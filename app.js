@@ -48,6 +48,7 @@
     h += '</div></div>';
     if (!s.loaded) { if (S.jump && S.jump.idx === S.modIdx) h += '<div class="msg ok" style="margin:-8px 0 16px">Load this module and you will land on <b>' + esc(S.jump.label) + '</b>.</div>'; h += renderLive(m) + renderPaste(m, s); $('right').innerHTML = h; return; }
     if (s.source) h += '<div class="msg ' + (s.source.kind === 'live' ? 'ok' : 'ok') + '" style="margin:-8px 0 16px">' + (s.source.kind === 'live' ? 'Editing the live page version from ' + hhmm(s.source.at) + '. Its code has no indentation. That is how HubSpot serves it, and it works the same.' : 'Editing the code you pasted from HubSpot.') + ' <button class="btn sm" id="reload">Start again</button></div>';
+    if (s.flash) { h += '<div class="msg ok" style="margin:-8px 0 16px">' + esc(s.flash) + '</div>'; s.flash = null; }
     if (s.mode === 'code') h += renderCode(m, s);
     else if (m.editor === 'products') h += renderProductsModule(m, s);
     else if (m.editor === 'content' || m.editor === 'banner') h += renderContent(m, s);
@@ -201,7 +202,7 @@
       });
       h += '</tr>';
     });
-    return h + '</tbody></table></div>' + pasteBox() + '</div>';
+    return h + '</tbody></table></div></div>';
   }
   // Every product's tags in one place. Tag shape comes from the page's own tags field
   // (Life: zh/en/colour · CI: zh · VHIS: plain words) — or a single badge (OSI).
@@ -255,7 +256,7 @@
       h += '</tr>';
     });
     function cellIn(p, i, val, o) { return '<td class="' + (JSON.stringify(val) !== JSON.stringify(o) ? 'changed' : '') + '"><input type="number" min="0" step="any" data-pid="' + esc(s.vp) + '" data-tpath="' + p + '" data-ti="' + i + '" value="' + (typeof val === 'number' && isFinite(val) ? val : '') + '"></td>'; }
-    return h + '</tbody></table></div>' + pasteBox() + '</div>';
+    return h + '</tbody></table></div></div>';
   }
   /* ---------- paste a whole sheet from the RP Product Details Excel ---------- */
   // products the sheet's plan names are matched against: this module's products, or (Life premiums,
@@ -275,7 +276,8 @@
   }
   function excelPanel(s, v) {
     if (!v.excel) return '';
-    var x = s.xl && s.xl.v === v.v ? s.xl : null, h = '<div class="card xl"><h2>Paste the Excel sheet</h2><p class="hint">' + esc(v.excel.how) + '</p>';
+    var x = s.xl && s.xl.v === v.v ? s.xl : null, h = '<div class="card xl"><h2>Paste the Excel sheet</h2><p class="hint">' + esc(v.excel.how) + '</p>' +
+      (v.kind !== 'productColumns' ? '<p class="hint"><b>Copied just the numbers?</b> Click the cell in the table below where the first number goes and paste there (Cmd+V).' + (v.groupOrder ? ' A whole column from the sheet fills all four groups.' : '') + '</p>' : '');
     var boxes = v.excel.two ? [{ which: 'premium', label: '1. "Premium" sheet' }, { which: 'discount', label: '2. "Discounted Premium" sheet' }] : [{ which: 'premium', label: '' }];
     boxes.forEach(function (b) {
       h += (b.label ? '<h3>' + esc(b.label) + '</h3>' : '') + '<textarea class="code" style="min-height:70px" data-xltext="' + b.which + '" placeholder="Paste the whole sheet here…"></textarea>' +
@@ -333,29 +335,6 @@
     var n = s.xl.changes.length; s.xl = null; s.copied = false; all();
     var r = $('review'); if (r) r.scrollIntoView({ behavior: 'smooth', block: 'start' });
     return n;
-  }
-  // Paste a block copied from Excel into the table above, left to right, top to bottom
-  function pasteBox() {
-    return '<details class="paste"><summary>Paste numbers only (advanced)</summary><p class="hint">For a block of numbers copied in exactly the same rows and columns as this table. Usually the "Paste the Excel sheet" box above is easier.</p>' +
-      '<textarea class="code" id="pasteGrid" style="min-height:100px" placeholder="Paste here…"></textarea>' +
-      '<label class="check"><input type="checkbox" id="pasteSkip"> The first column is the age or product name (skip it)</label>' +
-      '<div class="row" style="margin-top:6px"><button class="btn" id="pasteFill">Fill the table</button></div></details>';
-  }
-  function fillFromPaste() {
-    var rows = $('pasteGrid').value.replace(/\r/g, '').split('\n').filter(function (r) { return r.trim(); }).map(function (r) { return r.split('\t'); });
-    if ($('pasteSkip').checked) rows = rows.map(function (r) { return r.slice(1); });
-    var trs = $('pasteGrid').closest('.card').querySelectorAll('table.rates tbody tr'), n = 0;
-    S.batch = true;
-    rows.forEach(function (cells, i) {
-      if (!trs[i]) return;
-      var ins = trs[i].querySelectorAll('input[type=number]:not(:disabled)');
-      cells.forEach(function (c, j) {
-        var v = c.replace(/[,$\sHK]/g, ''); if (!ins[j] || v === '') return;
-        if (!isFinite(+v)) return; ins[j].value = v; ins[j].dispatchEvent(new Event('input', { bubbles: true })); n++;
-      });
-    });
-    S.batch = false; all();
-    alert(n + ' cells filled. Check the table and the change summary before copying.');
   }
   function renderProductForm(s, id) {
     var c = cfg(), h = '<div class="card" style="margin:0 0 10px">', lastGroup = '';
@@ -472,12 +451,12 @@
         });
         h += '</tr>';
       });
-      h += '</tbody></table></div>' + pasteBox();
+      h += '</tbody></table></div>';
     } else if (v.kind === 'grid') {
       var rows = Object.keys(data), gcols = Object.keys(data[rows[0]]);
       h += '<div class="tablewrap"><table class="rates"><thead><tr><th>Age</th>' + gcols.map(function (c) { return '<th>' + esc(c) + '</th>'; }).join('') + '</tr></thead><tbody>';
       rows.forEach(function (r) { h += '<tr><th>' + esc(r) + '</th>' + gcols.map(function (c) { var path = r + '.' + c, val = vcur(s, v.v, path, data); return '<td class="' + (val !== data[r][c] ? 'changed' : '') + '"><input type="number" step="any" data-grid="' + esc(path) + '" value="' + esc(val) + '"></td>'; }).join('') + '</tr>'; });
-      h += '</tbody></table></div>' + pasteBox();
+      h += '</tbody></table></div>';
     }
     return h + '</div>';
   }
@@ -522,6 +501,55 @@
     if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
   }
 
+  /* ---------- paste numbers straight into a table, like a spreadsheet ---------- */
+  // Click the cell where the first number goes and paste: values fill down (and right, for several columns).
+  // VHIS: a column from Phillip's sheet runs through all four groups; values past age 80 continue into the
+  // next group in the sheet's order.
+  function pasteBlock(start, text) {
+    var s = st(), m = mod(), v = (m.vars || []).filter(function (x) { return x.v === s.vtab; })[0] || {};
+    var rows = X.parseTSV(text).map(function (r) { return r; });
+    while (rows.length && rows[0].every(function (c) { return c === '' || isNaN(X.num(c)); })) rows.shift(); // copied a header too
+    var tr = start.closest('tr'), trs = [].slice.call(tr.parentNode.children), r0 = trs.indexOf(tr);
+    // VHIS tables alternate standard / first-year columns, but Phillip keeps them on separate sheets:
+    // several copied columns follow the kind of column you started in (all standard, or all first-year)
+    var kind = start.dataset.tpath ? start.dataset.tpath.split('.')[0] : null;
+    var inputsOf = function (row) { return [].slice.call(row.querySelectorAll('input[type=number]:not(:disabled)')).filter(function (x) { return !kind || (x.dataset.tpath || '').split('.')[0] === kind; }); };
+    var c0 = inputsOf(tr).indexOf(start), filled = 0, skipped = 0, over = [];
+    var val = function (c) { var n = X.num(c); if (n === null || isNaN(n)) return n; return v.round != null ? X.roundEven(n, v.round) : n; };
+    S.batch = true;
+    rows.forEach(function (cells, i) {
+      var row = trs[r0 + i]; if (!row) { over.push({ i: i, cells: cells }); return; }
+      var ins = inputsOf(row);
+      cells.forEach(function (c, j) { var inp = ins[c0 + j], n = val(c); if (!inp) { skipped++; return; } if (n === null) return; if (isNaN(n)) { skipped++; return; } inp.value = n; inp.dispatchEvent(new Event('input', { bubbles: true })); filled++; });
+    });
+    var groupsDone = [s.vg];
+    if (over.length && v.kind === 'productRates' && v.groupOrder) {
+      var d = curData(s, s.vp), ages = Object.keys(get(d, v.path) || {}), g0 = v.groupOrder.indexOf(s.vg), hasDisc = !!get(d, v.discPath), slots = [];
+      (get(d, v.tiersPath) || []).forEach(function (t, k) { slots.push({ p: kind === v.discPath.split('.')[0] ? v.discPath : v.path, k: k }); });
+      over.forEach(function (o) {
+        var abs = r0 + o.i, g = v.groupOrder[g0 + Math.floor(abs / ages.length)], age = ages[abs % ages.length];
+        if (!g) { skipped += o.cells.length; return; }
+        if (groupsDone.indexOf(g) < 0) groupsDone.push(g);
+        o.cells.forEach(function (c, j) {
+          var sl = slots[c0 + j], n = val(c); if (!sl) { skipped++; return; } if (n === null) return; if (isNaN(n)) { skipped++; return; }
+          var path = sl.p + '.' + age + '.' + g, arr = (cur(s, s.vp, path) || []).slice(); arr[sl.k] = n; setP(s, s.vp, path, arr); filled++;
+        });
+      });
+    } else skipped += over.reduce(function (a, o) { return a + o.cells.length; }, 0);
+    S.batch = false;
+    s.flash = 'Filled ' + filled + ' cell' + (filled === 1 ? '' : 's') + (groupsDone.length > 1 ? ' across ' + groupsDone.join(', ') : '') + '.' +
+      (skipped ? ' ' + skipped + ' value' + (skipped === 1 ? ' was' : 's were') + ' left out (past the end of the table, or not a number).' : '') + ' Check the change list before copying.';
+    all();
+  }
+  document.addEventListener('paste', function (e) {
+    var t = e.target; if (!t.matches || !t.matches('table.rates input[type=number]')) return;
+    var text = (e.clipboardData || window.clipboardData).getData('text');
+    if (!/[\t\n]/.test(String(text).trim())) return; // one value: normal paste
+    e.preventDefault();
+    if (t.dataset.ppath) { st().flash = 'Pasting several values here is turned off: this table lists products in the page order, which is different from the Excel. Paste the whole sheet in the box above instead.'; return all(); }
+    pasteBlock(t, text);
+  });
+
   /* ================= events ================= */
   function soft() {
     if (S.batch) return; // refresh review + module badges without rebuilding the form (keeps typing focus)
@@ -556,7 +584,6 @@
     if (t.dataset.down != null) return move(s, +t.dataset.down, +t.dataset.down + 1);
     if (t.dataset.edit) { s.sel = s.sel === t.dataset.edit ? null : t.dataset.edit; return renderRight(); }
     if (t.dataset.undo) { delete s.fields[t.dataset.undo]; s.copied = false; return all(); }
-    if (t.id === 'pasteFill') return fillFromPaste();
     if (t.dataset.xlread) { var xv = (m.vars || []).filter(function (x) { return x.v === s.vtab; })[0]; excelRead(s, xv, t.dataset.xlread); var keep = {}; document.querySelectorAll('[data-xltext]').forEach(function (ta) { keep[ta.dataset.xltext] = ta.value; }); renderRight(); document.querySelectorAll('[data-xltext]').forEach(function (ta) { ta.value = keep[ta.dataset.xltext] || ''; }); var pv = document.querySelector('.xlprev'); if (pv) pv.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); return; }
     if (t.id === 'xlApply') { excelApply(s); return; }
     if (t.id === 'xlCancel') { s.xl = null; return renderRight(); }

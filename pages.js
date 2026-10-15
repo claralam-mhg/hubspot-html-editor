@@ -287,6 +287,8 @@
         { file: '07 overlays', editor: 'content', fingerprint: 'MODULE 07 —', find: '<!-- ═══ MODULE 07 — Tooltip, compare tray', what: 'Tooltip, compare tray, compare pop-up, filter sheet' },
         { file: '08 product data', editor: 'products', fingerprint: 'MODULE 08 —', find: '<!-- ═══ MODULE 08 — Product data', what: 'Ranking, plan names, tags, offers, codes, offer end dates, apply links, premiums',
           vars: [{ v: '@tags', title: 'Tags 標籤', kind: 'productTags', field: 'tags' }, { v: '@premiums', title: 'Premiums 保費', kind: 'productRates', path: 'premiums', discPath: 'discount.prices', tiersPath: 'deductibleTiers',
+            // Phillip's sheet lists each column's 81 ages for these groups in this order; a pasted column runs on into the next group
+            groupOrder: ['male-smoker', 'male-non-smoker', 'female-smoker', 'female-non-smoker'], round: 0,
             excel: { expect: ['vhis'], two: true, how: 'In the VHIS RP Product Details Excel, open the "Premium" sheet, click the corner above row 1 to select the whole sheet, copy, and paste in box 1. Then do the same with the "Discounted Premium" sheet in box 2.' } }],
           note: 'Deductible levels, discount label and coverage → "Edit code directly". This module is one very long line of code, so the form is the easier way in.' },
         { file: '09 banner', editor: 'scripts', fingerprint: 'MODULE 09 —', find: '<!-- ═══ MODULE 09 — Behaviour', what: 'Top and bottom banners (image, alt text, linked plan). The rest is page behaviour.',

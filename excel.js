@@ -248,11 +248,15 @@
 
   function importSheet(text, products, opts) {
     var rows = parseTSV(text), f = detect(rows);
-    if (!f) return { error: 'This does not look like one of the RP Product Details sheets. Select the whole sheet in Excel (click the corner above row 1), copy, and paste again.' };
+    if (!f) {
+      var cells = [].concat.apply([], rows), numeric = cells.filter(function (c) { return c !== '' && !isNaN(num(c)); }).length;
+      if (cells.length && numeric / cells.length > 0.8) return { error: 'This looks like just the numbers, without the headers. That works too: click the cell in the table below where the first number should go, and paste there (Cmd+V). Or select the whole sheet in Excel and paste it here.' };
+      return { error: 'This does not look like one of the RP Product Details sheets. Select the whole sheet in Excel (click the corner above row 1), copy, and paste again. Or paste just the numbers straight into the table below.' };
+    }
     if (opts.expect && opts.expect.indexOf(f) < 0) return { error: 'This looks like a different sheet (' + ({ long: 'a Life premium sheet', ci: 'the CI Premium sheet', vhis: 'a VHIS premium sheet', osi: 'the OSI sheet' })[f] + '). Paste the premium sheet for this page.' };
     return ({ long: importLong, ci: importCI, vhis: importVHIS, osi: importOSI })[f](rows, products, opts);
   }
 
-  var api = { parseTSV: parseTSV, detect: detect, matchName: matchName, importSheet: importSheet, norm: norm, dice: dice };
+  var api = { roundEven: roundEven, num: num, parseTSV: parseTSV, detect: detect, matchName: matchName, importSheet: importSheet, norm: norm, dice: dice };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.PCTExcel = api;
 })(typeof window !== 'undefined' ? window : globalThis);
