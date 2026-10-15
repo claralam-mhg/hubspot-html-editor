@@ -167,7 +167,7 @@
       var nextStart = k + 1 < records.length ? records[k + 1].node.start : arr.end - 1;
       var seg = html.slice(node.end, nextStart);
       // match within ONE comment — a lazy [^]*? would start at the previous END comment and swallow it
-      var startMarker = seg.search(/\/\*(?:(?!\*\/)[^])*PRODUCT CARD START/);
+      var startMarker = seg.search(new RegExp('\\/\\*(?:(?!\\*\\/)[^])*' + (cfg.blockStart || 'PRODUCT CARD START')));
       sepEnd = startMarker >= 0 ? node.end + startMarker : nextStart;
       // move sepEnd back to the beginning of its line so indentation travels with the block
       while (sepEnd > node.end && html[sepEnd - 1] !== '\n') sepEnd--;
@@ -210,7 +210,16 @@
       var ed = effective[rec.id] || {};
       Object.keys(ed).forEach(function (path) {
         var n = nodeAt(rec.node, path);
-        if (!n) throw new Error(rec.id + ': field "' + path + '" not found in this module');
+        if (!n) {
+          var dflt = (cfg.defaults || {})[path];
+          if (path.indexOf('.') < 0 && dflt !== undefined) {
+            if (JSON.stringify(ed[path]) === JSON.stringify(dflt)) return; // absent already means this value
+            // add the field as the record's first property, on its own line
+            edits.push({ start: rec.node.start + 1 - b.from, end: rec.node.start + 1 - b.from, text: '\n' + path + ':' + lit(ed[path]) + ',' });
+            return;
+          }
+          throw new Error(rec.id + ': field "' + path + '" not found in this module');
+        }
         var before = toJS(n);
         if (JSON.stringify(before) === JSON.stringify(ed[path])) return; // unchanged → leave bytes alone
         edits.push({ start: n.start - b.from, end: n.end - b.from, text: lit(ed[path], n.quote) });
@@ -240,7 +249,7 @@
     var noOrderChange = order.join() === current.join();
     var noField = order.every(function (id) {
       var r = doc.records[byId[id]], ed = effective[id];
-      return Object.keys(ed).every(function (p) { var n = nodeAt(r.node, p); return n && JSON.stringify(toJS(n)) === JSON.stringify(ed[p]); });
+      return Object.keys(ed).every(function (p) { var n = nodeAt(r.node, p); var v = n ? toJS(n) : (cfg.defaults || {})[p]; return (n || v !== undefined) && JSON.stringify(v) === JSON.stringify(ed[p]); });
     });
     if (noOrderChange && noField) return html;
     return out;
@@ -295,6 +304,19 @@
         var dt = parseZhDate(s);
         if (dt && dt < today) warnings.push(label + ': offer expired on ' + dt.toISOString().slice(0, 10) + ' but is still on the page ("' + s + '").');
       });
+      (cfg.numberFields || []).forEach(function (nf) {
+        var v = getPath(d, nf.path);
+        if (v === null && nf.nullable) return;
+        if (typeof v !== 'number' || !isFinite(v) || v < 0) errors.push(label + ': ' + nf.path + ' must be a number' + (nf.nullable ? ' or empty' : '') + '.');
+      });
+      (cfg.pairs || []).forEach(function (pr) {
+        var lo = getPath(d, pr.low), hi = getPath(d, pr.high);
+        if (typeof lo === 'number' && typeof hi === 'number' && lo >= hi) warnings.push(label + ': ' + pr.low + ' (' + lo + ') is not lower than ' + pr.high + ' (' + hi + ').');
+      });
+      Object.keys(cfg.enums || {}).forEach(function (p) {
+        var v = getPath(d, p);
+        if (cfg.enums[p].indexOf(v) < 0) errors.push(label + ': ' + p + ' must be one of ' + cfg.enums[p].join(', ') + '.');
+      });
       (cfg.htmlTextFields || []).forEach(function (p) {
         var v = getPath(d, p);
         [v && v.zh, v && v.en].forEach(function (s) {
@@ -303,6 +325,14 @@
       });
     });
 
+    // 4d2. Values that must exist as a key in another table (e.g. OSI iss → ISSUERS).
+    (cfg.lookups || []).forEach(function (lk) {
+      lk.vars.forEach(function (name) {
+        var mm = new RegExp('\\bvar\\s+' + name + '\\s*=\\s*\\{').exec(afterHtml); if (!mm) return;
+        var keys = Object.keys(toJS(parseValueAt(afterHtml, mm.index + mm[0].length - 1)));
+        after.records.forEach(function (r) { var v = getPath(r.data, lk.field); if (keys.indexOf(v) < 0) errors.push(cfg.productLabel(r.data) + ': ' + lk.field + ' "' + v + '" is not in ' + name + '.'); });
+      });
+    });
     // 4e. Lookups keyed by product id (e.g. SOCIAL_PROOF) must still cover every product.
     (cfg.idMaps || []).forEach(function (name) {
       var mm = new RegExp('\\bvar\\s+' + name + '\\s*=\\s*\\{').exec(afterHtml);
@@ -332,18 +362,30 @@
   /* ===== 5. Human-readable change list ===== */
   function changeList(beforeHtml, afterHtml, cfg) {
     var a = load(beforeHtml, cfg), b = load(afterHtml, cfg), out = [];
-    var aIds = a.records.map(function (r) { return r.id; }), bIds = b.records.map(function (r) { return r.id; });
-    if (aIds.join() !== bIds.join()) {
-      out.push({ product: 'Ranking', field: 'Order', before: a.records.map(function (r, n) { return (n + 1) + '. ' + cfg.productLabel(r.data); }).join('\n'), after: b.records.map(function (r, n) { return (n + 1) + '. ' + cfg.productLabel(r.data); }).join('\n') });
+    // Ranking = the order visitors see (cfg.displayOrder applies page rules such as badge-first or hidden products).
+    var vis = function (doc) { var ds = doc.records.map(function (r) { return r.data; }); return cfg.displayOrder ? cfg.displayOrder(ds) : ds; };
+    var va = vis(a), vb = vis(b), idsOf = function (l) { return l.map(function (d) { return d.id; }).join(); };
+    if (idsOf(va) !== idsOf(vb)) {
+      var lst = function (l) { return l.map(function (d, n) { return (n + 1) + '. ' + cfg.productLabel(d); }).join('\n'); };
+      out.push({ product: 'Ranking', field: 'Order on the page', before: lst(va), after: lst(vb) });
     }
     b.records.forEach(function (r) {
       var old = a.records.filter(function (x) { return x.id === r.id; })[0]; if (!old) return;
       cfg.fields.forEach(function (f) {
         var x = getPath(old.data, f.path), y = getPath(r.data, f.path);
-        if (JSON.stringify(x) !== JSON.stringify(y)) out.push({ product: cfg.productLabel(r.data), field: f.label, before: x == null ? '' : String(x), after: y == null ? '' : String(y) });
+        if (f.path in (cfg.defaults || {})) { if (x === undefined) x = cfg.defaults[f.path]; if (y === undefined) y = cfg.defaults[f.path]; }
+        if (JSON.stringify(x) !== JSON.stringify(y)) out.push({ product: cfg.productLabel(r.data), field: f.label, before: show(x, f), after: show(y, f) });
       });
     });
     return out;
+  }
+
+  function show(v, f) {
+    if (v == null) return '';
+    if (f && f.type === 'toggle') return v ? 'On (shown)' : 'Off (hidden)';
+    if (Array.isArray(v)) return v.map(function (i) { return i && typeof i === 'object' ? (i.zh || i.en || JSON.stringify(i)) : String(i); }).join(' · ');
+    if (typeof v === 'object') return v.zh || v.en || JSON.stringify(v);
+    return String(v);
   }
 
   /* Line diff (LCS) for the "what will change" view. Small modules, so O(n·m) is fine. */

@@ -9,6 +9,7 @@
      content / banner : s.base = code, s.fields = PCTModules.htmlFields(code, {overriddenIds}), s.edits = { fieldIdx: value },
                         s.structural = true after a banner add/remove
      scripts  : s.base = code, s.vedits = { 'VAR|path': { v, path, value } }
+     products may also carry s.vedits for tables in the same module (premium table, FAQ)
      any      : s.allowHookRemoval (code-mode tick box), s.fromCode (form re-read from edited code)
    ───────────────────────────────────────────────────────────── */
 (function (root) {
@@ -17,7 +18,11 @@
   function get(o, p) { return String(p).split('.').reduce(function (x, k) { return x == null ? x : x[k]; }, o); }
   function output(page, m, s) {
     if (s.mode === 'code') return s.code;
-    if (m.editor === 'products') return E.build(s.doc, { order: s.order, fields: s.fields });
+    if (m.editor === 'products') {
+      var built = E.build(s.doc, { order: s.order, fields: s.fields });
+      var ve = Object.keys(s.vedits || {}).map(function (k) { return s.vedits[k]; });
+      return ve.length ? M.applyVars(built, ve) : built;
+    }
     if (m.editor === 'content' || m.editor === 'banner') return M.applyHtml(s.base, s.fields, s.edits);
     if (m.editor === 'scripts') return M.applyVars(s.base, Object.keys(s.vedits).map(function (k) { return s.vedits[k]; }));
     return s.code;
@@ -30,17 +35,19 @@
     var safe = M.safety(s.original, out, { allowHookRemoval: s.allowHookRemoval, expectStructure: s.structural && s.mode !== 'code' });
     res.errors = res.errors.concat(safe.errors); res.warnings = res.warnings.concat(safe.warnings);
     if (m.editor === 'products') {
-      var c = E.check(s.original, out, Object.assign({}, cfg(), { allowOutside: s.mode === 'code' || s.fromCode }));
+      var tablesEdited = Object.keys(s.vedits || {}).length > 0; // premium table / FAQ live outside the product list
+      var c = E.check(s.original, out, Object.assign({}, cfg(), { allowOutside: s.mode === 'code' || s.fromCode || tablesEdited }));
       res.errors = res.errors.concat(c.errors.filter(function (x) { return res.errors.indexOf(x) < 0; }));
       res.warnings = res.warnings.concat(c.warnings);
       if (s.mode !== 'code') res.errors = res.errors.concat(productPatternErrors(page, s));
       try { changes = E.changeList(s.original, out, cfg()); } catch (e) {}
+      if (m.vars) { changes = changes.concat(varChanges(s.original, out, m)); if (s.mode !== 'code') rateWarnings(s.original, out, m).forEach(function (w) { res.warnings.push(w); }); }
     } else if ((m.editor === 'content' || m.editor === 'banner') && s.mode !== 'code') {
       res.errors = res.errors.concat(M.htmlFieldErrors(s.fields, s.edits));
       changes = contentChanges(page, s.original, out, m);
     } else if (m.editor === 'scripts') {
       changes = varChanges(s.original, out, m);
-      if (s.mode !== 'code') rateWarnings(out, m).forEach(function (w) { res.warnings.push(w); });
+      if (s.mode !== 'code') rateWarnings(s.original, out, m).forEach(function (w) { res.warnings.push(w); });
     } else if (m.editor === 'content' || m.editor === 'banner') {
       changes = contentChanges(page, s.original, out, m);
     }
@@ -69,14 +76,21 @@
     return out;
   }
   function fmt(v) { return v === undefined ? '(none)' : typeof v === 'string' ? v : JSON.stringify(v); }
-  function rateWarnings(out, m) {
+  // Premium cells: [original, discounted] · [original, null] (no discount, where allowed) · 'NA' · {n: 'note'}.
+  // Only cells that differ from the original are checked, so old data never floods the review.
+  function rateWarnings(original, out, m) {
     var w = [];
     (m.vars || []).filter(function (v) { return v.kind === 'rates'; }).forEach(function (v) {
-      var r = M.readVar(out, v.v); if (!r) return;
+      var r = M.readVar(out, v.v), o = M.readVar(original, v.v); if (!r) return;
       Object.keys(r.data).forEach(function (pid) { Object.keys(r.data[pid]).forEach(function (age) { Object.keys(r.data[pid][age]).forEach(function (k) {
-        var c = r.data[pid][age][k]; if (c === 'NA') return;
-        if (!Array.isArray(c) || c.length !== 2 || c.some(function (x) { return typeof x !== 'number' || !(x > 0); })) w.push(pid + ' age ' + age + ' ' + k + ': premium must be two numbers above 0.');
-        else if (c[1] > c[0]) w.push(pid + ' age ' + age + ' ' + k + ': discounted (' + c[1] + ') is higher than original (' + c[0] + ').');
+        var c = r.data[pid][age][k], before = o && o.data[pid] && o.data[pid][age] ? o.data[pid][age][k] : undefined;
+        if (JSON.stringify(c) === JSON.stringify(before)) return;
+        var where = pid + ' age ' + age + ' ' + k + ': ';
+        if (c === 'NA' && v.na) return;
+        if (c && typeof c === 'object' && !Array.isArray(c)) { if (!c.n || !String(c.n).trim()) w.push(where + 'the note is empty.'); return; }
+        var okNum = function (x) { return typeof x === 'number' && x > 0; };
+        if (!Array.isArray(c) || c.length !== 2 || !okNum(c[0]) || !(okNum(c[1]) || (v.discountOptional && c[1] === null))) w.push(where + 'enter the original premium' + (v.discountOptional ? ' (discounted is optional)' : ' and the discounted premium') + ' as numbers above 0.');
+        else if (c[1] !== null && c[1] > c[0]) w.push(where + 'discounted (' + c[1] + ') is higher than original (' + c[0] + ').');
       }); }); });
     });
     return w;
@@ -88,6 +102,7 @@
     Object.keys(s.fields).forEach(function (id) {
       cfg().fields.forEach(function (f) {
         var v = (s.fields[id] || {})[f.path];
+        if ((f.type === 'number' || f.type === 'number-null') && v !== undefined && v !== null && (typeof v !== 'number' || !isFinite(v) || v < 0)) out.push(prodLabel(s, id) + ': ' + f.label + ' — enter a number' + (f.type === 'number-null' ? ' or leave it empty' : '') + '.');
         if (f.pattern && typeof v === 'string' && !new RegExp(f.pattern).test(v)) out.push(prodLabel(s, id) + ': ' + f.label + ' — ' + f.patternMsg);
       });
     });

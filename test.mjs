@@ -266,5 +266,114 @@ t('live product-data: ranking change on live code → checks pass, browser order
   assert(E.check(code, o, cfg).ok, 'check'); eq(runModule(o).P.map(p => p.id).join(), order.join());
 });
 
+/* ===== Life EN, CI, OSI — against saved copies of their live pages (2026-10-15) ===== */
+for (const key of ['life-en', 'ci', 'osi']) {
+  const page = PAGES.find(p => p.key === key), pc = page.data;
+  const LV = fs.readFileSync(path.join(here, `fixtures/${key}-live-2026-10-15.html`), 'utf8');
+  console.log(`\n${page.label} (live copy)`);
+  const codeOf = m => M.liveModuleCode(LV, m.fingerprint).code;
+  for (const m of page.modules) {
+    t(`${key} ${m.file}: found once on live, passes safety, loads in its editor`, () => {
+      const r = M.liveModuleCode(LV, m.fingerprint); assert(r.code, r.error);
+      assert(M.safety(r.code, r.code).ok, M.safety(r.code, r.code).errors.join());
+      if (m.editor === 'products') { const d = E.load(r.code, pc); assert(d.records.length > 3, 'records'); const c = E.check(r.code, r.code, pc); assert(c.ok, c.errors.join('; ')); const other = c.warnings.filter(w => !/expired/.test(w)); eq(other.length, 0, 'warnings on untouched live data: ' + other.join('; ')); }
+      (m.vars || []).forEach(v => assert(M.readVar(r.code, v.v), v.v + ' missing'));
+      if (m.editor === 'banner') assert(M.slides(r.code).length >= 1, 'no banner slides found');
+      if (m.editor === 'content' || m.editor === 'banner') M.htmlFields(r.code, { overriddenIds: page.overriddenIds });
+      eq(M.liveCheck(r.code, LV, m.fingerprint).status, 'match');
+    });
+  }
+  const pdm = page.modules.find(m => m.editor === 'products'), PD = codeOf(pdm), D = E.load(PD, pc), ids = D.records.map(r => r.id);
+  const allIds = h => { const c = runModule(h); return (c.P_ALL || c.P).map(p => p.id); };
+  t(`${key}: no-op build is byte-identical; parser matches the browser`, () => {
+    eq(E.build(D, {}), PD);
+    eq(JSON.stringify(D.records.map(r => r.data)), JSON.stringify(runModule(PD).P_ALL || runModule(PD).P));
+  });
+  t(`${key}: reverse ranking → browser order, checks pass, reverse back → original bytes`, () => {
+    const o = E.build(D, { order: [...ids].reverse() });
+    eq(allIds(o).join(), [...ids].reverse().join()); assert(E.check(PD, o, pc).ok, E.check(PD, o, pc).errors.join());
+    eq(E.build(E.load(o, pc), { order: ids }), PD);
+  });
+  t(`${key}: each product's label comment moves with it`, () => {
+    const o = E.build(D, { order: [...ids].reverse() }), L = E.load(o, pc);
+    L.records.forEach((r, k) => {
+      const block = o.slice(L.blocks[k].from, L.blocks[k].to);
+      const name = typeof r.data.name === 'string' ? r.data.name : (r.data.name.zh || r.data.name.en);
+      const first = (block.match(/\/\*[\s\S]*?\*\//) || [''])[0];
+      assert(first.includes(name.slice(0, 6)) || /PRODUCT CARD START/.test(first), `block ${k} (${r.id}) starts with ${JSON.stringify(first.slice(0, 80))}`);
+    });
+  });
+  if (pdm.vars) {
+    const fv = pdm.vars.find(v => v.kind === 'list');
+    t(`${key}: FAQ edit → one value changes; review gate passes with a FAQ row`, () => {
+      const p0 = '0.' + fv.fields[0].p, o = M.applyVars(PD, [{ v: 'FAQS', path: p0, value: '新問題？' }]);
+      eq(String(p0.split('.').slice(1).reduce((x, k) => x[k], M.readVar(o, 'FAQS').data[0])), '新問題？');
+      const st = { mode: 'form', original: PD, doc: D, order: ids, fields: {}, base: PD, vedits: { ['FAQS|' + p0]: { v: 'FAQS', path: p0, value: '新問題？' } } };
+      const r = R.review(page, pdm, st); assert(r.res.ok, r.res.errors.join()); assert(r.changes.some(c => /FAQ/.test(c.product)), JSON.stringify(r.changes));
+    });
+  }
+}
+
+console.log('\nCI on/off switch');
+{
+  const page = PAGES.find(p => p.key === 'ci'), pc = page.data, pdm = page.modules.find(m => m.editor === 'products');
+  const PD = M.liveModuleCode(fs.readFileSync(path.join(here, 'fixtures/ci-live-2026-10-15.html'), 'utf8'), pdm.fingerprint).code, D = E.load(PD, pc);
+  const on = D.records.find(r => r.data.enabled !== false).id, off = D.records.find(r => r.data.enabled === false).id;
+  t('turning a product off adds enabled:false; the page drops it; Ranking row lists the change', () => {
+    const o = E.build(D, { fields: { [on]: { enabled: false } } });
+    assert(!runModule(o).P.some(p => p.id === on), 'still shown'); eq(E.lineDiff(PD, o).length, 1, 'one added line');
+    assert(E.check(PD, o, pc).ok, 'check'); const cl = E.changeList(PD, o, pc);
+    assert(cl.some(c => c.product === 'Ranking') && cl.some(c => c.after === 'Off (hidden)'), JSON.stringify(cl));
+  });
+  t('turning a hidden product on flips enabled:false → true and the page shows it', () => {
+    const o = E.build(D, { fields: { [off]: { enabled: true } } });
+    assert(runModule(o).P.some(p => p.id === off), 'not shown'); eq(E.lineDiff(PD, o).length, 2);
+  });
+  t('switching on a product that is already on changes nothing', () => eq(E.build(D, { fields: { [on]: { enabled: true } } }), PD));
+}
+
+console.log('\nOSI numbers, badges, empty values');
+{
+  const page = PAGES.find(p => p.key === 'osi'), pc = page.data, pdm = page.modules.find(m => m.editor === 'products');
+  const PD = M.liveModuleCode(fs.readFileSync(path.join(here, 'fixtures/osi-live-2026-10-15.html'), 'utf8'), pdm.fingerprint).code, D = E.load(PD, pc);
+  const a = D.records.find(r => r.data.disc != null && r.data.badge), id = a.id;
+  t('price, discount, empty discount, empty badge → browser sees numbers and null', () => {
+    const o = E.build(D, { fields: { [id]: { price: 4500, disc: null, badge: null, promo: null } } });
+    const p = runModule(o).P.find(x => x.id === id); eq(p.price, 4500); eq(p.disc, null); eq(p.badge, null); eq(p.promo, null);
+    assert(E.check(PD, o, pc).ok, E.check(PD, o, pc).errors.join());
+  });
+  t('removing a badge moves the product down the visible ranking', () => {
+    const o = E.build(D, { fields: { [id]: { badge: null } } });
+    assert(E.changeList(PD, o, pc).some(c => c.product === 'Ranking'), 'no Ranking row');
+  });
+  t('discount higher than price → warning; empty price → blocked', () => {
+    const o = E.build(D, { fields: { [id]: { disc: a.data.price + 100 } } });
+    assert(E.check(PD, o, pc).warnings.some(w => /not lower/.test(w)), 'warn');
+    try { E.build(D, { fields: { [id]: { price: NaN } } }); throw new Error('no error'); } catch (e) { assert(/empty or not a number/.test(e.message), e.message); }
+  });
+  t('unknown destination or issuer → blocked', () => {
+    assert(!E.check(PD, E.build(D, { fields: { [id]: { dest: 'europe' } } }), pc).ok, 'dest');
+    assert(!E.check(PD, E.build(D, { fields: { [id]: { iss: 'nobody' } } }), pc).ok, 'iss');
+  });
+}
+
+console.log('\nCI premium table formats');
+{
+  const page = PAGES.find(p => p.key === 'ci'), pdm = page.modules.find(m => m.editor === 'products');
+  const PD = M.liveModuleCode(fs.readFileSync(path.join(here, 'fixtures/ci-live-2026-10-15.html'), 'utf8'), pdm.fingerprint).code, D = E.load(PD, page.data);
+  const st = ve => ({ mode: 'form', original: PD, doc: D, order: D.records.map(r => r.id), fields: {}, base: PD, vedits: Object.fromEntries(ve.map(e => ['PREMIUM_RATES|' + e.path, { v: 'PREMIUM_RATES', ...e }])) });
+  t('a ranking change alone raises no premium warnings (old data is not re-checked)', () => {
+    const r = R.review(page, pdm, { ...st([]), order: D.records.map(r => r.id).reverse() }); eq(r.res.warnings.length, 0, r.res.warnings.slice(0, 3).join(' | '));
+  });
+  t('empty discount → null is fine; note cell edit is fine', () => {
+    const r = R.review(page, pdm, st([{ path: 'fwd-upgrade.0.male-smoker-1y', value: [800, null] }, { path: 'zurich-care.0.male-smoker-1y', value: { n: '請到官網索取報價。' } }]));
+    assert(r.res.ok && r.res.warnings.length === 0, JSON.stringify(r.res)); eq(r.changes.length, 2);
+  });
+  t('empty note or discount above original → warning', () => {
+    const r = R.review(page, pdm, st([{ path: 'zurich-care.0.male-smoker-1y', value: { n: '' } }, { path: 'fwd-upgrade.0.male-smoker-1y', value: [100, 200] }]));
+    eq(r.res.warnings.length, 2, r.res.warnings.join(' | '));
+  });
+}
+
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

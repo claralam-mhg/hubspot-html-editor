@@ -48,12 +48,12 @@
     if (!s.loaded) { h += renderLive(m) + renderPaste(m, s); $('right').innerHTML = h; return; }
     if (s.source) h += '<div class="msg ' + (s.source.kind === 'live' ? 'ok' : 'ok') + '" style="margin:-8px 0 16px">' + (s.source.kind === 'live' ? 'Editing the live page version from ' + hhmm(s.source.at) + '. Its code has no indentation. That is how HubSpot serves it, and it works the same.' : 'Editing the code you pasted from HubSpot.') + ' <button class="btn sm" id="reload">Start again</button></div>';
     if (s.mode === 'code') h += renderCode(m, s);
-    else if (m.editor === 'products') h += renderProducts(s);
+    else if (m.editor === 'products') h += renderProductsModule(m, s);
     else if (m.editor === 'content' || m.editor === 'banner') h += renderContent(m, s);
     else if (m.editor === 'scripts') h += renderScripts(m, s);
     h += renderReview(m, s);
     $('right').innerHTML = h;
-    if (m.editor === 'products' && s.mode === 'form') bindRank();
+    if (m.editor === 'products' && s.mode === 'form' && s.vtab === 'products') bindRank();
   }
 
   /* ---------- live-page copy (written every ~15 min by the GitHub job into live/<page>.json) ---------- */
@@ -109,7 +109,11 @@
     try { initForm(m, s, text); } catch (e) { s.mode = 'code'; s.err = 'The form could not read this module (' + e.message + '). You can still edit the code directly.'; }
   }
   function initForm(m, s, text) {
-    if (m.editor === 'products') { s.doc = E.load(text, cfg()); s.order = s.doc.records.map(function (r) { return r.id; }); s.fields = {}; s.sel = null; }
+    if (m.editor === 'products') {
+      s.doc = E.load(text, cfg()); s.order = s.doc.records.map(function (r) { return r.id; }); s.fields = {}; s.sel = null;
+      s.base = text; s.vedits = {}; s.vtab = 'products'; s.q = '';
+      (m.vars || []).forEach(function (v) { if (!M.readVar(text, v.v)) throw new Error(v.v + ' not found'); });
+    }
     if (m.editor === 'content' || m.editor === 'banner') { s.base = text; s.fields = M.htmlFields(text, { overriddenIds: S.page.overriddenIds }); s.edits = {}; s.q = ''; }
     if (m.editor === 'scripts') {
       s.base = text; s.vedits = {}; s.vtab = s.vtab || m.vars[0].v; s.q = '';
@@ -128,40 +132,79 @@
   /* ---------- products ---------- */
   function rec(s, id) { return s.doc.records.filter(function (r) { return r.id === id; })[0]; }
   function prodLabel(s, id) { return cfg().productLabel(rec(s, id).data); }
-  function cur(s, id, path) { var e = s.fields[id]; return e && e.hasOwnProperty(path) ? e[path] : get(rec(s, id).data, path); }
-  function isEdited(s, id) { var e = s.fields[id] || {}; return Object.keys(e).some(function (p) { return JSON.stringify(e[p]) !== JSON.stringify(get(rec(s, id).data, p)); }); }
-  function renderProducts(s) {
-    var c = cfg(), h = '', orig = s.doc.records.map(function (r) { return r.id; });
-    h += '<div class="card"><div class="row" style="justify-content:space-between"><div><h2>Ranking</h2><div class="muted">Drag a product, or use the arrows. #1 shows first on the page.</div></div>' + (s.order.join() !== orig.join() ? '<button class="btn sm" id="resetOrder">Undo ranking changes</button>' : '') + '</div>';
+  function cur(s, id, path) {
+    var e = s.fields[id]; if (e && e.hasOwnProperty(path)) return e[path];
+    var v = get(rec(s, id).data, path); return v === undefined && cfg().defaults && path in cfg().defaults ? cfg().defaults[path] : v;
+  }
+  function orig(s, id, path) { var v = get(rec(s, id).data, path); return v === undefined && cfg().defaults && path in cfg().defaults ? cfg().defaults[path] : v; }
+  function isEdited(s, id) { var e = s.fields[id] || {}; return Object.keys(e).some(function (p) { return JSON.stringify(e[p]) !== JSON.stringify(orig(s, id, p)); }); }
+  function setPath(o, p, v) { var k = p.split('.'), x = o; for (var i = 0; i < k.length - 1; i++) { if (x[k[i]] == null || typeof x[k[i]] !== 'object') x[k[i]] = {}; x = x[k[i]]; } x[k[k.length - 1]] = v; }
+  // the product as it will be after this session's edits — what display rules (badge first, hidden) look at
+  function curData(s, id) { var d = JSON.parse(JSON.stringify(rec(s, id).data)); var e = s.fields[id] || {}; Object.keys(e).forEach(function (p) { setPath(d, p, e[p]); }); return d; }
+  function shownIds(s, ids) {
+    var c = cfg(), list = ids.map(function (id) { return curData(s, id); });
+    return (c.displayOrder ? c.displayOrder(list) : list).map(function (d) { return d.id; });
+  }
+  function renderProductsModule(m, s) {
+    if (!m.vars) return renderProducts(m, s);
+    var h = '<div class="card" style="padding-bottom:4px"><div class="seg wide"><button class="' + (s.vtab === 'products' ? 'on' : '') + '" data-vtab="products">Products &amp; ranking</button>' +
+      m.vars.map(function (v) { return '<button class="' + (s.vtab === v.v ? 'on' : '') + '" data-vtab="' + v.v + '">' + esc(v.title) + '</button>'; }).join('') + '</div></div>';
+    if (s.vtab === 'products') return h + renderProducts(m, s);
+    return h + renderVar(m, s, m.vars.filter(function (x) { return x.v === s.vtab; })[0]);
+  }
+  function renderProducts(m, s) {
+    var c = cfg(), h = '', origIds = s.doc.records.map(function (r) { return r.id; });
+    var shown = shownIds(s, s.order), origShown = shownIds({ doc: s.doc, fields: {} }, origIds);
+    var hidden = s.order.filter(function (id) { return shown.indexOf(id) < 0; });
+    h += '<div class="card"><div class="row" style="justify-content:space-between"><div><h2>Ranking</h2><div class="muted">Drag a product, or use the arrows. #1 shows first on the page.' + (c.displayOrder && /badge/.test(String(c.displayOrder)) ? ' Products with a badge always show above products without one.' : '') + '</div></div>' + (shown.join() !== origShown.join() ? '<button class="btn sm" id="resetOrder">Undo ranking changes</button>' : '') + '</div>';
     h += '<ol class="rank-list" id="rankList">';
-    s.order.forEach(function (id, n) {
-      var d = rec(s, id).data, op = orig.indexOf(id), code = cur(s, id, 'exclusive.code');
-      h += '<li class="rank-item' + (s.sel === id ? ' selected' : '') + '" draggable="true" data-id="' + esc(id) + '">' +
-        '<div class="rank-pos">' + (n + 1) + '</div><img class="rank-logo" src="' + esc(c.logo(d)) + '" alt="">' +
-        '<div><div class="rank-name">' + esc(cur(s, id, 'name.zh') || id) + (op !== n ? '<span class="moved">was #' + (op + 1) + '</span>' : '') + (isEdited(s, id) ? '<span class="edited">edited</span>' : '') + '</div>' +
-        '<div class="rank-meta">' + esc(c.productSub(d)) + (code ? ' · code ' + esc(code) : '') + '</div></div>' +
-        '<div class="row"><button class="btn sm" data-up="' + n + '" ' + (n === 0 ? 'disabled' : '') + ' aria-label="Move up">↑</button><button class="btn sm" data-down="' + n + '" ' + (n === s.order.length - 1 ? 'disabled' : '') + ' aria-label="Move down">↓</button><button class="btn sm" data-edit="' + esc(id) + '">' + (s.sel === id ? 'Close' : 'Edit') + '</button></div></li>';
-      if (s.sel === id) h += '<li>' + renderProductForm(s, id) + '</li>';
-    });
-    return h + '</ol><p class="muted" style="margin-top:8px">Premiums are in the scripts module › Premium table. Other product details (coverage, pros/cons, documents) → "Edit code directly".</p></div>';
+    shown.forEach(function (id, n) { h += rankRow(s, id, n, shown.length, origShown); });
+    h += '</ol>';
+    if (hidden.length) {
+      h += '<h3>Hidden from the page</h3><ol class="rank-list">';
+      hidden.forEach(function (id) { h += rankRow(s, id, -1, 0, origShown); });
+      h += '</ol>';
+    }
+    return h + (m.note ? '<p class="muted" style="margin-top:8px">' + esc(m.note) + '</p>' : '') + '</div>';
+  }
+  function rankRow(s, id, n, total, origShown) {
+    var c = cfg(), d = curData(s, id), op = origShown.indexOf(id), code = cur(s, id, 'exclusive.code') || d.promo, logo = c.logo(d);
+    var moved = n < 0 ? '' : op < 0 ? '<span class="moved">was hidden</span>' : op !== n ? '<span class="moved">was #' + (op + 1) + '</span>' : '';
+    var h = '<li class="rank-item' + (s.sel === id ? ' selected' : '') + (n < 0 ? ' off' : '') + '"' + (n >= 0 ? ' draggable="true"' : '') + ' data-id="' + esc(id) + '">' +
+      '<div class="rank-pos">' + (n < 0 ? '–' : n + 1) + '</div>' + (logo ? '<img class="rank-logo" src="' + esc(logo) + '" alt="">' : '<div></div>') +
+      '<div><div class="rank-name">' + esc(c.productLabel(d)) + moved + (isEdited(s, id) ? '<span class="edited">edited</span>' : '') + '</div>' +
+      '<div class="rank-meta">' + esc(c.productSub(d)) + (code ? ' · code ' + esc(code) : '') + '</div></div><div class="row">' +
+      (n >= 0 ? '<button class="btn sm" data-up="' + n + '" ' + (n === 0 ? 'disabled' : '') + ' aria-label="Move up">↑</button><button class="btn sm" data-down="' + n + '" ' + (n === total - 1 ? 'disabled' : '') + ' aria-label="Move down">↓</button>' : '') +
+      '<button class="btn sm" data-edit="' + esc(id) + '">' + (s.sel === id ? 'Close' : 'Edit') + '</button></div></li>';
+    if (s.sel === id) h += '<li>' + renderProductForm(s, id) + '</li>';
+    return h;
   }
   function renderProductForm(s, id) {
     var c = cfg(), h = '<div class="card" style="margin:0 0 10px">', lastGroup = '';
     c.fields.forEach(function (f) {
-      var orig = get(rec(s, id).data, f.path); if (orig === undefined && f.path.indexOf('exclusive') === 0 && !rec(s, id).data.exclusive) return;
+      var o = orig(s, id, f.path);
+      if (o === undefined && f.path.indexOf('.') > 0 && get(rec(s, id).data, f.path.split('.')[0]) == null) return; // e.g. no offer on this product
       if (f.group !== lastGroup) { h += '<h3>' + esc(f.group) + '</h3>'; lastGroup = f.group; }
-      var val = cur(s, id, f.path), changed = JSON.stringify(val) !== JSON.stringify(orig);
+      var val = cur(s, id, f.path), changed = JSON.stringify(val) !== JSON.stringify(o);
       h += '<div class="field' + (changed ? ' changed' : '') + '"><label>' + esc(f.label) + '</label>';
       if (f.type === 'tags') {
+        var langs = f.langs || ['zh', 'en'];
         (val || []).forEach(function (t, k) {
-          h += '<div class="tagrow"><input type="text" data-tag="' + k + '" data-k="zh" value="' + esc(t.zh) + '" placeholder="中文"><input type="text" data-tag="' + k + '" data-k="en" value="' + esc(t.en) + '" placeholder="English"><select data-tag="' + k + '" data-k="c">' + f.colours.map(function (o) { return '<option value="' + o.value + '"' + (o.value === t.c ? ' selected' : '') + '>' + o.label + '</option>'; }).join('') + '</select><button class="btn sm" data-tagdel="' + k + '">Remove</button></div>';
+          h += '<div class="tagrow" style="grid-template-columns:' + langs.map(function () { return 'minmax(0,1fr)'; }).join(' ') + (f.colours ? ' 110px' : '') + ' auto">' +
+            langs.map(function (L) { return '<input type="text" data-tag="' + k + '" data-k="' + L + '" value="' + esc(t[L]) + '" placeholder="' + (L === 'zh' ? '中文' : 'English') + '">'; }).join('') +
+            (f.colours ? '<select data-tag="' + k + '" data-k="c">' + f.colours.map(function (op) { return '<option value="' + op.value + '"' + (op.value === t.c ? ' selected' : '') + '>' + op.label + '</option>'; }).join('') + '</select>' : '') +
+            '<button class="btn sm" data-tagdel="' + k + '">Remove</button></div>';
         });
         h += '<button class="btn sm" id="tagAdd">Add tag</button>';
+      } else if (f.type === 'toggle') {
+        h += '<label class="check"><input type="checkbox" data-toggle="' + f.path + '"' + (val !== false ? ' checked' : '') + '> ' + (val !== false ? 'On — shown on the page' : 'Off — hidden from the page') + '</label>';
       } else if (f.type === 'textarea') h += '<textarea data-path="' + f.path + '">' + esc(val) + '</textarea>';
-      else h += '<input type="text" data-path="' + f.path + '" value="' + esc(val) + '">';
+      else if (f.type === 'number' || f.type === 'number-null') h += '<input type="number" min="0" step="any" data-path="' + f.path + '" data-type="' + f.type + '" value="' + (typeof val === 'number' ? val : '') + '">';
+      else h += '<input type="text" data-path="' + f.path + '" data-type="' + (f.type || 'text') + '" value="' + esc(val == null ? '' : val) + '">';
       if (f.pattern && typeof val === 'string' && !new RegExp(f.pattern).test(val)) h += '<div class="bad">' + esc(f.patternMsg) + '</div>';
+      if ((f.type === 'number' || f.type === 'number-null') && val !== null && val !== undefined && !(typeof val === 'number' && isFinite(val) && val >= 0)) h += '<div class="bad">Enter a number' + (f.type === 'number-null' ? ', or leave it empty' : '') + '.</div>';
       if (f.hint) h += '<div class="hint">' + esc(f.hint) + '</div>';
-      if (changed && f.type !== 'tags') h += '<div class="was">Was: ' + esc(orig) + '</div>';
+      if (changed && f.type !== 'tags' && f.type !== 'toggle') h += '<div class="was">Was: ' + esc(o == null ? '(empty)' : o) + '</div>';
       h += '</div>';
     });
     return h + '<div class="row"><button class="btn sm" data-undo="' + esc(id) + '">Undo changes to this product</button></div></div>';
@@ -202,11 +245,14 @@
     return h + '</div>';
   }
 
-  /* ---------- scripts (page text + premium tables) ---------- */
+  /* ---------- data tables: page text, premium tables, FAQ lists ---------- */
   function vcur(s, v, path, data) { var k = v + '|' + path; return s.vedits.hasOwnProperty(k) ? s.vedits[k].value : get(data, path); }
   function renderScripts(m, s) {
-    var h = '<div class="card"><div class="seg wide">' + m.vars.map(function (v) { return '<button class="' + (s.vtab === v.v ? 'on' : '') + '" data-vtab="' + v.v + '">' + esc(v.title) + '</button>'; }).join('') + '</div>';
-    var v = m.vars.filter(function (x) { return x.v === s.vtab; })[0], data = M.readVar(s.base, v.v).data;
+    var h = '<div class="card" style="padding-bottom:4px"><div class="seg wide">' + m.vars.map(function (v) { return '<button class="' + (s.vtab === v.v ? 'on' : '') + '" data-vtab="' + v.v + '">' + esc(v.title) + '</button>'; }).join('') + '</div></div>';
+    return h + renderVar(m, s, m.vars.filter(function (x) { return x.v === s.vtab; })[0]);
+  }
+  function renderVar(m, s, v) {
+    var h = '<div class="card">', data = M.readVar(s.base, v.v).data;
     if (v.kind === 'text') {
       var root = data[v.root] || {}, q = (s.q || '').toLowerCase();
       h += '<input type="search" class="search" id="q" placeholder="Search page text (e.g. FAQ, hero, 免費)…" value="' + esc(s.q) + '">';
@@ -215,19 +261,32 @@
         var path = v.root + '.' + key, val = vcur(s, v.v, path, data), o = root[key];
         if (typeof o !== 'string') return;
         if (q && (key + ' ' + val).toLowerCase().indexOf(q) < 0) return;
-        var changed = val !== o;
-        h += '<div class="field' + (changed ? ' changed' : '') + '"><label>' + esc(key) + '</label>' + (o.length > 60 ? '<textarea data-v="' + v.v + '" data-p="' + esc(path) + '">' + esc(val) + '</textarea>' : '<input type="text" data-v="' + v.v + '" data-p="' + esc(path) + '" value="' + esc(val) + '">') + (changed ? '<div class="was">Was: ' + esc(o) + '</div>' : '') + '</div>';
+        h += textField(key, v.v, path, val, o, o.length > 60);
       });
+    } else if (v.kind === 'list') {
+      data.forEach(function (item, n) {
+        h += '<div class="slide"><h3>' + (n + 1) + '</h3>';
+        v.fields.forEach(function (f) { var path = n + '.' + f.p, o = get(data, path); if (typeof o !== 'string') return; h += textField(f.label, v.v, path, vcur(s, v.v, path, data), o, f.long || o.length > 60); });
+        h += '</div>';
+      });
+      h += '<p class="hint">To add or remove a question, use "Edit code directly".</p>';
     } else if (v.kind === 'rates') {
       var pids = Object.keys(data); s.rp = s.rp && data[s.rp] ? s.rp : pids[0];
       h += '<div class="field"><label>Product</label><select id="rp">' + pids.map(function (p) { return '<option' + (p === s.rp ? ' selected' : '') + '>' + esc(p) + '</option>'; }).join('') + '</select></div>';
-      var ages = Object.keys(data[s.rp]), cols = Object.keys(data[s.rp][ages[0]]);
-      h += '<p class="hint">Annual premium in HK$. Left = original, right = after discount. Tick N/A if the plan is not offered.</p><div class="tablewrap"><table class="rates"><thead><tr><th>Age</th>' + cols.map(function (c) { return '<th>' + esc(c) + '</th>'; }).join('') + '</tr></thead><tbody>';
+      var ages = Object.keys(data[s.rp]), cols = [];
+      ages.forEach(function (a) { Object.keys(data[s.rp][a]).forEach(function (c) { if (cols.indexOf(c) < 0) cols.push(c); }); });
+      cols.sort();
+      h += '<p class="hint">Annual premium in HK$. Left = original, right = after discount' + (v.discountOptional ? ' (leave empty for no discount)' : '') + '.' + (v.na ? ' Tick N/A if the plan is not offered.' : '') + ' A dash means this combination is not offered.</p><div class="tablewrap"><table class="rates"><thead><tr><th>Age</th>' + cols.map(function (c) { return '<th>' + esc(c) + '</th>'; }).join('') + '</tr></thead><tbody>';
       ages.forEach(function (a) {
         h += '<tr><th>' + esc(a) + '</th>';
         cols.forEach(function (c) {
-          var path = s.rp + '.' + a + '.' + c, val = vcur(s, v.v, path, data), o = get(data, path), na = val === 'NA', ch = JSON.stringify(val) !== JSON.stringify(o);
-          h += '<td class="' + (ch ? 'changed' : '') + '"><div class="pair"><input type="number" min="0" data-rate="' + esc(path) + '" data-i="0" value="' + (na ? '' : esc(val[0])) + '"' + (na ? ' disabled' : '') + '><input type="number" min="0" data-rate="' + esc(path) + '" data-i="1" value="' + (na ? '' : esc(val[1])) + '"' + (na ? ' disabled' : '') + '></div><label class="na"><input type="checkbox" data-na="' + esc(path) + '"' + (na ? ' checked' : '') + '> N/A</label></td>';
+          var path = s.rp + '.' + a + '.' + c, o = get(data, path);
+          if (o === undefined) { h += '<td class="muted">—</td>'; return; }
+          var val = vcur(s, v.v, path, data), ch = JSON.stringify(val) !== JSON.stringify(o);
+          if (val && typeof val === 'object' && !Array.isArray(val)) { h += '<td class="' + (ch ? 'changed' : '') + '"><input type="text" class="note" data-ratenote="' + esc(path) + '" value="' + esc(val.n) + '" title="Shown instead of a price"><div class="hint">note instead of price</div></td>'; return; }
+          var na = val === 'NA', arr = Array.isArray(val) ? val : [];
+          h += '<td class="' + (ch ? 'changed' : '') + '"><div class="pair"><input type="number" min="0" data-rate="' + esc(path) + '" data-i="0" value="' + (na || arr[0] == null ? '' : esc(arr[0])) + '"' + (na ? ' disabled' : '') + '><input type="number" min="0" data-rate="' + esc(path) + '" data-i="1" value="' + (na || arr[1] == null ? '' : esc(arr[1])) + '"' + (na ? ' disabled' : '') + '></div>' +
+            (v.na ? '<label class="na"><input type="checkbox" data-na="' + esc(path) + '"' + (na ? ' checked' : '') + '> N/A</label>' : '') + '</td>';
         });
         h += '</tr>';
       });
@@ -239,6 +298,10 @@
       h += '</tbody></table></div>';
     }
     return h + '</div>';
+  }
+  function textField(label, v, path, val, o, long) {
+    var changed = val !== o;
+    return '<div class="field' + (changed ? ' changed' : '') + '"><label>' + esc(label) + '</label>' + (long ? '<textarea data-v="' + v + '" data-p="' + esc(path) + '">' + esc(val) + '</textarea>' : '<input type="text" data-v="' + v + '" data-p="' + esc(path) + '" value="' + esc(val) + '">') + (changed ? '<div class="was">Was: ' + esc(o) + '</div>' : '') + '</div>';
   }
 
   /* ---------- review + copy ---------- */
@@ -301,7 +364,11 @@
     if (t.dataset.down != null) return move(s, +t.dataset.down, +t.dataset.down + 1);
     if (t.dataset.edit) { s.sel = s.sel === t.dataset.edit ? null : t.dataset.edit; return renderRight(); }
     if (t.dataset.undo) { delete s.fields[t.dataset.undo]; s.copied = false; return all(); }
-    if (t.id === 'tagAdd') { var tg = (cur(s, s.sel, 'tags') || []).slice(); tg.push({ zh: '', en: '', c: 't-blue' }); setP(s, s.sel, 'tags', tg); return all(); }
+    if (t.id === 'tagAdd') {
+      var tf = cfg().fields.filter(function (f) { return f.type === 'tags'; })[0], nt = {};
+      (tf.langs || ['zh', 'en']).forEach(function (L) { nt[L] = ''; }); if (tf.langs && tf.langs.indexOf('en') < 0) nt.en = ''; if (tf.colours) nt.c = tf.colours[0].value;
+      var tg = (cur(s, s.sel, 'tags') || []).slice(); tg.push(nt); setP(s, s.sel, 'tags', tg); return all();
+    }
     if (t.dataset.tagdel != null) { var tg2 = cur(s, s.sel, 'tags').slice(); tg2.splice(+t.dataset.tagdel, 1); setP(s, s.sel, 'tags', tg2); return all(); }
   });
   function setP(s, id, path, v) { s.fields[id] = s.fields[id] || {}; s.fields[id][path] = v; s.copied = false; }
@@ -311,19 +378,30 @@
     if (t.id === 'q') { s.q = t.value; var pos = t.selectionStart; renderRight(); var q = $('q'); q.focus(); q.setSelectionRange(pos, pos); return; }
     if (t.id === 'codeBox') { s.code = t.value; s.copied = false; return soft(); }
     if (t.dataset.f != null) { s.edits[t.dataset.f] = t.value; s.copied = false; t.closest('.field').classList.toggle('changed', t.value !== s.fields[+t.dataset.f].value); return soft(); }
-    if (t.dataset.path) { setP(s, s.sel, t.dataset.path, t.value); return soft(); }
+    if (t.dataset.path) {
+      var ty = t.dataset.type, val = t.value;
+      if (ty === 'number') val = val === '' ? NaN : Number(val);
+      else if (ty === 'number-null') val = val === '' ? null : Number(val);
+      else if (ty === 'text-null') val = val === '' ? null : val;
+      setP(s, s.sel, t.dataset.path, val); return soft();
+    }
     if (t.dataset.tag != null) { var tg = cur(s, s.sel, 'tags').map(function (x) { return Object.assign({}, x); }); tg[+t.dataset.tag][t.dataset.k] = t.value; setP(s, s.sel, 'tags', tg); return soft(); }
     if (t.dataset.v) { setV(s, t.dataset.v, t.dataset.p, t.value); return soft(); }
     if (t.dataset.rate) {
       var data = M.readVar(s.base, s.vtab).data, val = vcur(s, s.vtab, t.dataset.rate, data); val = Array.isArray(val) ? val.slice() : [0, 0];
-      val[+t.dataset.i] = t.value === '' ? NaN : Number(t.value); setV(s, s.vtab, t.dataset.rate, val);
+      var vdef = (mod().vars || []).filter(function (x) { return x.v === s.vtab; })[0] || {};
+      val[+t.dataset.i] = t.value === '' ? (+t.dataset.i === 1 && vdef.discountOptional ? null : NaN) : Number(t.value); setV(s, s.vtab, t.dataset.rate, val);
       return soft();
     }
+    if (t.dataset.ratenote) { setV(s, s.vtab, t.dataset.ratenote, { n: t.value }); return soft(); }
     if (t.dataset.grid) { setV(s, s.vtab, t.dataset.grid, t.value === '' ? NaN : Number(t.value)); return soft(); }
   });
   document.addEventListener('change', function (e) {
     var t = e.target; if (S.modIdx == null) return; var s = st();
     if (t.id === 'rp') { s.rp = t.value; return renderRight(); }
+    if (t.dataset.toggle) { setP(s, s.sel, t.dataset.toggle, t.checked); return all(); }
+    // fields that decide where a product shows (e.g. OSI badge) re-sort the ranking once you leave the field
+    if (t.dataset.path && cfg().displayOrder) return all();
     if (t.id === 'allowHooks') { s.allowHookRemoval = t.checked; return soft(); }
     if (t.dataset.na) {
       var data = M.readVar(s.base, s.vtab).data, o = get(data, t.dataset.na);
@@ -331,15 +409,20 @@
     }
   });
   document.addEventListener('keydown', function (e) { if ((e.key === 'Enter' || e.key === ' ') && e.target.classList.contains('editable')) { e.preventDefault(); e.target.click(); } });
-  function move(s, from, to) { if (to < 0 || to >= s.order.length) return; var id = s.order.splice(from, 1)[0]; s.order.splice(to, 0, id); s.copied = false; all(); }
+  // from/to are positions in the list as shown on the page; hidden products keep their place after it
+  function move(s, from, to) {
+    var shown = shownIds(s, s.order); if (to < 0 || to >= shown.length) return;
+    var id = shown.splice(from, 1)[0]; shown.splice(to, 0, id);
+    s.order = shown.concat(s.order.filter(function (x) { return shown.indexOf(x) < 0; })); s.copied = false; all();
+  }
   function bindRank() {
     var s = st(), dragId = null;
-    document.querySelectorAll('.rank-item').forEach(function (li) {
+    document.querySelectorAll('.rank-item[draggable]').forEach(function (li) {
       li.addEventListener('dragstart', function (e) { dragId = li.dataset.id; li.classList.add('dragging'); e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', dragId); });
       li.addEventListener('dragend', function () { li.classList.remove('dragging'); });
       li.addEventListener('dragover', function (e) { e.preventDefault(); li.classList.add('drop-above'); });
       li.addEventListener('dragleave', function () { li.classList.remove('drop-above'); });
-      li.addEventListener('drop', function (e) { e.preventDefault(); li.classList.remove('drop-above'); var from = s.order.indexOf(dragId), to = s.order.indexOf(li.dataset.id); if (from >= 0 && from !== to) move(s, from, to); });
+      li.addEventListener('drop', function (e) { e.preventDefault(); li.classList.remove('drop-above'); var sh = shownIds(s, s.order), from = sh.indexOf(dragId), to = sh.indexOf(li.dataset.id); if (from >= 0 && to >= 0 && from !== to) move(s, from, to); });
     });
   }
   function all() { fetchLive(S.page); renderTabs(); renderLeft(); renderRight(); if (S.modIdx == null || !st().loaded) $('copybar').hidden = true; }

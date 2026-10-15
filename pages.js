@@ -1,23 +1,115 @@
 /* ─────────────────────────────────────────────────────────────
    PCT Page Editor — page registry
-   One entry per HubSpot page. Each lists its modules in paste order and
-   says which ones PCT may edit. Field paths match the module's data,
-   e.g. "exclusive.expiry.zh" → P[n].exclusive.expiry.zh.
+   One entry per HubSpot page: its modules in the order they appear on the
+   LIVE page, the editor each one gets, field labels and check rules.
+   Field paths match the module's data, e.g. "exclusive.expiry.zh" → P[n].exclusive.expiry.zh.
+
+   Module keys:
+     fingerprint  text that is in this module and no other — how pastes are checked and
+                  how the live snapshot finds the module
+     find         the module's first line of code, shown to PCT to locate it in HubSpot
+                  (HubSpot's own module numbers are unknown, so the tool never uses numbers)
+     editor       products = product forms + ranking · content = text/links/images
+                  banner = content + add/remove banners · scripts = data tables only
+                  code = direct code only. Every module also has "Edit code directly".
+     vars         data tables in the module, edited value by value:
+                  text (T page text) · rates ([product][age][column] = [original, discounted] | 'NA')
+                  grid ([row][column] = number) · list (array of items, e.g. FAQS)
    ───────────────────────────────────────────────────────────── */
 (function (root) {
   'use strict';
 
+  var PROMO_CODE = { pattern: '^[A-Za-z0-9_-]*$', patternMsg: 'Letters, numbers, - and _ only' };
+
+  /* ===== Life (ZH + EN share one data shape) ===== */
   var LIFE_FIELDS = [
     { path: 'name.zh', label: '產品名稱 (中)', group: 'Product', type: 'text' },
     { path: 'name.en', label: 'Product name (EN)', group: 'Product', type: 'text' },
-    { path: 'tags', label: 'Tags 標籤', group: 'Product', type: 'tags', colours: [
+    { path: 'tags', label: 'Tags 標籤', group: 'Product', type: 'tags', langs: ['zh', 'en'], colours: [
       { value: 't-blue', label: 'Blue' }, { value: 't-orange', label: 'Orange' }, { value: 't-green', label: 'Green' }] },
     { path: 'exclusive.text.zh', label: '優惠內容 (中)', group: 'Offer', type: 'textarea', hint: 'Line break: type <br>' },
     { path: 'exclusive.text.en', label: 'Offer text (EN)', group: 'Offer', type: 'textarea', hint: 'Line break: type <br>' },
-    { path: 'exclusive.code', label: '優惠碼 Promo code', group: 'Offer', type: 'text', pattern: '^[A-Za-z0-9_-]*$', patternMsg: 'Letters, numbers, - and _ only' },
+    { path: 'exclusive.code', label: '優惠碼 Promo code', group: 'Offer', type: 'text', pattern: PROMO_CODE.pattern, patternMsg: PROMO_CODE.patternMsg },
     { path: 'exclusive.expiry.zh', label: '優惠期 (中)', group: 'Offer', type: 'text', hint: 'e.g. 限時至2026年11月30日 — the tool warns when this date has passed' },
     { path: 'exclusive.expiry.en', label: 'Offer period (EN)', group: 'Offer', type: 'text', hint: 'e.g. Valid until 30 Nov 2026' },
     { path: 'url', label: '投保連結 Apply link', group: 'Link', type: 'url', hint: 'Full https:// link from the provider, including UTM' }
+  ];
+  function lifeData(lang) {
+    return {
+      moduleLabel: 'Life product-data',
+      arrayVar: 'P',
+      productLabel: function (d) { return (d.name && (d.name[lang] || d.name.zh || d.name.en)) || d.id; },
+      productSub: function (d) { return d.insurer; },
+      logo: function (d) { return d.logo; },
+      // Ranking = order of P (scripts never reads rank). rank / rankClass are kept in step for readers.
+      rank: { field: 'rank', classField: 'rankClass', classFor: function (n) { return n <= 3 ? 'rank-' + n : 'rank-other'; } },
+      fields: LIFE_FIELDS,
+      required: ['id', 'insurer', 'providerId', 'name.zh', 'logo', 'url'],
+      urlFields: ['url', 'logo'],
+      bilingualPairs: ['name', 'exclusive.text', 'exclusive.expiry'],
+      requireEn: true,
+      expiryFields: ['exclusive.expiry'],
+      htmlTextFields: ['exclusive.text'],
+      idMaps: ['SOCIAL_PROOF']
+    };
+  }
+  function lifeModules(lang) {
+    var m = [
+      { file: 'head', editor: 'content', fingerprint: 'Component: Head', find: '<!-- Component: Head', what: 'Browser tab title, Google description, social share text' },
+      { file: 'styles', editor: 'code', fingerprint: 'HUBSPOT OVERRIDES', find: '<style> /* ── HUBSPOT OVERRIDES', what: 'Colours, spacing, layout. Code only — check the preview on phone and desktop.' },
+      { file: 'hero', editor: 'content', fingerprint: 'Component: Hero Section', find: '<!-- Component: Hero Section -->', what: 'Hero heading and intro. The words shown are set in scripts › Page text.' },
+      { file: 'trust-bar', editor: 'content', fingerprint: 'Component: Trust Bar', find: '<!-- Component: Trust Bar -->', what: 'Trust points under the hero (text set in scripts › Page text)' },
+      lang === 'zh'
+        ? { file: 'promo-banner', editor: 'banner', fingerprint: 'Component: Promo Banner', find: '<!-- Component: Promo Banner Carousel -->', what: 'Banner images, links, alt text. Add or remove banners.' }
+        // the EN banner is a bare image with no link (checked 2026-10-15), so there is no slide to copy
+        : { file: 'promo-banner', editor: 'content', fingerprint: 'Component: Promo Banner', find: '<!-- Component: Promo Banner Carousel -->', what: 'Banner images and alt text. This banner has no link; to add one or a second banner, use "Edit code directly".' },
+      { file: 'sidebar-and-products', editor: 'content', fingerprint: 'Component: Quote Bar', find: '<!-- Component: Quote Bar + Sidebar + Product List', what: 'Quote bar and filter labels' },
+      { file: 'compare-banner', editor: 'content', fingerprint: 'Component: Compare Banner', find: '<!-- Component: Compare Banner -->', what: 'The compare box and its banner' },
+      { file: 'claims-section', editor: 'content', fingerprint: 'Component: Claims and Features', find: '<!-- Component: Claims and Features Section -->', what: 'Claims and features section' }
+    ];
+    if (lang === 'en') m.push({ file: 'faq-section', editor: 'content', fingerprint: 'Component: FAQ Section', find: '<!-- Component: FAQ Section -->', what: 'FAQ heading. Questions and answers are set in scripts › Page text (faq1q, faq1a…).' });
+    m.push(
+      { file: 'seo-content', editor: 'content', fingerprint: 'Component: SEO Content', find: '<!-- Component: SEO Content Section -->', what: lang === 'zh' ? 'SEO article. (The extra article text below it is a HubSpot rich-text module — edit that directly in HubSpot.)' : 'SEO article' },
+      { file: 'footer-cta', editor: 'content', fingerprint: 'Component: Footer CTA', find: '<!-- Component: Footer CTA -->', what: 'Bottom call-to-action (text set in scripts › Page text)' },
+      { file: 'sticky-elements', editor: 'content', fingerprint: 'Component: Sticky Elements', find: '<!-- Component: Sticky Elements', what: 'Sticky buy button, compare tray, compare pop-up' },
+      { file: 'product-data', editor: 'products', fingerprint: 'PRODUCT DATA', find: '<script> /* ===== PRODUCT DATA ===== */', what: 'Ranking, product names, tags, offers, promo codes, apply links',
+        note: 'Premiums are in the scripts module › Premium table. Coverage, pros/cons and documents → "Edit code directly".' },
+      { file: 'scripts', editor: 'scripts', fingerprint: 'var PREMIUM_RATES', find: '<script> /* ===== i18n ===== */', what: 'Page text (hero, FAQ, labels) and premium tables',
+        vars: [
+          { v: 'T', title: lang === 'zh' ? 'Page text 頁面文字' : 'Page text', kind: 'text', root: lang },
+          { v: 'PREMIUM_RATES', title: 'Premium table 保費表', kind: 'rates', na: true }, // Life scripts read 'NA' as not offered
+          { v: 'BOWTIE_RATES', title: 'Bowtie monthly rates (per HK$1M)', kind: 'grid' }
+        ] }
+    );
+    return m;
+  }
+
+  /* ===== Critical Illness (繁中 only) ===== */
+  var CI_FIELDS = [
+    { path: 'enabled', label: 'Show on the page', group: 'Product', type: 'toggle', hint: 'Off = the product stays in the data but is hidden from the page.' },
+    { path: 'name.zh', label: '計劃名稱', group: 'Product', type: 'text' },
+    { path: 'tags', label: 'Tags 標籤 (top chips on the card)', group: 'Product', type: 'tags', langs: ['zh'] },
+    { path: 'exclusive.text.zh', label: '獨家優惠內容', group: 'Offer', type: 'textarea', hint: 'Line break: type <br>' },
+    { path: 'exclusive.code', label: '優惠碼 Promo code', group: 'Offer', type: 'text', pattern: PROMO_CODE.pattern, patternMsg: PROMO_CODE.patternMsg },
+    { path: 'exclusive.expiry.zh', label: '優惠期', group: 'Offer', type: 'text', hint: 'e.g. 限時至2026年11月30日 — the tool warns when this date has passed' },
+    { path: 'url', label: '投保連結 Apply link', group: 'Link', type: 'url', hint: 'Full https:// link from the provider, including UTM' }
+  ];
+
+  /* ===== Overseas Student Insurance (繁中 only) ===== */
+  var OSI_FIELDS = [
+    { path: 'name', label: '計劃名稱', group: 'Product', type: 'text' },
+    { path: 'badge', label: '角標 Badge', group: 'Product', type: 'text-null', hint: 'Leave empty for no badge. Products with a badge always show above products without one.' },
+    { path: 'price', label: '原價 Original price (HK$ / year)', group: 'Price & offer', type: 'number' },
+    { path: 'disc', label: '折後價 Discounted price (HK$ / year)', group: 'Price & offer', type: 'number-null', hint: 'Leave empty if there is no discount.' },
+    { path: 'promo', label: '優惠碼 Promo code', group: 'Price & offer', type: 'text-null', pattern: '^[A-Za-z0-9_-]*$', patternMsg: PROMO_CODE.patternMsg, hint: 'Leave empty if there is no code.' },
+    { path: 'age', label: '投保年齡', group: 'Coverage', type: 'text' },
+    { path: 'med', label: '醫療保障 Medical (HK$)', group: 'Coverage', type: 'number' },
+    { path: 'acc', label: '意外保障 Accident (HK$)', group: 'Coverage', type: 'number' },
+    { path: 'tui', label: '學費保障 Tuition (HK$)', group: 'Coverage', type: 'number' },
+    { path: 'edu', label: '教育保障 Education (HK$)', group: 'Coverage', type: 'number' },
+    { path: 'url', label: '投保連結 Apply link', group: 'Links', type: 'url' },
+    { path: 'leaflet', label: '產品小冊子 Leaflet PDF', group: 'Links', type: 'url' },
+    { path: 'policy', label: '保單條款 Policy PDF', group: 'Links', type: 'url' }
   ];
 
   var PAGES = [
@@ -25,57 +117,110 @@
       key: 'life-zh', label: 'Life 人壽 (中)', status: 'live',
       liveUrl: 'https://www.moneyhero.com.hk/zh/life-insurance',
       hubspotPage: 'Life Insurance — 繁中',
-      // Modules in the order they appear on the LIVE page (checked 2026-10-15 — differs from the old repo
-      // _template.html: no mobile-quote-bar / category-tabs / faq-section live). HubSpot's own module numbers
-      // are unknown, so PCT finds a module by its first line of code (`find`), never by number.
-      // fingerprint: text that must be in the module; also how the live snapshot finds it.
-      // editor: products = product forms · content = text/links/images · banner = content + add/remove banners
-      //         scripts = page text + premium tables · code = direct code only. Every module also has "Edit code directly".
+      modules: lifeModules('zh'),
+      // Elements whose text scripts overwrite on load → the key in scripts › Page text that really controls it.
+      overriddenIds: { heroTitle: 'heroTitle', heroDesc: 'heroDesc' },
+      data: lifeData('zh')
+    },
+    {
+      key: 'life-en', label: 'Life (EN)', status: 'live',
+      liveUrl: 'https://www.moneyhero.com.hk/en/campaign/life-insurance-testing-page',
+      hubspotPage: 'Life Insurance — English (life-insurance-testing-page)',
+      modules: lifeModules('en'),
+      overriddenIds: { heroTitle: 'heroTitle', heroDesc: 'heroDesc' },
+      data: lifeData('en')
+    },
+    {
+      key: 'ci', label: 'CI 危疾', status: 'live',
+      liveUrl: 'https://www.moneyhero.com.hk/zh/insurance/critical-illness-insurance',
+      hubspotPage: 'Critical Illness Insurance — 繁中',
       modules: [
         { file: 'head', editor: 'content', fingerprint: 'Component: Head', find: '<!-- Component: Head', what: 'Browser tab title, Google description, social share text' },
         { file: 'styles', editor: 'code', fingerprint: 'HUBSPOT OVERRIDES', find: '<style> /* ── HUBSPOT OVERRIDES', what: 'Colours, spacing, layout. Code only — check the preview on phone and desktop.' },
-        { file: 'hero', editor: 'content', fingerprint: 'Component: Hero Section', find: '<!-- Component: Hero Section -->', what: 'Hero heading and intro. The words shown are set in scripts › Page text.' },
+        { file: 'hero', editor: 'content', fingerprint: 'Component: Hero Section', find: '<!-- Component: Hero Section -->', what: 'Hero heading, intro and notice. The words shown are set in scripts › Page text.' },
         { file: 'trust-bar', editor: 'content', fingerprint: 'Component: Trust Bar', find: '<!-- Component: Trust Bar -->', what: 'Trust points under the hero (text set in scripts › Page text)' },
-        { file: 'promo-banner', editor: 'banner', fingerprint: 'Component: Promo Banner', find: '<!-- Component: Promo Banner Carousel -->', what: 'Banner images, links, alt text. Add or remove banners.' },
+        { file: 'promo-banner', editor: 'banner', fingerprint: 'Component: Promo Banner', find: '<!-- Component: Promo Banner Carousel', what: 'Banner images, links, alt text. Add or remove banners.' },
         { file: 'sidebar-and-products', editor: 'content', fingerprint: 'Component: Quote Bar', find: '<!-- Component: Quote Bar + Sidebar + Product List', what: 'Quote bar and filter labels' },
-        { file: 'compare-banner', editor: 'content', fingerprint: 'Component: Compare Banner', find: '<!-- Component: Compare Banner -->', what: 'The 先比後買 box and its banner' },
+        { file: 'compare-banner', editor: 'content', fingerprint: 'class="compare-banner"', find: '<!-- 獨立 Blue banner（26-0252）已拎走', what: 'The 先比後買 box' },
         { file: 'claims-section', editor: 'content', fingerprint: 'Component: Claims and Features', find: '<!-- Component: Claims and Features Section -->', what: 'Claims and features section' },
-        { file: 'seo-content', editor: 'content', fingerprint: 'Component: SEO Content', find: '<!-- Component: SEO Content Section -->', what: 'SEO article. (The extra article text below it is a HubSpot rich-text module — edit that directly in HubSpot.)' },
+        { file: 'faq-section', editor: 'content', fingerprint: 'Component: FAQ Section', find: '<!-- Component: FAQ Section -->', what: 'FAQ heading. Questions and answers are in product-data › FAQ.' },
+        { file: 'seo-content', editor: 'content', fingerprint: 'Component: SEO Content', find: '<!-- Component: SEO Content Section', what: 'SEO article' },
         { file: 'footer-cta', editor: 'content', fingerprint: 'Component: Footer CTA', find: '<!-- Component: Footer CTA -->', what: 'Bottom call-to-action (text set in scripts › Page text)' },
         { file: 'sticky-elements', editor: 'content', fingerprint: 'Component: Sticky Elements', find: '<!-- Component: Sticky Elements', what: 'Sticky buy button, compare tray, compare pop-up' },
-        { file: 'product-data', editor: 'products', fingerprint: 'PRODUCT DATA', find: '<script> /* ===== PRODUCT DATA ===== */', what: 'Ranking, product names, tags, offers, promo codes, apply links' },
-        { file: 'scripts', editor: 'scripts', fingerprint: 'var PREMIUM_RATES', find: '<script> /* ===== i18n ===== */', what: 'Page text (hero, FAQ, labels) and premium tables',
+        { file: 'product-data', editor: 'products', fingerprint: 'var PREMIUM_RATES', find: '<!-- ══════ 產品資料 PRODUCT DATA', what: 'Ranking, show/hide, names, tags, offers, codes, apply links, premium table, FAQ',
           vars: [
-            { v: 'T', title: 'Page text 頁面文字', kind: 'text', root: 'zh' },
-            { v: 'PREMIUM_RATES', title: 'Premium table 保費表', kind: 'rates' },
-            { v: 'BOWTIE_RATES', title: 'Bowtie monthly rates (per HK$1M)', kind: 'grid' }
-          ] }
+            // CI cells: [original, discounted|null] or {n:'note shown instead of a price'}; no 'NA'
+            { v: 'PREMIUM_RATES', title: 'Premium table 保費表', kind: 'rates', discountOptional: true },
+            { v: 'FAQS', title: 'FAQ 常見問題', kind: 'list', fields: [{ p: 'q.zh', label: '問題 Question' }, { p: 'a.zh', label: '答案 Answer', long: true }] }
+          ],
+          note: 'Coverage table, more info and documents → "Edit code directly".' },
+        { file: 'scripts', editor: 'scripts', fingerprint: 'var LANG=', find: '<script> /* ===== i18n ===== */', what: 'Page text (hero, labels)',
+          vars: [{ v: 'T', title: 'Page text 頁面文字', kind: 'text', root: 'zh' }] }
       ],
-      // Elements whose text scripts overwrite on load → the key in scripts › Page text that really controls it.
-      overriddenIds: { heroTitle: 'heroTitle', heroDesc: 'heroDesc' },
+      overriddenIds: { heroTitle: 'heroTitle', heroDesc: 'heroDesc', heroNotice: 'heroNotice' },
       data: {
-        moduleLabel: 'Life product-data',
+        moduleLabel: 'CI product-data',
         arrayVar: 'P',
-        productLabel: function (d) { return (d.name && (d.name.zh || d.name.en)) || d.id; },
+        productLabel: function (d) { return (d.name && d.name.zh) || d.id; },
         productSub: function (d) { return d.insurer; },
         logo: function (d) { return d.logo; },
-        // Ranking on this page = order of products in P (scripts.html renders P in order).
-        // rank / rankClass are kept in step for anyone reading the data.
-        rank: { field: 'rank', classField: 'rankClass', classFor: function (n) { return n <= 3 ? 'rank-' + n : 'rank-other'; } },
-        fields: LIFE_FIELDS,
+        // Ranking = order of P among products that are switched on (scripts filters enabled!==false, never reads rank).
+        rank: { field: 'rank' },
+        displayOrder: function (list) { return list.filter(function (d) { return d.enabled !== false; }); },
+        defaults: { enabled: true },
+        fields: CI_FIELDS,
         required: ['id', 'insurer', 'providerId', 'name.zh', 'logo', 'url'],
         urlFields: ['url', 'logo'],
-        bilingualPairs: ['name', 'exclusive.text', 'exclusive.expiry'],
-        requireEn: true,
+        bilingualPairs: ['name'],
+        requireEn: false,
         expiryFields: ['exclusive.expiry'],
         htmlTextFields: ['exclusive.text'],
-        idMaps: ['SOCIAL_PROOF']
+        idMaps: ['SOCIAL_PROOF', 'PREMIUM_RATES'],
+        lookups: [{ field: 'providerId', vars: ['ISSUERS'] }]
       }
     },
-    { key: 'life-en', label: 'Life (EN)', status: 'soon', reason: 'Live EN page differs from the repo — Clara to resync first' },
-    { key: 'osi', label: 'OSI 海外升學', status: 'soon' },
-    { key: 'ci', label: 'CI 危疾', status: 'soon' },
-    { key: 'vhis', label: 'VHIS 自願醫保', status: 'soon' }
+    {
+      key: 'osi', label: 'OSI 海外升學', status: 'live',
+      liveUrl: 'https://www.moneyhero.com.hk/zh/insurance/oversea-student-insurance',
+      hubspotPage: 'Overseas Student Insurance — 繁中',
+      modules: [
+        { file: 'head', editor: 'content', fingerprint: '<title>', find: '<meta charset="UTF-8">', what: 'Browser tab title, Google description, social share text' },
+        { file: 'styles', editor: 'code', fingerprint: 'HUBSPOT OVERRIDES', find: '<style> /* ── HUBSPOT OVERRIDES', what: 'Colours, spacing, layout. Code only — check the preview on phone and desktop.' },
+        { file: 'hero', editor: 'content', fingerprint: '<!-- HERO -->', find: '<!-- HERO -->', what: 'Hero heading and intro' },
+        { file: 'trust-bar', editor: 'content', fingerprint: '<!-- TRUST BAR -->', find: '<!-- TRUST BAR -->', what: 'Trust points under the hero' },
+        { file: 'promo-banner', editor: 'banner', fingerprint: '<!-- PROMO BANNER CAROUSEL', find: '<!-- PROMO BANNER CAROUSEL', what: 'Banner images, links, alt text. Add or remove banners.' },
+        { file: 'sidebar-and-products', editor: 'content', fingerprint: 'id="productList"', find: '<div class="page">', what: 'Filters, results bar and the product list container' },
+        { file: 'compare-banner', editor: 'content', fingerprint: '<!-- COMPARE BANNER -->', find: '<!-- COMPARE BANNER -->', what: 'The compare box' },
+        { file: 'claims-section', editor: 'content', fingerprint: '<!-- CLAIMS & FEATURES -->', find: '<!-- CLAIMS & FEATURES -->', what: 'Claims and features section' },
+        { file: 'faq-section', editor: 'content', fingerprint: '<!-- FAQ -->', find: '<!-- FAQ -->', what: 'FAQ heading. Questions and answers are in product-data › FAQ.' },
+        { file: 'seo-content', editor: 'content', fingerprint: '<!-- SEO CONTENT -->', find: '<!-- SEO CONTENT -->', what: 'SEO article' },
+        { file: 'footer-cta', editor: 'content', fingerprint: '<!-- FOOTER CTA -->', find: '<!-- FOOTER CTA -->', what: 'Bottom call-to-action' },
+        { file: 'sticky-elements', editor: 'content', fingerprint: '<!-- STICKY BOTTOM CTA -->', find: '<!-- STICKY BOTTOM CTA -->', what: 'Sticky bottom bar, compare tray, compare pop-up' },
+        { file: 'product-data', editor: 'products', fingerprint: 'var ISSUERS', find: '<!-- ══════ 產品資料 PRODUCT DATA', what: 'Ranking, prices, discounts, codes, badges, coverage amounts, links, FAQ',
+          vars: [{ v: 'FAQS', title: 'FAQ 常見問題', kind: 'list', fields: [{ p: 'q', label: '問題 Question' }, { p: 'a', label: '答案 Answer', long: true }] }],
+          note: 'Issuer names and anything not in the form → "Edit code directly".' },
+        { file: 'scripts', editor: 'code', fingerprint: 'Component: Scripts', find: '<!-- Component: Scripts — All JavaScript', what: 'Page behaviour. Code only. This page has no separate page-text table: change text in the module where it appears.' }
+      ],
+      overriddenIds: {},
+      data: {
+        moduleLabel: 'OSI product-data',
+        arrayVar: 'P',
+        blockStart: '═{5}', // each product starts with a /* ═════ name ═════ */ comment
+        productLabel: function (d) { return d.name || d.id; },
+        productSub: function (d) { return d.iss + ' · ' + d.dest + ' · ' + d.dur + (d.badge ? ' · ' + d.badge : ''); },
+        logo: function () { return null; },
+        // Default view: products with a badge first, otherwise P order (stable sort in scripts).
+        displayOrder: function (list) { return list.filter(function (d) { return d.badge; }).concat(list.filter(function (d) { return !d.badge; })); },
+        fields: OSI_FIELDS,
+        required: ['id', 'iss', 'name', 'url', 'dest', 'dur'],
+        urlFields: ['url', 'leaflet', 'policy'],
+        numberFields: [{ path: 'price' }, { path: 'disc', nullable: true }, { path: 'med' }, { path: 'acc' }, { path: 'tui' }, { path: 'edu' }],
+        pairs: [{ low: 'disc', high: 'price' }],
+        enums: { dest: ['global', 'usca', 'asia'], dur: ['6m', '1y', '2y'] },
+        lookups: [{ field: 'iss', vars: ['ISSUERS', 'ISSUER_ICON'] }]
+      }
+    },
+    { key: 'vhis', label: 'VHIS 自願醫保', status: 'soon', reason: 'Waiting on a decision: VHIS product data is generated from the Excel' }
   ];
 
   var api = { PAGES: PAGES };
