@@ -12,12 +12,12 @@ const read = p => fs.readFileSync(p, 'utf8');
 const fonts = read(path.join(skill, 'fonts.css'));
 const tokens = read(path.join(skill, 'tokens.css'));
 let html = read(path.join(here, 'app.src.html'));
-const parts = { '/*@@FONTS@@*/': fonts, '/*@@TOKENS@@*/': tokens, '/*@@ENGINE@@*/': read(path.join(here, 'engine.js')), '/*@@PAGES@@*/': read(path.join(here, 'pages.js')), '/*@@MODULES@@*/': read(path.join(here, 'modules.js')), '/*@@REVIEW@@*/': read(path.join(here, 'review.js')), '/*@@APP@@*/': read(path.join(here, 'app.js')) };
+const parts = { '/*@@FONTS@@*/': fonts, '/*@@TOKENS@@*/': tokens, '/*@@ENGINE@@*/': read(path.join(here, 'engine.js')), '/*@@PAGES@@*/': read(path.join(here, 'pages.js')), '/*@@MODULES@@*/': read(path.join(here, 'modules.js')), '/*@@REVIEW@@*/': read(path.join(here, 'review.js')), '/*@@EXCEL@@*/': read(path.join(here, 'excel.js')), '/*@@APP@@*/': read(path.join(here, 'app.js')) };
 for (const [k, v] of Object.entries(parts)) {
   if (html.split(k).length !== 2) throw new Error('placeholder ' + k + ' must appear exactly once');
   // Inlined code must not contain "</script", "<script" or "<!--": the HTML parser would end or
   // re-enter the script early. "\x3C" is "<" to JavaScript (in strings and regexes alike), so behaviour is unchanged.
-  const safe = /^\/\*@@(ENGINE|PAGES|MODULES|REVIEW|APP)@@\*\/$/.test(k) ? v.replace(/<(\/?script|!--)/gi, '\\x3C$1') : v;
+  const safe = /^\/\*@@(ENGINE|PAGES|MODULES|REVIEW|EXCEL|APP)@@\*\/$/.test(k) ? v.replace(/<(\/?script|!--)/gi, '\\x3C$1') : v;
   html = html.split(k).join(safe);
 }
 
@@ -30,7 +30,7 @@ const scripts = [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].map(m => m[1
 scripts.forEach((s, i) => { new Function(s); });
 // The HTML parser must see exactly the scripts we wrote: count <script> tags vs closing tags.
 const opens = (html.match(/<script\b/gi) || []).length, closes = (html.match(/<\/script>/gi) || []).length;
-if (opens !== 5 || closes !== 5) throw new Error(`expected 5 <script> blocks, HTML has ${opens} opening / ${closes} closing tags`);
+if (opens !== 6 || closes !== 6) throw new Error(`expected 6 <script> blocks, HTML has ${opens} opening / ${closes} closing tags`);
 if (/<!--/.test(scripts.join(''))) throw new Error('"<!--" inside an inlined script');
 
 fs.mkdirSync(path.join(here, 'dist'), { recursive: true });

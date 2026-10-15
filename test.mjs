@@ -461,5 +461,66 @@ console.log('\nTags');
   });
 }
 
+console.log('\nPaste the Excel sheet (real RP Product Details exports)');
+{
+  const X = require('./excel.js');
+  const XL = f => fs.readFileSync(path.join(here, 'fixtures/excel', f), 'utf8');
+  const get = (o, p) => p.split('.').reduce((x, k) => x == null ? x : x[k], o);
+  const live = key => fs.readFileSync(path.join(here, `fixtures/${key}-live-2026-10-15.html`), 'utf8');
+  const prodsOf = (page, code) => E.load(code, page.data).records.map(r => ({ id: r.id, names: [page.data.productLabel(r.data)], aliases: [], provider: [r.data.insurer || r.data.iss || '', r.data.providerId || ''], tiers: r.data.deductibleTiers ? r.data.deductibleTiers.length : null, data: r.data }));
+  const count = (res, curOf) => { let same = 0, change = 0, off = 0; res.edits.forEach(e => { if (e.hide) return; const c = curOf(e); if (c === undefined) off++; else if (JSON.stringify(c) === JSON.stringify(e.value)) same++; else change++; }); return { same, change, off }; };
+  // Life
+  const lp = PAGES.find(p => p.key === 'life-zh'), lv = lp.modules.find(m => m.file === 'scripts').vars.find(v => v.excel);
+  const LP = prodsOf(lp, M.liveModuleCode(live('life-zh'), 'PRODUCT DATA').code).map(p => ({ ...p, aliases: lv.excel.aliases[p.id] || [] }));
+  const LR = M.readVar(M.liveModuleCode(live('life-zh'), 'var PREMIUM_RATES').code, 'PREMIUM_RATES').data;
+  for (const f of ['fwd', 'zurich', 'bowtie', 'blue']) t(`Life "Premium ${f}" sheet → matches live exactly (0 changes)`, () => {
+    const res = X.importSheet(XL(`life-premium-${f}.tsv`), LP, { v: 'PREMIUM_RATES', sumInsured: '3M', expect: ['long'] });
+    const c = count(res, e => get(LR, e.path)); eq(c.change, 0, JSON.stringify(c)); assert(c.same >= 16, JSON.stringify(c)); eq(res.unmatched.length, 0, res.unmatched.join());
+  });
+  t('Life: names match by the known Excel names, not by guessing', () => {
+    const res = X.importSheet(XL('life-premium-fwd.tsv'), LP, { v: 'PREMIUM_RATES', sumInsured: '3M' });
+    assert(res.matches.every(m => m.how === 'known name' || m.how === 'same name'), JSON.stringify(res.matches));
+  });
+  t('Life: one changed number in the sheet → exactly one change', () => {
+    const txt = XL('life-premium-bowtie.tsv').replace('\t1332\t1132.2', '\t1332\t999');
+    eq(count(X.importSheet(txt, LP, { v: 'PREMIUM_RATES', sumInsured: '3M' }), e => get(LR, e.path)).change, 1);
+  });
+  // CI
+  const cp = PAGES.find(p => p.key === 'ci'), CPD = M.liveModuleCode(live('ci'), 'var PREMIUM_RATES').code, CR = M.readVar(CPD, 'PREMIUM_RATES').data;
+  t('CI "Premium" sheet → all 16 plans matched (Bowtie by provider), 0 changes', () => {
+    const res = X.importSheet(XL('ci-premium.tsv'), prodsOf(cp, CPD), { v: 'PREMIUM_RATES', expect: ['ci'] });
+    eq(res.matches.length, 16, res.unmatched.join()); const c = count(res, e => get(CR, e.path)); eq(c.change, 0); assert(c.same > 700, JSON.stringify(c));
+  });
+  // VHIS
+  const vp = PAGES.find(p => p.key === 'vhis'), VPD = M.liveModuleCode(live('vhis'), 'MODULE 08 —').code, VP = prodsOf(vp, VPD), by = Object.fromEntries(VP.map(p => [p.id, p.data]));
+  t('VHIS "Premium" sheet → 0 changes; female rows ("W") read; another insurer\'s plan (Avo) never matched', () => {
+    const res = X.importSheet(XL('vhis-premium.tsv'), VP, { which: 'premium', expect: ['vhis'] });
+    const c = count(res, e => get(by[e.id], e.path)); eq(c.change, 0, JSON.stringify(c)); eq(c.same, 4536);
+    assert(res.edits.some(e => /female-smoker/.test(e.path)), 'female rows'); assert(res.unmatched.some(n => /Avo/.test(n)), 'Avo should be unmatched');
+  });
+  t('VHIS "Discounted Premium" sheet → 0 changes (rounding matches the build script)', () => {
+    const res = X.importSheet(XL('vhis-discounted.tsv'), VP, { which: 'discount', premiumOf: (id, a, k) => get(by[id], 'premiums.' + a + '.' + k) });
+    eq(count(res, e => get(by[e.id], e.path)).change, 0);
+  });
+  // OSI
+  const op = PAGES.find(p => p.key === 'osi'), OPD = M.liveModuleCode(live('osi'), 'var ISSUERS').code, OP = prodsOf(op, OPD), ob = Object.fromEntries(OP.map(p => [p.id, p.data]));
+  t('OSI sheet (June file) → 23 plans matched; repeated plan row flagged; old values show as changes', () => {
+    const res = X.importSheet(XL('osi-sheet1.tsv'), OP, { expect: ['osi'] });
+    eq(res.matches.length, 23); assert(res.notes.some(n => /more than one row/.test(n)), res.notes.join(' | '));
+    assert(count(res, e => get(ob[e.id], e.path)).change > 0, 'old file should differ');
+  });
+  // safety
+  t('wrong sheet for the page → clear error', () => assert(/different sheet/.test(X.importSheet(XL('ci-premium.tsv'), LP, { expect: ['long'] }).error), 'error'));
+  t('random text → clear error', () => assert(/does not look like/.test(X.importSheet('hello\tworld', LP, {}).error), 'error'));
+  t('Excel quoting: cells with tabs, newlines and quotes survive', () => {
+    const rows = X.parseTSV('a\t"line1\nline2"\t"say ""hi"""\nb\tc\td\n');
+    eq(rows[0][1], 'line1\nline2'); eq(rows[0][2], 'say "hi"'); eq(rows[1].join(), 'b,c,d');
+  });
+  t('numbers with commas, HK$ and $ are read', () => {
+    const txt = XL('life-premium-bowtie.tsv').replace('\t2400\t2040', '\tHK$2,400\t$2,040');
+    eq(count(X.importSheet(txt, LP, { v: 'PREMIUM_RATES', sumInsured: '3M' }), e => get(LR, e.path)).change, 0);
+  });
+}
+
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

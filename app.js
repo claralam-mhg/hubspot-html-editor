@@ -2,7 +2,7 @@
    the same review + checks + copy flow runs for all of them. */
 (function () {
   'use strict';
-  var E = window.PCTEngine, M = window.PCTModules, R = window.PCTReview, PAGES = window.PCTPages.PAGES;
+  var E = window.PCTEngine, M = window.PCTModules, R = window.PCTReview, X = window.PCTExcel, PAGES = window.PCTPages.PAGES;
   var S = { page: PAGES[0], modIdx: null, mods: {}, live: {} };
 
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
@@ -156,9 +156,9 @@
       m.vars.map(function (v) { return '<button class="' + (s.vtab === v.v ? 'on' : '') + '" data-vtab="' + v.v + '">' + esc(v.title) + '</button>'; }).join('') + '</div></div>';
     if (s.vtab === 'products') return h + renderProducts(m, s);
     var vv = m.vars.filter(function (x) { return x.v === s.vtab; })[0];
-    if (vv.kind === 'productColumns') return h + renderProductColumns(s, vv);
+    if (vv.kind === 'productColumns') return h + excelPanel(s, vv) + renderProductColumns(s, vv);
     if (vv.kind === 'productTags') return h + renderProductTags(s, vv);
-    if (vv.kind === 'productRates') return h + renderProductRates(s, vv);
+    if (vv.kind === 'productRates') return h + excelPanel(s, vv) + renderProductRates(s, vv);
     return h + renderVar(m, s, vv);
   }
   function renderProducts(m, s) {
@@ -257,9 +257,86 @@
     function cellIn(p, i, val, o) { return '<td class="' + (JSON.stringify(val) !== JSON.stringify(o) ? 'changed' : '') + '"><input type="number" min="0" step="any" data-pid="' + esc(s.vp) + '" data-tpath="' + p + '" data-ti="' + i + '" value="' + (typeof val === 'number' && isFinite(val) ? val : '') + '"></td>'; }
     return h + '</tbody></table></div>' + pasteBox() + '</div>';
   }
+  /* ---------- paste a whole sheet from the RP Product Details Excel ---------- */
+  // products the sheet's plan names are matched against: this module's products, or (Life premiums,
+  // which live in scripts) the product-data module — loaded, or read from the live copy
+  function excelProducts(s, v) {
+    var c = cfg(), doc = s.doc, al = (v.excel && v.excel.aliases) || {};
+    if (!doc && v.excel && v.excel.products) {
+      var i = S.page.modules.map(function (x) { return x.file; }).indexOf(v.excel.products), ps = i >= 0 ? S.mods[S.page.key + ':' + i] : null;
+      if (ps && ps.doc) doc = ps.doc;
+      else { var le = liveEntry(S.page.modules[i]); if (le) try { doc = E.load(le.code, c); } catch (e) {} }
+    }
+    if (!doc) return Object.keys(al).map(function (id) { return { id: id, names: [id], aliases: al[id], provider: [] }; });
+    return doc.records.map(function (r) {
+      var d = r.data, names = [c.productLabel(d)]; if (d.name && typeof d.name === 'object') ['zh', 'en'].forEach(function (L) { if (d.name[L]) names.push(d.name[L]); });
+      return { id: r.id, names: names, aliases: al[r.id] || [], provider: [d.insurer || d.iss || '', d.providerId || ''], tiers: d.deductibleTiers ? d.deductibleTiers.length : null };
+    });
+  }
+  function excelPanel(s, v) {
+    if (!v.excel) return '';
+    var x = s.xl && s.xl.v === v.v ? s.xl : null, h = '<div class="card xl"><h2>Paste the Excel sheet</h2><p class="hint">' + esc(v.excel.how) + '</p>';
+    var boxes = v.excel.two ? [{ which: 'premium', label: '1. "Premium" sheet' }, { which: 'discount', label: '2. "Discounted Premium" sheet' }] : [{ which: 'premium', label: '' }];
+    boxes.forEach(function (b) {
+      h += (b.label ? '<h3>' + esc(b.label) + '</h3>' : '') + '<textarea class="code" style="min-height:70px" data-xltext="' + b.which + '" placeholder="Paste the whole sheet here…"></textarea>' +
+        '<div class="row" style="margin-top:6px"><button class="btn primary" data-xlread="' + b.which + '">Read the sheet</button></div>';
+    });
+    if (x && x.error) h += '<div class="msg err">' + esc(x.error) + '</div>';
+    if (x && x.res) h += excelPreview(x);
+    return h + '</div>';
+  }
+  function excelPreview(x) {
+    var r = x.res, h = '<div class="xlprev"><h3>What the sheet will change</h3>';
+    h += '<table class="changes"><thead><tr><th>In the Excel</th><th>Matched to</th><th></th></tr></thead><tbody>' + r.matches.map(function (m) {
+      return '<tr><td>' + esc(m.excel) + '</td><td>' + esc(m.label) + '</td><td>' + (/close/.test(m.how) ? '<span class="moved">check: ' + esc(m.how) + '</span>' : '<span class="muted">' + esc(m.how) + '</span>') + '</td></tr>';
+    }).join('') + '</tbody></table>';
+    if (r.unmatched.length) h += '<div class="msg warn">Not on this page, so skipped: ' + esc(r.unmatched.join(' · ')) + '</div>';
+    r.notes.concat(x.notes).forEach(function (n) { h += '<div class="msg warn">' + esc(n) + '</div>'; });
+    if (!x.changes.length) h += '<div class="msg ok">Everything in this sheet already matches the page (' + x.same + ' values checked). Nothing to change.</div>';
+    else {
+      h += '<p><b>' + x.changes.length + '</b> value' + (x.changes.length > 1 ? 's' : '') + ' will change, ' + x.same + ' already match.</p>';
+      h += '<div class="tablewrap" style="max-height:260px;overflow:auto"><table class="changes"><thead><tr><th>Product</th><th>What</th><th>Now</th><th>From the sheet</th></tr></thead><tbody>' +
+        x.changes.slice(0, 300).map(function (c) { return '<tr><td>' + esc(c.product) + '</td><td>' + esc(c.what) + '</td><td>' + esc(c.now) + '</td><td>' + esc(c.next) + '</td></tr>'; }).join('') +
+        (x.changes.length > 300 ? '<tr><td colspan="4" class="muted">…and ' + (x.changes.length - 300) + ' more</td></tr>' : '') + '</tbody></table></div>';
+      h += '<div class="row" style="margin-top:8px"><button class="btn primary" id="xlApply">Apply ' + x.changes.length + ' change' + (x.changes.length > 1 ? 's' : '') + '</button><button class="btn" id="xlCancel">Cancel</button></div>';
+    }
+    return h + '</div>';
+  }
+  function excelRead(s, v, which) {
+    var text = (document.querySelector('[data-xltext="' + which + '"]') || {}).value || '';
+    var prods = excelProducts(s, v), byId = {}; prods.forEach(function (p) { byId[p.id] = p; });
+    var current = function (e) {
+      if (e.kind === 'var') { var k = e.v + '|' + e.path; if (s.vedits[k]) return s.vedits[k].value; return get(M.readVar(s.base, e.v).data, e.path); }
+      return cur(s, e.id, e.path);
+    };
+    var res = X.importSheet(text, prods, { v: v.v, sumInsured: v.excel.sumInsured, expect: v.excel.expect, which: which,
+      premiumOf: function (id, a, k) { return cur(s, id, v.path + '.' + a + '.' + k); } });
+    if (res.error) { s.xl = { v: v.v, error: res.error }; return; }
+    var empty = function (x) { return x === null || x === '' || x === undefined; };
+    var changes = [], same = 0, notOnPage = 0, cantHide = 0;
+    res.edits.forEach(function (e) {
+      var now = current(e);
+      if (e.hide) { if (now !== undefined) cantHide++; return; }
+      if (now === undefined) { notOnPage++; return; }
+      if (JSON.stringify(now) === JSON.stringify(e.value) || (empty(now) && empty(e.value))) { same++; return; }
+      var pid = e.kind === 'var' ? e.path.split('.')[0] : e.id, rest = e.kind === 'var' ? e.path.split('.').slice(1).join(' · ') : e.path.replace(/^premiums\./, 'premium · ').replace(/^discount\.prices\./, 'first year · ').replace(/\./g, ' · ');
+      changes.push({ e: e, product: (byId[pid] && byId[pid].names[0]) || pid, what: rest, now: shortVal(now), next: shortVal(e.value) });
+    });
+    var notes = [];
+    if (notOnPage) notes.push(notOnPage + ' value' + (notOnPage > 1 ? 's are' : ' is') + ' for an age or group this page does not show — skipped.');
+    if (cantHide) notes.push(cantHide + ' cell' + (cantHide > 1 ? 's say' : ' says') + ' "DO NOT SHOW PRODUCT" but the page shows a price there now. Not changed — remove those in "Edit code directly" if needed.');
+    s.xl = { v: v.v, res: res, changes: changes, same: same, notes: notes };
+  }
+  function shortVal(v) { if (v == null || v === '') return '(empty)'; if (Array.isArray(v)) return v.map(function (x) { return x == null ? '–' : x; }).join(' / '); if (typeof v === 'object') return v.n || JSON.stringify(v); return String(v); }
+  function excelApply(s) {
+    s.xl.changes.forEach(function (c) { var e = c.e; if (e.kind === 'var') setV(s, e.v, e.path, e.value); else setP(s, e.id, e.path, e.value); });
+    var n = s.xl.changes.length; s.xl = null; s.copied = false; all();
+    var r = $('review'); if (r) r.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    return n;
+  }
   // Paste a block copied from Excel into the table above, left to right, top to bottom
   function pasteBox() {
-    return '<details class="paste"><summary>Paste from Excel</summary><p class="hint">Copy the numbers in Excel (rows and columns in the same order as this table) and paste them here. Commas and $ are ignored.</p>' +
+    return '<details class="paste"><summary>Paste numbers only (advanced)</summary><p class="hint">For a block of numbers copied in exactly the same rows and columns as this table. Usually the "Paste the Excel sheet" box above is easier.</p>' +
       '<textarea class="code" id="pasteGrid" style="min-height:100px" placeholder="Paste here…"></textarea>' +
       '<label class="check"><input type="checkbox" id="pasteSkip"> The first column is the age or product name (skip it)</label>' +
       '<div class="row" style="margin-top:6px"><button class="btn" id="pasteFill">Fill the table</button></div></details>';
@@ -357,7 +434,7 @@
     return h + renderVar(m, s, m.vars.filter(function (x) { return x.v === s.vtab; })[0]);
   }
   function renderVar(m, s, v) {
-    var h = '<div class="card">', data = M.readVar(s.base, v.v).data;
+    var h = (v.excel ? excelPanel(s, v) : '') + '<div class="card">', data = M.readVar(s.base, v.v).data;
     if (v.kind === 'text') {
       var root = data[v.root] || {}, q = (s.q || '').toLowerCase();
       h += '<input type="search" class="search" id="q" placeholder="Search page text (e.g. FAQ, hero, 免費)…" value="' + esc(s.q) + '">';
@@ -480,6 +557,9 @@
     if (t.dataset.edit) { s.sel = s.sel === t.dataset.edit ? null : t.dataset.edit; return renderRight(); }
     if (t.dataset.undo) { delete s.fields[t.dataset.undo]; s.copied = false; return all(); }
     if (t.id === 'pasteFill') return fillFromPaste();
+    if (t.dataset.xlread) { var xv = (m.vars || []).filter(function (x) { return x.v === s.vtab; })[0]; excelRead(s, xv, t.dataset.xlread); var keep = {}; document.querySelectorAll('[data-xltext]').forEach(function (ta) { keep[ta.dataset.xltext] = ta.value; }); renderRight(); document.querySelectorAll('[data-xltext]').forEach(function (ta) { ta.value = keep[ta.dataset.xltext] || ''; }); var pv = document.querySelector('.xlprev'); if (pv) pv.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); return; }
+    if (t.id === 'xlApply') { excelApply(s); return; }
+    if (t.id === 'xlCancel') { s.xl = null; return renderRight(); }
     if (t.dataset.ptagadd) { var pa = (cur(s, t.dataset.pid, 'tags') || []).slice(); pa.push(newTag(tagsField())); setP(s, t.dataset.pid, 'tags', pa); return all(); }
     if (t.dataset.ptagdel != null) { var pd = cur(s, t.dataset.pid, 'tags').slice(); pd.splice(+t.dataset.ptagdel, 1); setP(s, t.dataset.pid, 'tags', pd); return all(); }
     if (t.id === 'tagAdd') {

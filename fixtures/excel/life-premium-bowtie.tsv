@@ -1,0 +1,23 @@
+續保年期為十的年度保費計算 ** 年繳
+Product 	Age 	"Sum insured
+"	Gender 	Smoking 	Original Annual Premium	Discounted Premium - Oct 2026 Offer
+Bowtie 定期人壽保險計劃	30	3M	F	Y	2400	2040
+Bowtie 定期人壽保險計劃	30	3M	F	N	1332	1132.2
+Bowtie 定期人壽保險計劃	30	3M	M	Y	3096	2631.6
+Bowtie 定期人壽保險計劃	30	3M	M	N	1776	1509.6
+Bowtie 定期人壽保險計劃	35	3M	F	Y	3288	2794.8
+Bowtie 定期人壽保險計劃	35	3M	F	N	1776	1509.6
+Bowtie 定期人壽保險計劃	35	3M	M	Y	4440	3774
+Bowtie 定期人壽保險計劃	35	3M	M	N	2472	2101.2
+Bowtie 定期人壽保險計劃	40	3M	F	Y	4848	4120.8
+Bowtie 定期人壽保險計劃	40	3M	F	N	2568	2182.8
+Bowtie 定期人壽保險計劃	40	3M	M	Y	6612	5620.2
+Bowtie 定期人壽保險計劃	40	3M	M	N	3612	3070.2
+Bowtie 定期人壽保險計劃	45	3M	F	Y	7416	6303.6
+Bowtie 定期人壽保險計劃	45	3M	F	N	3888	3304.8
+Bowtie 定期人壽保險計劃	45	3M	M	Y	10080	8568
+Bowtie 定期人壽保險計劃	45	3M	M	N	5424	4610.4
+Bowtie 定期人壽保險計劃	50	3M	F	Y	11232	9547.2
+Bowtie 定期人壽保險計劃	50	3M	F	N	5868	4987.8
+Bowtie 定期人壽保險計劃	50	3M	M	Y	16896	14361.6
+Bowtie 定期人壽保險計劃	50	3M	M	N	9000	7650

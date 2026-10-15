@@ -78,7 +78,13 @@
       { file: 'scripts', editor: 'scripts', fingerprint: 'var PREMIUM_RATES', find: '<script> /* ===== i18n ===== */', what: 'Page text (hero, FAQ, labels) and premium tables',
         vars: [
           { v: 'T', title: lang === 'zh' ? 'Page text 頁面文字' : 'Page text', kind: 'text', root: lang },
-          { v: 'PREMIUM_RATES', title: 'Premium table 保費表', kind: 'rates', na: true }, // Life scripts read 'NA' as not offered
+          { v: 'PREMIUM_RATES', title: 'Premium table 保費表', kind: 'rates', na: true, // Life scripts read 'NA' as not offered
+            excel: { expect: ['long'], sumInsured: '3M', products: 'product-data',
+              how: 'In the Term Life RP Product Details Excel, open one provider\'s premium sheet (e.g. "Premium FWD"). Click the corner above row 1 to select the whole sheet, copy, and paste below. Do one provider at a time.',
+              // Excel plan names as Phillip writes them (checked against the 29/09 file)
+              aliases: { 'fwd-standard': ['FWD 自主保（升級版）定期保障計劃 - 標準計劃'], 'fwd-premier': ['FWD 自主保（升級版）定期保障計劃 - 特等級別'],
+                zurich: ['Zurich 至安心定期壽險計劃'], bowtie: ['Bowtie 定期人壽保險計劃'],
+                'blue-tl3': ['Blue WeCare 定期人壽保障計劃 TL3'], 'blue-tf1': ['Blue WeCare 靈活定期人壽保障計劃 TF1'] } } },
           { v: 'BOWTIE_RATES', title: 'Bowtie monthly rates (per HK$1M)', kind: 'grid' }
         ] }
     );
@@ -176,7 +182,8 @@
           vars: [
             { v: '@tags', title: 'Tags 標籤', kind: 'productTags', field: 'tags' },
             // CI cells: [original, discounted|null] or {n:'note shown instead of a price'}; no 'NA'
-            { v: 'PREMIUM_RATES', title: 'Premium table 保費表', kind: 'rates', discountOptional: true },
+            { v: 'PREMIUM_RATES', title: 'Premium table 保費表', kind: 'rates', discountOptional: true,
+              excel: { expect: ['ci'], how: 'In the Critical Illness RP Product Details Excel, open the "Premium" sheet. Click the corner above row 1 to select the whole sheet, copy, and paste below.' } },
             { v: 'FAQS', title: 'FAQ 常見問題', kind: 'list', fields: [{ p: 'q.zh', label: '問題 Question' }, { p: 'a.zh', label: '答案 Answer', long: true }] }
           ],
           note: 'Coverage table, more info and documents → "Edit code directly".' },
@@ -232,7 +239,9 @@
         { file: 'product-data', editor: 'products', fingerprint: 'var ISSUERS', find: '<!-- ══════ 產品資料 PRODUCT DATA', what: 'Ranking, prices, discounts, codes, badges, coverage amounts, links, FAQ',
           vars: [
             { v: '@tags', title: 'Badges 角標', kind: 'productTags', field: 'badge' },
-            { v: '@premiums', title: 'Premiums 保費', kind: 'productColumns', cols: [{ p: 'price', label: '原價 Original (HK$/yr)' }, { p: 'disc', label: '折後價 Discounted (HK$/yr)', nullable: true }] },
+            { v: '@premiums', title: 'Premiums 保費', kind: 'productColumns',
+              excel: { expect: ['osi'], how: 'Open the OSI Excel (one row per plan: 保險計劃, Badge, Link, … 保費, Discounted Price). Click the corner above row 1 to select the whole sheet, copy, and paste below. Badges, links, ages and coverage amounts are updated too.' },
+              cols: [{ p: 'price', label: '原價 Original (HK$/yr)' }, { p: 'disc', label: '折後價 Discounted (HK$/yr)', nullable: true }] },
             { v: 'FAQS', title: 'FAQ 常見問題', kind: 'list', fields: [{ p: 'q', label: '問題 Question' }, { p: 'a', label: '答案 Answer', long: true }] }
           ],
           note: 'Issuer names and anything not in the form → "Edit code directly".' },
@@ -277,7 +286,8 @@
         { file: '06 tax note', editor: 'content', fingerprint: 'MODULE 06 —', find: '<!-- ═══ MODULE 06 — Tax deduction note', what: 'Tax deduction note' },
         { file: '07 overlays', editor: 'content', fingerprint: 'MODULE 07 —', find: '<!-- ═══ MODULE 07 — Tooltip, compare tray', what: 'Tooltip, compare tray, compare pop-up, filter sheet' },
         { file: '08 product data', editor: 'products', fingerprint: 'MODULE 08 —', find: '<!-- ═══ MODULE 08 — Product data', what: 'Ranking, plan names, tags, offers, codes, offer end dates, apply links, premiums',
-          vars: [{ v: '@tags', title: 'Tags 標籤', kind: 'productTags', field: 'tags' }, { v: '@premiums', title: 'Premiums 保費', kind: 'productRates', path: 'premiums', discPath: 'discount.prices', tiersPath: 'deductibleTiers' }],
+          vars: [{ v: '@tags', title: 'Tags 標籤', kind: 'productTags', field: 'tags' }, { v: '@premiums', title: 'Premiums 保費', kind: 'productRates', path: 'premiums', discPath: 'discount.prices', tiersPath: 'deductibleTiers',
+            excel: { expect: ['vhis'], two: true, how: 'In the VHIS RP Product Details Excel, open the "Premium" sheet, click the corner above row 1 to select the whole sheet, copy, and paste in box 1. Then do the same with the "Discounted Premium" sheet in box 2.' } }],
           note: 'Deductible levels, discount label and coverage → "Edit code directly". This module is one very long line of code, so the form is the easier way in.' },
         { file: '09 banner', editor: 'scripts', fingerprint: 'MODULE 09 —', find: '<!-- ═══ MODULE 09 — Behaviour', what: 'Top and bottom banners (image, alt text, linked plan). The rest is page behaviour.',
           vars: [{ v: 'BANNERS', title: 'Banners', kind: 'list', fields: [
