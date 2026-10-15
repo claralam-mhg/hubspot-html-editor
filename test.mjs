@@ -256,7 +256,7 @@ for (const m of life.modules) {
     const r = M.liveModuleCode(LIVE, m.fingerprint); assert(r.code, r.error);
     assert(M.safety(r.code, r.code).ok, 'safety');
     if (m.editor === 'products') eq(E.load(r.code, cfg).records.length, 6);
-    if (m.vars) m.vars.forEach(v => assert(M.readVar(r.code, v.v), v.v));
+    if (m.vars) m.vars.filter(v => v.v[0] !== '@').forEach(v => assert(M.readVar(r.code, v.v), v.v));
     eq(M.liveCheck(r.code, LIVE, m.fingerprint).status, 'match');
   });
 }
@@ -303,8 +303,8 @@ for (const key of ['life-en', 'ci', 'osi']) {
       assert(first.includes(name.slice(0, 6)) || /PRODUCT CARD START/.test(first), `block ${k} (${r.id}) starts with ${JSON.stringify(first.slice(0, 80))}`);
     });
   });
-  if (pdm.vars) {
-    const fv = pdm.vars.find(v => v.kind === 'list');
+  const fv = (pdm.vars || []).find(v => v.kind === 'list');
+  if (fv) {
     t(`${key}: FAQ edit → one value changes; review gate passes with a FAQ row`, () => {
       const p0 = '0.' + fv.fields[0].p, o = M.applyVars(PD, [{ v: 'FAQS', path: p0, value: '新問題？' }]);
       eq(String(p0.split('.').slice(1).reduce((x, k) => x[k], M.readVar(o, 'FAQS').data[0])), '新問題？');
@@ -441,6 +441,23 @@ console.log('\nVHIS premiums');
   t('empty premium cell → blocked', () => {
     const p1 = old.premiums['30']['male-non-smoker'].slice(); p1[0] = NaN;
     try { E.build(D, { fields: { [id]: { 'premiums.30.male-non-smoker': p1 } } }); throw new Error('no error'); } catch (e) { assert(/empty or not a number/.test(e.message), e.message); }
+  });
+}
+
+console.log('\nTags');
+{
+  const page = PAGES.find(p => p.key === 'vhis'), pdm = page.modules.find(m => m.editor === 'products');
+  const PD = M.liveModuleCode(fs.readFileSync(path.join(here, 'fixtures/vhis-live-2026-10-15.html'), 'utf8'), pdm.fingerprint).code, D = E.load(PD, page.data);
+  const st = f => ({ mode: 'form', original: PD, doc: D, order: D.records.map(r => r.id), fields: f, base: PD, vedits: {} });
+  t('empty tag → blocked; filled tag → fine', () => {
+    assert(!R.review(page, pdm, st({ 'fwd-vprime': { tags: ['a', ''] } })).res.ok, 'empty should block');
+    assert(R.review(page, pdm, st({ 'fwd-vprime': { tags: ['a', 'b'] } })).res.ok, 'filled should pass');
+  });
+  const lp = PAGES.find(p => p.key === 'life-zh'), lm = lp.modules.find(m => m.editor === 'products');
+  const LPD = M.liveModuleCode(LIVE, lm.fingerprint).code, LD = E.load(LPD, lp.data);
+  t('Life tag with empty Chinese → blocked', () => {
+    const r = R.review(lp, lm, { mode: 'form', original: LPD, doc: LD, order: LD.records.map(r => r.id), fields: { bowtie: { tags: [{ zh: '', en: 'x', c: 't-blue' }] } }, base: LPD, vedits: {} });
+    assert(!r.res.ok, 'should block');
   });
 }
 

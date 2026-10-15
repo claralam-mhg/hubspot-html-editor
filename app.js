@@ -157,6 +157,7 @@
     if (s.vtab === 'products') return h + renderProducts(m, s);
     var vv = m.vars.filter(function (x) { return x.v === s.vtab; })[0];
     if (vv.kind === 'productColumns') return h + renderProductColumns(s, vv);
+    if (vv.kind === 'productTags') return h + renderProductTags(s, vv);
     if (vv.kind === 'productRates') return h + renderProductRates(s, vv);
     return h + renderVar(m, s, vv);
   }
@@ -202,6 +203,36 @@
     });
     return h + '</tbody></table></div>' + pasteBox() + '</div>';
   }
+  // Every product's tags in one place. Tag shape comes from the page's own tags field
+  // (Life: zh/en/colour · CI: zh · VHIS: plain words) — or a single badge (OSI).
+  function renderProductTags(s, v) {
+    var c = cfg(), f = c.fields.filter(function (x) { return x.path === v.field; })[0];
+    var sh = shownIds(s, s.order), ids = sh.concat(s.order.filter(function (x) { return sh.indexOf(x) < 0; }));
+    var h = '<div class="card"><p class="hint">' + (f.type === 'text-null' ? 'Leave a badge empty for no badge. Products with a badge always show above products without one.' : 'Tags appear as chips at the top of each product card.') + '</p>';
+    ids.forEach(function (id) {
+      var d = curData(s, id), val = cur(s, id, v.field), changed = JSON.stringify(val) !== JSON.stringify(orig(s, id, v.field));
+      h += '<div class="field' + (changed ? ' changed' : '') + '" style="border-bottom:1px solid var(--border-default);padding-bottom:10px"><label>' + esc(c.productLabel(d)) + ' <span class="where">' + esc(c.productSub(d)) + '</span></label>';
+      if (f.type === 'text-null') h += '<input type="text" data-pid="' + esc(id) + '" data-ppath="' + v.field + '" data-type="text-null" value="' + esc(val == null ? '' : val) + '" placeholder="No badge">';
+      else if (f.type === 'strtags') {
+        (val || []).forEach(function (t, k) { h += '<div class="tagrow" style="grid-template-columns:minmax(0,1fr) auto"><input type="text" data-pid="' + esc(id) + '" data-pstag="' + k + '" value="' + esc(t) + '"><button class="btn sm" data-pid="' + esc(id) + '" data-ptagdel="' + k + '">Remove</button></div>'; });
+        h += '<button class="btn sm" data-pid="' + esc(id) + '" data-ptagadd="1">Add tag</button>';
+      } else {
+        var langs = f.langs || ['zh', 'en'];
+        (val || []).forEach(function (t, k) {
+          h += '<div class="tagrow" style="grid-template-columns:' + langs.map(function () { return 'minmax(0,1fr)'; }).join(' ') + (f.colours ? ' 110px' : '') + ' auto">' +
+            langs.map(function (L) { return '<input type="text" data-pid="' + esc(id) + '" data-ptag="' + k + '" data-k="' + L + '" value="' + esc(t[L]) + '" placeholder="' + (L === 'zh' ? '中文' : 'English') + '">'; }).join('') +
+            (f.colours ? '<select data-pid="' + esc(id) + '" data-ptag="' + k + '" data-k="c">' + f.colours.map(function (op) { return '<option value="' + op.value + '"' + (op.value === t.c ? ' selected' : '') + '>' + op.label + '</option>'; }).join('') + '</select>' : '') +
+            '<button class="btn sm" data-pid="' + esc(id) + '" data-ptagdel="' + k + '">Remove</button></div>';
+        });
+        h += '<button class="btn sm" data-pid="' + esc(id) + '" data-ptagadd="1">Add tag</button>';
+      }
+      if (changed && f.type === 'text-null') h += '<div class="was">Was: ' + esc(orig(s, id, v.field) || '(no badge)') + '</div>';
+      h += '</div>';
+    });
+    return h + '</div>';
+  }
+  function newTag(f) { if (f.type === 'strtags') return ''; var nt = {}; (f.langs || ['zh', 'en']).forEach(function (L) { nt[L] = ''; }); if (f.langs && f.langs.indexOf('en') < 0) nt.en = ''; if (f.colours) nt.c = f.colours[0].value; return nt; }
+  function tagsField() { return cfg().fields.filter(function (x) { return x.path === 'tags'; })[0]; }
   // VHIS: premiums[age][group] = one price per deductible level, plus the first-year discounted table
   function renderProductRates(s, v) {
     var c = cfg(), ids = s.order; s.vp = s.vp && ids.indexOf(s.vp) >= 0 ? s.vp : ids[0];
@@ -449,6 +480,8 @@
     if (t.dataset.edit) { s.sel = s.sel === t.dataset.edit ? null : t.dataset.edit; return renderRight(); }
     if (t.dataset.undo) { delete s.fields[t.dataset.undo]; s.copied = false; return all(); }
     if (t.id === 'pasteFill') return fillFromPaste();
+    if (t.dataset.ptagadd) { var pa = (cur(s, t.dataset.pid, 'tags') || []).slice(); pa.push(newTag(tagsField())); setP(s, t.dataset.pid, 'tags', pa); return all(); }
+    if (t.dataset.ptagdel != null) { var pd = cur(s, t.dataset.pid, 'tags').slice(); pd.splice(+t.dataset.ptagdel, 1); setP(s, t.dataset.pid, 'tags', pd); return all(); }
     if (t.id === 'tagAdd') {
       var tf = cfg().fields.filter(function (f) { return f.type === 'tags'; })[0], nt = {};
       (tf.langs || ['zh', 'en']).forEach(function (L) { nt[L] = ''; }); if (tf.langs && tf.langs.indexOf('en') < 0) nt.en = ''; if (tf.colours) nt.c = tf.colours[0].value;
@@ -465,7 +498,12 @@
     if (t.id === 'q') { s.q = t.value; var pos = t.selectionStart; renderRight(); var q = $('q'); q.focus(); q.setSelectionRange(pos, pos); return; }
     if (t.id === 'codeBox') { s.code = t.value; s.copied = false; return soft(); }
     if (t.dataset.f != null) { s.edits[t.dataset.f] = t.value; s.copied = false; t.closest('.field').classList.toggle('changed', t.value !== s.fields[+t.dataset.f].value); return soft(); }
-    if (t.dataset.ppath) { setP(s, t.dataset.pid, t.dataset.ppath, t.value === '' ? (t.dataset.type === 'number-null' ? null : NaN) : Number(t.value)); return soft(); }
+    if (t.dataset.ppath) {
+      var pv = t.dataset.type === 'text-null' ? (t.value === '' ? null : t.value) : t.value === '' ? (t.dataset.type === 'number-null' ? null : NaN) : Number(t.value);
+      setP(s, t.dataset.pid, t.dataset.ppath, pv); return soft();
+    }
+    if (t.dataset.pstag != null) { var ps = cur(s, t.dataset.pid, 'tags').slice(); ps[+t.dataset.pstag] = t.value; setP(s, t.dataset.pid, 'tags', ps); return soft(); }
+    if (t.dataset.ptag != null) { var pt = cur(s, t.dataset.pid, 'tags').map(function (x) { return Object.assign({}, x); }); pt[+t.dataset.ptag][t.dataset.k] = t.value; setP(s, t.dataset.pid, 'tags', pt); return soft(); }
     if (t.dataset.tpath) { var ta = (cur(s, t.dataset.pid, t.dataset.tpath) || []).slice(); ta[+t.dataset.ti] = t.value === '' ? NaN : Number(t.value); setP(s, t.dataset.pid, t.dataset.tpath, ta); return soft(); }
     if (t.dataset.path) {
       var ty = t.dataset.type, val = t.value;
@@ -494,6 +532,8 @@
     if (t.dataset.toggle) { setP(s, s.sel, t.dataset.toggle, t.checked); return all(); }
     // fields that decide where a product shows (e.g. OSI badge) re-sort the ranking once you leave the field
     if (t.dataset.path && cfg().displayOrder) return all();
+    if (t.dataset.ptag != null && t.tagName === 'SELECT') { var pc = cur(s, t.dataset.pid, 'tags').map(function (x) { return Object.assign({}, x); }); pc[+t.dataset.ptag].c = t.value; setP(s, t.dataset.pid, 'tags', pc); return soft(); }
+    if (t.dataset.ppath === 'badge') return all();
     if (t.id === 'allowHooks') { s.allowHookRemoval = t.checked; return soft(); }
     if (t.dataset.na) {
       var data = M.readVar(s.base, s.vtab).data, o = get(data, t.dataset.na);

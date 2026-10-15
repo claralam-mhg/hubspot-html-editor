@@ -102,6 +102,8 @@
     Object.keys(s.fields).forEach(function (id) {
       cfg().fields.forEach(function (f) {
         var v = (s.fields[id] || {})[f.path];
+        // a tag left empty would show as a blank chip on the card
+        if ((f.type === 'tags' || f.type === 'strtags') && Array.isArray(v) && v.some(function (t) { return typeof t === 'string' ? !t.trim() : !t || !String(t.zh || '').trim(); })) out.push(prodLabel(s, id) + ': a tag is empty — type it or remove it.');
         if ((f.type === 'number' || f.type === 'number-null') && v !== undefined && v !== null && (typeof v !== 'number' || !isFinite(v) || v < 0)) out.push(prodLabel(s, id) + ': ' + f.label + ' — enter a number' + (f.type === 'number-null' ? ' or leave it empty' : '') + '.');
         if (f.pattern && typeof v === 'string' && !new RegExp(f.pattern).test(v)) out.push(prodLabel(s, id) + ': ' + f.label + ' — ' + f.patternMsg);
       });

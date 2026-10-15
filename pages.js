@@ -73,6 +73,7 @@
       { file: 'footer-cta', editor: 'content', fingerprint: 'Component: Footer CTA', find: '<!-- Component: Footer CTA -->', what: 'Bottom call-to-action (text set in scripts › Page text)' },
       { file: 'sticky-elements', editor: 'content', fingerprint: 'Component: Sticky Elements', find: '<!-- Component: Sticky Elements', what: 'Sticky buy button, compare tray, compare pop-up' },
       { file: 'product-data', editor: 'products', fingerprint: 'PRODUCT DATA', find: '<script> /* ===== PRODUCT DATA ===== */', what: 'Ranking, product names, tags, offers, promo codes, apply links',
+        vars: [{ v: '@tags', title: 'Tags 標籤', kind: 'productTags', field: 'tags' }],
         note: 'Premiums are in the scripts module › Premium table. Coverage, pros/cons and documents → "Edit code directly".' },
       { file: 'scripts', editor: 'scripts', fingerprint: 'var PREMIUM_RATES', find: '<script> /* ===== i18n ===== */', what: 'Page text (hero, FAQ, labels) and premium tables',
         vars: [
@@ -121,6 +122,7 @@
       shortcuts: [
         { label: 'Premiums', file: 'scripts', tab: 'PREMIUM_RATES' },
         { label: 'Ranking & offers', file: 'product-data', tab: 'products' },
+        { label: 'Tags', file: 'product-data', tab: '@tags' },
         { label: 'Banners', file: 'promo-banner' },
         { label: 'Page text', file: 'scripts', tab: 'T' }
       ],
@@ -138,6 +140,7 @@
       shortcuts: [
         { label: 'Premiums', file: 'scripts', tab: 'PREMIUM_RATES' },
         { label: 'Ranking & offers', file: 'product-data', tab: 'products' },
+        { label: 'Tags', file: 'product-data', tab: '@tags' },
         { label: 'Banners', file: 'promo-banner' },
         { label: 'Page text', file: 'scripts', tab: 'T' }
       ],
@@ -151,6 +154,7 @@
       shortcuts: [
         { label: 'Premiums', file: 'product-data', tab: 'PREMIUM_RATES' },
         { label: 'Ranking, show/hide & offers', file: 'product-data', tab: 'products' },
+        { label: 'Tags', file: 'product-data', tab: '@tags' },
         { label: 'FAQ', file: 'product-data', tab: 'FAQS' },
         { label: 'Banners', file: 'promo-banner' },
         { label: 'Page text', file: 'scripts', tab: 'T' }
@@ -170,6 +174,7 @@
         { file: 'sticky-elements', editor: 'content', fingerprint: 'Component: Sticky Elements', find: '<!-- Component: Sticky Elements', what: 'Sticky buy button, compare tray, compare pop-up' },
         { file: 'product-data', editor: 'products', fingerprint: 'var PREMIUM_RATES', find: '<!-- ══════ 產品資料 PRODUCT DATA', what: 'Ranking, show/hide, names, tags, offers, codes, apply links, premium table, FAQ',
           vars: [
+            { v: '@tags', title: 'Tags 標籤', kind: 'productTags', field: 'tags' },
             // CI cells: [original, discounted|null] or {n:'note shown instead of a price'}; no 'NA'
             { v: 'PREMIUM_RATES', title: 'Premium table 保費表', kind: 'rates', discountOptional: true },
             { v: 'FAQS', title: 'FAQ 常見問題', kind: 'list', fields: [{ p: 'q.zh', label: '問題 Question' }, { p: 'a.zh', label: '答案 Answer', long: true }] }
@@ -207,6 +212,7 @@
       shortcuts: [
         { label: 'Premiums', file: 'product-data', tab: '@premiums' },
         { label: 'Ranking & offers', file: 'product-data', tab: 'products' },
+        { label: 'Tags (badges)', file: 'product-data', tab: '@tags' },
         { label: 'FAQ', file: 'product-data', tab: 'FAQS' },
         { label: 'Banners', file: 'promo-banner' }
       ],
@@ -225,6 +231,7 @@
         { file: 'sticky-elements', editor: 'content', fingerprint: '<!-- STICKY BOTTOM CTA -->', find: '<!-- STICKY BOTTOM CTA -->', what: 'Sticky bottom bar, compare tray, compare pop-up' },
         { file: 'product-data', editor: 'products', fingerprint: 'var ISSUERS', find: '<!-- ══════ 產品資料 PRODUCT DATA', what: 'Ranking, prices, discounts, codes, badges, coverage amounts, links, FAQ',
           vars: [
+            { v: '@tags', title: 'Badges 角標', kind: 'productTags', field: 'badge' },
             { v: '@premiums', title: 'Premiums 保費', kind: 'productColumns', cols: [{ p: 'price', label: '原價 Original (HK$/yr)' }, { p: 'disc', label: '折後價 Discounted (HK$/yr)', nullable: true }] },
             { v: 'FAQS', title: 'FAQ 常見問題', kind: 'list', fields: [{ p: 'q', label: '問題 Question' }, { p: 'a', label: '答案 Answer', long: true }] }
           ],
@@ -257,6 +264,7 @@
       shortcuts: [
         { label: 'Premiums', file: '08 product data', tab: '@premiums' },
         { label: 'Ranking & offers', file: '08 product data', tab: 'products' },
+        { label: 'Tags', file: '08 product data', tab: '@tags' },
         { label: 'Banners', file: '09 banner', tab: 'BANNERS' }
       ],
       // Modules are labelled "MODULE 0N —" in their first comment. MODULE 01 (fonts) lives in
@@ -269,7 +277,7 @@
         { file: '06 tax note', editor: 'content', fingerprint: 'MODULE 06 —', find: '<!-- ═══ MODULE 06 — Tax deduction note', what: 'Tax deduction note' },
         { file: '07 overlays', editor: 'content', fingerprint: 'MODULE 07 —', find: '<!-- ═══ MODULE 07 — Tooltip, compare tray', what: 'Tooltip, compare tray, compare pop-up, filter sheet' },
         { file: '08 product data', editor: 'products', fingerprint: 'MODULE 08 —', find: '<!-- ═══ MODULE 08 — Product data', what: 'Ranking, plan names, tags, offers, codes, offer end dates, apply links, premiums',
-          vars: [{ v: '@premiums', title: 'Premiums 保費', kind: 'productRates', path: 'premiums', discPath: 'discount.prices', tiersPath: 'deductibleTiers' }],
+          vars: [{ v: '@tags', title: 'Tags 標籤', kind: 'productTags', field: 'tags' }, { v: '@premiums', title: 'Premiums 保費', kind: 'productRates', path: 'premiums', discPath: 'discount.prices', tiersPath: 'deductibleTiers' }],
           note: 'Deductible levels, discount label and coverage → "Edit code directly". This module is one very long line of code, so the form is the easier way in.' },
         { file: '09 banner', editor: 'scripts', fingerprint: 'MODULE 09 —', find: '<!-- ═══ MODULE 09 — Behaviour', what: 'Top and bottom banners (image, alt text, linked plan). The rest is page behaviour.',
           vars: [{ v: 'BANNERS', title: 'Banners', kind: 'list', fields: [
