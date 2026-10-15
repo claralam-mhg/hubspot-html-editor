@@ -30,7 +30,7 @@ Lets MoneyHero's PCT team change HubSpot comparison pages (ranking, offers, tags
 | `pages.js` | pages, their modules (in live order), field labels, rules |
 | `app.js` + `app.src.html` | the screen; `build.mjs` bundles everything into one HTML file |
 | `scripts/snapshot.mjs` | reads the live pages into `live/<page>.json` (run by the GitHub job) |
-| `test.mjs` + `fixtures/` | 147 tests against real modules and saved copies of each live page |
+| `test.mjs` + `fixtures/` | 159 tests against real modules and saved copies of each live page |
 | `design/` | MoneyHero design-system fonts and tokens (from the `mhg-design` skill) |
 
 ```bash
@@ -46,4 +46,4 @@ GitHub pauses scheduled jobs in a repo with no commits for 60 days. If the live 
 
 ## Pages covered
 
-Life Insurance (繁中 + EN), Critical Illness, Overseas Student Insurance. VHIS: pending (its product data is generated from an Excel).
+Life Insurance (繁中 + EN), Critical Illness, Overseas Student Insurance, VHIS. VHIS product data (module 08) is edited here, not from the Excel (2026-10-15).

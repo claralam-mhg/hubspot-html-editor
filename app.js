@@ -110,7 +110,7 @@
   }
   function initForm(m, s, text) {
     if (m.editor === 'products') {
-      s.doc = E.load(text, cfg()); s.order = s.doc.records.map(function (r) { return r.id; }); s.fields = {}; s.sel = null;
+      s.doc = E.load(text, cfg()); s.order = baseOrder(s.doc); s.fields = {}; s.sel = null;
       s.base = text; s.vedits = {}; s.vtab = 'products'; s.q = '';
       (m.vars || []).forEach(function (v) { if (!M.readVar(text, v.v)) throw new Error(v.v + ' not found'); });
     }
@@ -141,8 +141,11 @@
   function setPath(o, p, v) { var k = p.split('.'), x = o; for (var i = 0; i < k.length - 1; i++) { if (x[k[i]] == null || typeof x[k[i]] !== 'object') x[k[i]] = {}; x = x[k[i]]; } x[k[k.length - 1]] = v; }
   // the product as it will be after this session's edits — what display rules (badge first, hidden) look at
   function curData(s, id) { var d = JSON.parse(JSON.stringify(rec(s, id).data)); var e = s.fields[id] || {}; Object.keys(e).forEach(function (p) { setPath(d, p, e[p]); }); return d; }
+  // rankOnly pages (VHIS): the list you arrange IS the order; rank numbers are written from it
+  function baseOrder(doc) { var c = cfg(), ids = doc.records.map(function (r) { return r.id; }); return c.rankOnly ? c.displayOrder(doc.records.map(function (r) { return r.data; })).map(function (d) { return d.id; }) : ids; }
   function shownIds(s, ids) {
-    var c = cfg(), list = ids.map(function (id) { return curData(s, id); });
+    var c = cfg(); if (c.rankOnly) return ids.slice();
+    var list = ids.map(function (id) { return curData(s, id); });
     return (c.displayOrder ? c.displayOrder(list) : list).map(function (d) { return d.id; });
   }
   function renderProductsModule(m, s) {
@@ -153,7 +156,7 @@
     return h + renderVar(m, s, m.vars.filter(function (x) { return x.v === s.vtab; })[0]);
   }
   function renderProducts(m, s) {
-    var c = cfg(), h = '', origIds = s.doc.records.map(function (r) { return r.id; });
+    var c = cfg(), h = '', origIds = baseOrder(s.doc);
     var shown = shownIds(s, s.order), origShown = shownIds({ doc: s.doc, fields: {} }, origIds);
     var hidden = s.order.filter(function (id) { return shown.indexOf(id) < 0; });
     h += '<div class="card"><div class="row" style="justify-content:space-between"><div><h2>Ranking</h2><div class="muted">Drag a product, or use the arrows. #1 shows first on the page.' + (c.displayOrder && /badge/.test(String(c.displayOrder)) ? ' Products with a badge always show above products without one.' : '') + '</div></div>' + (shown.join() !== origShown.join() ? '<button class="btn sm" id="resetOrder">Undo ranking changes</button>' : '') + '</div>';
@@ -196,6 +199,9 @@
             '<button class="btn sm" data-tagdel="' + k + '">Remove</button></div>';
         });
         h += '<button class="btn sm" id="tagAdd">Add tag</button>';
+      } else if (f.type === 'strtags') {
+        (val || []).forEach(function (t, k) { h += '<div class="tagrow" style="grid-template-columns:minmax(0,1fr) auto"><input type="text" data-stag="' + k + '" value="' + esc(t) + '"><button class="btn sm" data-stagdel="' + k + '">Remove</button></div>'; });
+        h += '<button class="btn sm" id="stagAdd">Add tag</button>';
       } else if (f.type === 'toggle') {
         h += '<label class="check"><input type="checkbox" data-toggle="' + f.path + '"' + (val !== false ? ' checked' : '') + '> ' + (val !== false ? 'On — shown on the page' : 'Off — hidden from the page') + '</label>';
       } else if (f.type === 'textarea') h += '<textarea data-path="' + f.path + '">' + esc(val) + '</textarea>';
@@ -314,7 +320,7 @@
     h += '<h3>What will change</h3><div class="tablewrap"><table class="changes"><thead><tr><th>Where</th><th>What</th><th>Before</th><th>After</th></tr></thead><tbody>';
     R.changes.slice(0, 200).forEach(function (c) { h += '<tr><td>' + esc(c.product) + '</td><td>' + esc(c.field) + '</td><td>' + esc(c.before) + '</td><td>' + esc(c.after) + '</td></tr>'; });
     h += '</tbody></table></div>';
-    if (R.out) { var d = E.lineDiff(s.original, R.out); h += '<details style="margin-top:12px"><summary class="muted" style="cursor:pointer">Show code changes (' + d.length + ' lines)</summary><div class="diff">' + d.slice(0, 600).map(function (o) { return '<div class="' + (o.t === '+' ? 'add' : 'del') + '">' + o.t + ' ' + esc(o.s) + '</div>'; }).join('') + '</div></details>'; }
+    if (R.out) { var d = E.lineDiff(s.original, R.out); h += '<details style="margin-top:12px"><summary class="muted" style="cursor:pointer">Show code changes (' + d.length + ' lines)</summary><div class="diff">' + d.slice(0, 600).map(function (o) { return '<div class="' + (o.t === '+' ? 'add' : 'del') + '">' + o.t + ' ' + esc(o.s.length > 600 ? o.s.slice(0, 600) + ' … (' + o.s.length.toLocaleString() + ' characters on this line)' : o.s) + '</div>'; }).join('') + '</div></details>'; }
     var others = S.page.modules.map(function (x, i) { return i; }).filter(function (i) { return i !== S.modIdx && hasChanges(i); });
     h += '<h3>Paste it back into HubSpot</h3><ol class="steps"><li>Press <b>Copy new code</b> below.</li><li>In HubSpot, open the module whose code starts with <code>' + esc(m.find) + '</code>, select all of its code and paste over it. Paste only into this module.</li><li>Press <b>Preview</b>. Check every row in the table above, on desktop and on phone.</li><li>If it all looks right, <b>Publish</b>. If not, close without publishing. Nothing changes live until you publish.</li><li>Post the change summary in the request thread.</li></ol>';
     if (others.length) h += '<div class="msg warn">You also changed module' + (others.length > 1 ? 's ' : ' ') + others.map(function (i) { return (i + 1) + ' (' + S.page.modules[i].file + ')'; }).join(', ') + '. Paste those too before you publish.</div>';
@@ -325,7 +331,10 @@
     var bar = $('copybar'); bar.hidden = false;
     var n = R.changes.length, ok = n && R.res.ok;
     var status = !R.res.ok ? 'Fix ' + R.res.errors.length + ' problem' + (R.res.errors.length > 1 ? 's' : '') + ' before copying' : !n ? 'No changes yet' : R.res.ok ? n + ' change' + (n > 1 ? 's' : '') + ' ready' + (R.res.warnings.length ? ' — read the ' + R.res.warnings.length + ' warning' + (R.res.warnings.length > 1 ? 's' : '') + ' first' : '') : 'Fix ' + R.res.errors.length + ' problem' + (R.res.errors.length > 1 ? 's' : '') + ' before copying';
-    bar.innerHTML = '<span class="status">' + esc(status) + '</span><button class="btn" id="copySummary"' + (ok ? '' : ' disabled') + '>Copy change summary</button><button class="btn primary" id="copyCode"' + (ok ? '' : ' disabled') + '>' + (s.copied ? 'Copied — now paste into HubSpot' : 'Copy new code') + '</button>';
+    var html = '<span class="status">' + esc(status) + '</span><button class="btn" id="copySummary"' + (ok ? '' : ' disabled') + '>Copy change summary</button><button class="btn primary" id="copyCode"' + (ok ? '' : ' disabled') + '>' + (s.copied ? 'Copied — now paste into HubSpot' : 'Copy new code') + '</button>';
+    // Only rebuild when something visible changed. Leaving a field re-renders the page; if the buttons were
+    // rebuilt every time, a click on Copy made straight after typing would land on a removed button and be lost.
+    if (bar.dataset.h !== html) { bar.innerHTML = html; bar.dataset.h = html; }
     $('copyCode').onclick = function () { copy(R.out, function () { s.copied = true; renderCopybar(m, s, R); }); };
     $('copySummary').onclick = function () {
       var txt = S.page.label + ' — ' + m.file + ' module updated\n' + R.changes.map(function (c) { return '• ' + c.product + ' — ' + c.field + ':\n  ' + String(c.before).replace(/\n/g, '\n  ') + '\n  → ' + String(c.after).replace(/\n/g, '\n  '); }).join('\n');
@@ -359,7 +368,7 @@
     if (t.dataset.vtab) { s.vtab = t.dataset.vtab; s.q = ''; return renderRight(); }
     if (t.dataset.addslide != null) { s.base = M.addSlide(M.applyHtml(s.base, s.fields, s.edits), +t.dataset.addslide); s.fields = M.htmlFields(s.base, { overriddenIds: S.page.overriddenIds }); s.edits = {}; s.structural = true; s.copied = false; return all(); }
     if (t.dataset.delslide != null) { if (!confirm('Remove banner ' + (+t.dataset.delslide + 1) + '?')) return; s.base = M.removeSlide(M.applyHtml(s.base, s.fields, s.edits), +t.dataset.delslide); s.fields = M.htmlFields(s.base, { overriddenIds: S.page.overriddenIds }); s.edits = {}; s.structural = true; s.copied = false; return all(); }
-    if (t.id === 'resetOrder') { s.order = s.doc.records.map(function (r) { return r.id; }); s.copied = false; return all(); }
+    if (t.id === 'resetOrder') { s.order = baseOrder(s.doc); s.copied = false; return all(); }
     if (t.dataset.up != null) return move(s, +t.dataset.up, +t.dataset.up - 1);
     if (t.dataset.down != null) return move(s, +t.dataset.down, +t.dataset.down + 1);
     if (t.dataset.edit) { s.sel = s.sel === t.dataset.edit ? null : t.dataset.edit; return renderRight(); }
@@ -369,6 +378,8 @@
       (tf.langs || ['zh', 'en']).forEach(function (L) { nt[L] = ''; }); if (tf.langs && tf.langs.indexOf('en') < 0) nt.en = ''; if (tf.colours) nt.c = tf.colours[0].value;
       var tg = (cur(s, s.sel, 'tags') || []).slice(); tg.push(nt); setP(s, s.sel, 'tags', tg); return all();
     }
+    if (t.id === 'stagAdd') { var sa = (cur(s, s.sel, 'tags') || []).slice(); sa.push(''); setP(s, s.sel, 'tags', sa); return all(); }
+    if (t.dataset.stagdel != null) { var sd = cur(s, s.sel, 'tags').slice(); sd.splice(+t.dataset.stagdel, 1); setP(s, s.sel, 'tags', sd); return all(); }
     if (t.dataset.tagdel != null) { var tg2 = cur(s, s.sel, 'tags').slice(); tg2.splice(+t.dataset.tagdel, 1); setP(s, s.sel, 'tags', tg2); return all(); }
   });
   function setP(s, id, path, v) { s.fields[id] = s.fields[id] || {}; s.fields[id][path] = v; s.copied = false; }
@@ -385,6 +396,7 @@
       else if (ty === 'text-null') val = val === '' ? null : val;
       setP(s, s.sel, t.dataset.path, val); return soft();
     }
+    if (t.dataset.stag != null) { var si = cur(s, s.sel, 'tags').slice(); si[+t.dataset.stag] = t.value; setP(s, s.sel, 'tags', si); return soft(); }
     if (t.dataset.tag != null) { var tg = cur(s, s.sel, 'tags').map(function (x) { return Object.assign({}, x); }); tg[+t.dataset.tag][t.dataset.k] = t.value; setP(s, s.sel, 'tags', tg); return soft(); }
     if (t.dataset.v) { setV(s, t.dataset.v, t.dataset.p, t.value); return soft(); }
     if (t.dataset.rate) {

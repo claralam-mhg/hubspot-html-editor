@@ -134,11 +134,12 @@
 
   /* ===== 2. Load a module ===== */
   function load(html, cfg) {
-    var re = new RegExp('\\bvar\\s+' + cfg.arrayVar + '\\s*=\\s*\\[');
+    var re = new RegExp('\\bvar\\s+' + cfg.arrayVar + '\\s*=\\s*' + (cfg.arrayPath ? '\\{' : '\\['));
     var m = re.exec(html);
-    if (!m) throw new Error('This does not look like the ' + cfg.moduleLabel + ' module: no "var ' + cfg.arrayVar + '=[" found. Check you copied the right module from HubSpot.');
-    var arrStart = m.index + m[0].length - 1;
-    var arr = parseValueAt(html, arrStart);
+    if (!m) throw new Error('This does not look like the ' + cfg.moduleLabel + ' module: no "var ' + cfg.arrayVar + '=' + (cfg.arrayPath ? '{' : '[') + '" found. Check you copied the right module from HubSpot.');
+    var arr = parseValueAt(html, m.index + m[0].length - 1);
+    if (cfg.arrayPath) { arr = nodeAt(arr, cfg.arrayPath); if (!arr || arr.type !== 'array') throw new Error(cfg.arrayVar + '.' + cfg.arrayPath + ' is not a list'); }
+    var arrStart = arr.start;
     var records = arr.items.map(function (node, idx) {
       if (node.type !== 'object') throw new Error('Product #' + (idx + 1) + ' is not a product block');
       return { node: node, data: toJS(node), id: toJS(node.map.id) };
@@ -171,6 +172,7 @@
       sepEnd = startMarker >= 0 ? node.end + startMarker : nextStart;
       // move sepEnd back to the beginning of its line so indentation travels with the block
       while (sepEnd > node.end && html[sepEnd - 1] !== '\n') sepEnd--;
+      if (startMarker < 0 && comma >= 0 && sepEnd <= comma) sepEnd = comma + 1; // records on one line (VHIS JSON)
       records[k].sepEnd = sepEnd;
       blocks.push({ from: from, to: sepEnd });
     }
@@ -185,7 +187,9 @@
   function build(doc, changes) {
     var html = doc.html, cfg = doc.cfg;
     var fieldEdits = (changes && changes.fields) || {};
-    var order = (changes && changes.order) || doc.records.map(function (r) { return r.id; });
+    var displayed = cfg.displayOrder ? cfg.displayOrder(doc.records.map(function (r) { return r.data; })).map(function (d) { return d.id; }) : null;
+    // no order given = keep the page as it is (for rank-sorted pages that is the displayed order, not code order)
+    var order = (changes && changes.order) || (cfg.rankOnly ? displayed : doc.records.map(function (r) { return r.id; }));
 
     // Validate the order is a permutation — a reorder must never drop or duplicate a product.
     var current = doc.records.map(function (r) { return r.id; });
@@ -193,10 +197,14 @@
       throw new Error('New ranking must contain exactly the same products');
 
     // Rank fields follow the order, if this page has them.
+    // rankOnly pages (VHIS) sort by the rank number: products stay where they are in the code and only
+    // their rank numbers change — and only when the order differs from what the page shows today.
+    var baseline = displayed || current;
+    var rankChanged = order.join() !== (cfg.rankOnly ? baseline : current).join();
     var effective = {};
     order.forEach(function (id, n) {
       effective[id] = Object.assign({}, fieldEdits[id] || {});
-      if (cfg.rank) {
+      if (cfg.rank && (!cfg.rankOnly || rankChanged)) {
         if (cfg.rank.field) effective[id][cfg.rank.field] = n + 1;
         if (cfg.rank.classField) effective[id][cfg.rank.classField] = cfg.rank.classFor(n + 1);
       }
@@ -222,7 +230,7 @@
         }
         var before = toJS(n);
         if (JSON.stringify(before) === JSON.stringify(ed[path])) return; // unchanged → leave bytes alone
-        edits.push({ start: n.start - b.from, end: n.end - b.from, text: lit(ed[path], n.quote) });
+        edits.push({ start: n.start - b.from, end: n.end - b.from, text: lit(ed[path], n.quote || cfg.quote) });
       });
       edits.sort(function (a, c) { return c.start - a.start; });
       edits.forEach(function (e) { text = text.slice(0, e.start) + e.text + text.slice(e.end); });
@@ -238,15 +246,17 @@
     // The last block runs to the array's closing "]" but may lack a trailing newline; make sure
     // every block ends with a newline before the next one starts, so a moved last block cannot glue
     // onto the following START comment.
-    var body = order.map(function (id, n) {
-      var t = blockText(doc.records[byId[id]], byId[id], n === order.length - 1);
-      if (n < order.length - 1 && !/\n$/.test(t)) t += '\n';
+    var layout = cfg.rankOnly ? current : order; // rankOnly: blocks keep their place
+    var multiLine = html.slice(doc.blocks[0].from, doc.blocks[doc.blocks.length - 1].to).indexOf('\n') >= 0;
+    var body = layout.map(function (id, n) {
+      var t = blockText(doc.records[byId[id]], byId[id], n === layout.length - 1);
+      if (multiLine && n < layout.length - 1 && !/\n$/.test(t)) t += '\n';
       return t;
     }).join('');
     var lastBlockEnd = doc.blocks[doc.blocks.length - 1].to;
     var out = html.slice(0, doc.blocks[0].from) + body + html.slice(lastBlockEnd);
     // If nothing at all changed, return the input exactly (guards against whitespace normalisation).
-    var noOrderChange = order.join() === current.join();
+    var noOrderChange = !rankChanged;
     var noField = order.every(function (id) {
       var r = doc.records[byId[id]], ed = effective[id];
       return Object.keys(ed).every(function (p) { var n = nodeAt(r.node, p); var v = n ? toJS(n) : (cfg.defaults || {})[p]; return (n || v !== undefined) && JSON.stringify(v) === JSON.stringify(ed[p]); });

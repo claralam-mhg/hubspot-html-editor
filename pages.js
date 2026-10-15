@@ -220,7 +220,52 @@
         lookups: [{ field: 'iss', vars: ['ISSUERS', 'ISSUER_ICON'] }]
       }
     },
-    { key: 'vhis', label: 'VHIS 自願醫保', status: 'soon', reason: 'Waiting on a decision: VHIS product data is generated from the Excel' }
+    {
+      key: 'vhis', label: 'VHIS 自願醫保', status: 'live',
+      liveUrl: 'https://www.moneyhero.com.hk/zh/insurance/vhis',
+      hubspotPage: 'VHIS 自願醫保 — 繁中',
+      // Modules are labelled "MODULE 0N —" in their first comment. MODULE 01 (fonts) lives in
+      // Page Settings › Head HTML, not in a module. Product data (08) is edited here, not from the Excel
+      // (Clara, 2026-10-15) — running the old Excel build would undo PCT's edits.
+      modules: [
+        { file: '02 styles', editor: 'code', fingerprint: 'MODULE 02 —', find: '<!-- ═══ MODULE 02 — Styles', what: 'Colours, spacing, layout. Code only — check the preview on phone and desktop.' },
+        { file: '03 hero', editor: 'content', fingerprint: 'MODULE 03 —', find: '<!-- ═══ MODULE 03 — Hero', what: 'Hero heading and intro' },
+        { file: '05 results + banners', editor: 'content', fingerprint: 'MODULE 05 —', find: '<!-- ═══ MODULE 05 — Results bar + sidebar + product list', what: 'Results bar, filters, banner slots. Banner images and alt text are in 09 › Banners.' },
+        { file: '06 tax note', editor: 'content', fingerprint: 'MODULE 06 —', find: '<!-- ═══ MODULE 06 — Tax deduction note', what: 'Tax deduction note' },
+        { file: '07 overlays', editor: 'content', fingerprint: 'MODULE 07 —', find: '<!-- ═══ MODULE 07 — Tooltip, compare tray', what: 'Tooltip, compare tray, compare pop-up, filter sheet' },
+        { file: '08 product data', editor: 'products', fingerprint: 'MODULE 08 —', find: '<!-- ═══ MODULE 08 — Product data', what: 'Ranking, plan names, tags, offers, codes, offer end dates, apply links',
+          note: 'Premiums, deductible tiers, discounts and coverage → "Edit code directly". This module is one very long line of code, so the form is the easier way in.' },
+        { file: '09 behaviour', editor: 'scripts', fingerprint: 'MODULE 09 —', find: '<!-- ═══ MODULE 09 — Behaviour', what: 'Top and bottom banners (image, alt text, linked plan). The rest is page behaviour.',
+          vars: [{ v: 'BANNERS', title: 'Banners', kind: 'list', fields: [
+            { p: 'alt', label: 'Banner text (alt) — also what screen readers and tracking use', long: true },
+            { p: 'desktop', label: 'Desktop image (2592×360)' }, { p: 'mobile', label: 'Mobile image (750×375)' },
+            { p: 'productId', label: 'Links to plan (id) — the banner uses that plan\'s apply link and hides after its offer ends' }] }] }
+      ],
+      overriddenIds: {},
+      data: {
+        moduleLabel: 'VHIS product data',
+        arrayVar: 'DATA', arrayPath: 'products', quote: '"',
+        productLabel: function (d) { return d.name || d.id; },
+        productSub: function (d) { return d.insurer + (d.planType ? ' · ' + d.planType : ''); },
+        logo: function () { return null; },
+        // Page sorts by rank (no rank = last), then name. Ranking edits change rank numbers only.
+        rank: { field: 'rank' }, rankOnly: true,
+        displayOrder: function (list) {
+          return list.slice().sort(function (a, b) { var ra = a.rank == null ? Infinity : a.rank, rb = b.rank == null ? Infinity : b.rank; return ra - rb || String(a.name).localeCompare(String(b.name)); });
+        },
+        fields: [
+          { path: 'name', label: '計劃名稱', group: 'Product', type: 'text' },
+          { path: 'tags', label: 'Tags 標籤', group: 'Product', type: 'strtags' },
+          { path: 'offer.text', label: '優惠內容', group: 'Offer', type: 'textarea' },
+          { path: 'offer.code', label: '優惠碼 Promo code', group: 'Offer', type: 'text-null', pattern: '^[A-Za-z0-9_-]*$', patternMsg: 'Letters, numbers, - and _ only', hint: 'Leave empty if there is no code.' },
+          { path: 'offer.end', label: '優惠截止 Offer ends (YYYY-MM-DD)', group: 'Offer', type: 'text-null', pattern: '^(\\d{4}-\\d{2}-\\d{2})?$', patternMsg: 'Use YYYY-MM-DD, e.g. 2026-11-30', hint: 'The offer (and any banner linked to this plan) hides after this date.' },
+          { path: 'url', label: '投保連結 Apply link', group: 'Link', type: 'url' }
+        ],
+        required: ['id', 'providerId', 'insurer', 'name', 'url'],
+        urlFields: ['url'],
+        expiryFields: ['offer.end']
+      }
+    }
   ];
 
   var api = { PAGES: PAGES };

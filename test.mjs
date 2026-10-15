@@ -375,5 +375,53 @@ console.log('\nCI premium table formats');
   });
 }
 
+console.log('\nVHIS (live copy)');
+{
+  const page = PAGES.find(p => p.key === 'vhis'), pc = page.data;
+  const LV = fs.readFileSync(path.join(here, 'fixtures/vhis-live-2026-10-15.html'), 'utf8');
+  for (const m of page.modules) {
+    t(`vhis ${m.file}: found once on live, passes safety, loads in its editor`, () => {
+      const r = M.liveModuleCode(LV, m.fingerprint); assert(r.code, r.error);
+      assert(M.safety(r.code, r.code).ok, M.safety(r.code, r.code).errors.join());
+      if (m.editor === 'products') { const c = E.check(r.code, r.code, pc); assert(c.ok, c.errors.join('; ')); }
+      (m.vars || []).forEach(v => assert(M.readVar(r.code, v.v), v.v));
+      if (m.editor === 'content') M.htmlFields(r.code, {});
+      eq(M.liveCheck(r.code, LV, m.fingerprint).status, 'match');
+    });
+  }
+  const pdm = page.modules.find(m => m.editor === 'products'), PD = M.liveModuleCode(LV, pdm.fingerprint).code, D = E.load(PD, pc);
+  const shown = h => runModule(h).DATA.products.slice().sort((a, b) => ((a.rank == null ? Infinity : a.rank) - (b.rank == null ? Infinity : b.rank)) || a.name.localeCompare(b.name)).map(p => p.id);
+  const base = shown(PD);
+  t('vhis: parser matches the browser; no-op and "same order" builds are byte-identical', () => {
+    eq(JSON.stringify(D.records.map(r => r.data)), JSON.stringify(runModule(PD).DATA.products));
+    eq(E.build(D, {}), PD); eq(E.build(D, { order: base }), PD);
+  });
+  t('vhis: reverse the ranking → page order reversed, products stay in place, only rank numbers change', () => {
+    const o = E.build(D, { order: [...base].reverse() });
+    eq(shown(o).join(), [...base].reverse().join());
+    eq(runModule(o).DATA.products.map(p => p.id).join(), runModule(PD).DATA.products.map(p => p.id).join(), 'array order');
+    eq(o.split('\n').length, PD.split('\n').length); assert(E.check(PD, o, pc).ok, E.check(PD, o, pc).errors.join());
+    assert(E.changeList(PD, o, pc).some(c => c.product === 'Ranking'), 'ranking row');
+    const strip = h => runModule(h).DATA.products.map(({ rank, ...rest }) => JSON.stringify(rest)).join();
+    eq(strip(o), strip(PD), 'only rank changed');
+  });
+  t('vhis: offer end, tags, code, link edits → browser sees them; bad date is caught by the form rule', () => {
+    const id = D.records.find(r => r.data.offer).id;
+    const o = E.build(D, { fields: { [id]: { 'offer.end': '2026-12-31', tags: ['新標籤'], 'offer.code': 'MHVHIS', url: 'https://example.com/a?b=1' } } });
+    const p = runModule(o).DATA.products.find(x => x.id === id);
+    eq(p.offer.end, '2026-12-31'); eq(JSON.stringify(p.tags), '["新標籤"]'); eq(p.offer.code, 'MHVHIS'); assert(E.check(PD, o, pc).ok, 'check');
+    const f = pc.fields.find(x => x.path === 'offer.end'); assert(!new RegExp(f.pattern).test('31/12/2026'), 'pattern');
+  });
+  t('vhis: expired offer end → warning', () => {
+    const id = D.records.find(r => r.data.offer).id, o = E.build(D, { fields: { [id]: { 'offer.end': '2026-01-01' } } });
+    assert(E.check(PD, o, { ...pc, today: '2026-10-15' }).warnings.some(w => /expired/.test(w)), 'warn');
+  });
+  t('vhis: banner list edit (module 09) → one value changes, safety passes', () => {
+    const m9 = page.modules.find(m => m.vars), C9 = M.liveModuleCode(LV, m9.fingerprint).code;
+    const o = M.applyVars(C9, [{ v: 'BANNERS', path: '0.alt', value: '新 banner 文字' }]);
+    eq(M.readVar(o, 'BANNERS').data[0].alt, '新 banner 文字'); eq(E.lineDiff(C9, o).length, 2); assert(M.safety(C9, o).ok, 'safety');
+  });
+}
+
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);
