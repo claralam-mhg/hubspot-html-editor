@@ -1,0 +1,31 @@
+<!-- Component: Promo Banner Carousel -->
+<!--
+  Banner Carousel: 1 banner at a time, arrows + dots + swipe + auto-rotate
+
+  To add: copy a BANNER block, paste before closing div
+  To remove: delete the BANNER block
+
+  Image specs (submit @2x retina):
+  - Desktop: 2592x360px (displays at 1296x180)
+  - Mobile: 750x320px (displays at 375x160)
+  - Format: WebP preferred, JPG/PNG accepted, max 150KB
+  - Safe zone: 40px padding from all edges for critical content
+-->
+<div class="promo-carousel" id="promoCarousel">
+  <div class="promo-track-wrap">
+    <div class="promo-track" id="promoTrack">
+
+      <!-- BANNER 1 -->
+      <a class="promo-slide" href="https://www.fwd.com.hk/online-insurance/term-life/?promoCode=MHFWD&age=30&si=3000000&payment=ANNUAL&utm_source=moneyhero&utm_medium=affiliate&utm_campaign=mh-mtp&utm_content=mh-mtp-product-listing&dclid=CJ_-pPbYt5QDFWuUpgMdkzEaZg&gad_source=7" target="_blank" rel="noopener">
+        <picture>
+          <source media="(max-width: 767px)" srcset="https://www.moneyhero.com.hk/hubfs/assets_moneyhero/banners/1.png">
+          <img src="https://www.moneyhero.com.hk/hubfs/assets_moneyhero/banners/3.png" alt="FWD 自主保(升級版)定期保障計劃 — 全年最抵首年保費1折 — 優惠碼 MHFWD" class="promo-img" loading="lazy">
+        </picture>
+      </a>
+
+    </div>
+  </div>
+  <button class="promo-arrow promo-arrow-left" onclick="promoSlide(-1)" aria-label="Previous">&#8249;</button>
+  <button class="promo-arrow promo-arrow-right" onclick="promoSlide(1)" aria-label="Next">&#8250;</button>
+  <div class="promo-dots" id="promoDots"></div>
+</div>

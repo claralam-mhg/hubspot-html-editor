@@ -1,0 +1,47 @@
+# Builds the editor, takes a fresh copy of each live page, and publishes both to GitHub Pages.
+# Runs on every push, every 15 minutes (so "Load from live page" stays current), and on demand.
+# Goes in .github/workflows/deploy.yml
+name: Build and publish
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: '*/15 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Tests (must pass, or nothing is published)
+        run: node test.mjs
+      - name: Build
+        run: node build.mjs
+      - name: Copy of the live pages
+        run: |
+          mkdir -p site
+          cp dist/index.html site/index.html
+          node scripts/snapshot.mjs site
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+      - id: deploy
+        uses: actions/deploy-pages@v4

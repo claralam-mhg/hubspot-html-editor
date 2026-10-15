@@ -1,0 +1,24 @@
+/* ─────────────────────────────────────────────────────────────
+   MHG Alpha Design System — FONT FACES (Google Fonts CDN)
+   Albert Sans (EN, variable 100–900 + italic) + Noto Sans TC (繁中, 100–900)
+
+   Both faces are official Google Fonts, so deliverables load them from the
+   CDN — no self-hosted .ttf needed. This is the default for HubSpot / web.
+
+   Use ONE of the two equivalent methods below.
+   ───────────────────────────────────────────────────────────── */
+
+/* METHOD A — @import (works when pasted at the very top of a <style> block,
+   e.g. HubSpot rich-text / custom-HTML modules). MUST be the first rule. */
+@import url('https://fonts.googleapis.com/css2?family=Albert+Sans:ital,wght@0,100..900;1,100..900&family=Noto+Sans+TC:wght@100..900&display=swap');
+
+/* METHOD B — <link> in <head> (preferred for full pages; faster than @import):
+
+   <link rel="preconnect" href="https://fonts.googleapis.com">
+   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+   <link rel="stylesheet"
+         href="https://fonts.googleapis.com/css2?family=Albert+Sans:ital,wght@0,100..900;1,100..900&family=Noto+Sans+TC:wght@100..900&display=swap">
+
+   Offline / self-hosted? Use references/fonts-local.css instead (loads the
+   brand-uploaded .ttf from a local fonts/ folder — not bundled in this skill).
+*/

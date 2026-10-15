@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HubSpot Page Editor</title>
+<!-- mhg-design load order: fonts → tokens → page styles. Inlined by build.mjs. -->
+<style>/*@@FONTS@@*/</style>
+<style>/*@@TOKENS@@*/</style>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: var(--font-sans); color: var(--text-primary); background: #F5F7FA; font-size: 14px; line-height: 1.5; }
+  button, input, select, textarea { font: inherit; color: inherit; }
+  .topbar { background: #fff; border-bottom: 1px solid var(--border-default); padding: 12px 24px; display: flex; align-items: center; gap: 16px; }
+  .topbar h1 { font-size: 16px; margin: 0; font-weight: 700; }
+  .topbar .sub { color: var(--text-secondary); font-size: 13px; }
+  .tabs { display: flex; gap: 4px; padding: 0 24px; background: #fff; border-bottom: 1px solid var(--border-default); overflow-x: auto; }
+  .tab { border: 0; background: none; padding: 12px 16px; cursor: pointer; border-bottom: 3px solid transparent; white-space: nowrap; font-weight: 600; color: var(--text-secondary); }
+  .tab[aria-selected="true"] { color: var(--brand-primary); border-bottom-color: var(--brand-primary); }
+  .tab:disabled { cursor: not-allowed; opacity: .5; }
+  .tab small { font-weight: 400; margin-left: 4px; }
+  .layout { display: grid; grid-template-columns: minmax(0, 380px) minmax(0, 1fr); gap: 20px; padding: 20px 24px 120px; max-width: 1440px; margin: 0 auto; }
+  @media (max-width: 900px) { .layout { grid-template-columns: minmax(0, 1fr); padding: 16px; } }
+  .card { background: #fff; border: 1px solid var(--border-default); border-radius: var(--r-card); padding: 16px; margin-bottom: 16px; }
+  .card h2 { font-size: 15px; margin: 0 0 4px; }
+  .card h3 { font-size: 14px; margin: 16px 0 8px; }
+  .card p { font-size: 14px; margin: 6px 0; }
+  .muted { color: var(--text-secondary); font-size: 13px; }
+  .modlist { list-style: none; margin: 8px 0 0; padding: 0; }
+  .mod { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 8px; border: 1px solid transparent; }
+  .mod .num { width: 24px; height: 24px; border-radius: 50%; background: #EEF1F5; display: grid; place-items: center; font-size: 12px; font-weight: 700; flex: none; }
+  .mod .nm { flex: 1; min-width: 0; font-family: ui-monospace, Menlo, monospace; font-size: 12.5px; }
+  .mod .badge { font-size: 11px; padding: 2px 8px; border-radius: 999px; white-space: nowrap; }
+  .mod.locked { color: var(--text-muted); }
+  .mod.locked .badge { background: #EEF1F5; }
+  .mod.editable { cursor: pointer; border-color: var(--border-default); background: #fff; color: var(--text-primary); }
+  .mod.editable .badge { background: var(--status-success-bg); color: var(--status-success-fg); }
+  .mod.editable.active { border-color: var(--brand-primary); box-shadow: 0 0 0 1px var(--brand-primary); }
+  .mod.editable .num { background: var(--brand-primary); color: #fff; }
+  .mod-note { font-size: 12px; color: var(--text-muted); margin: -2px 0 4px 44px; }
+  textarea.code { width: 100%; min-height: 180px; font-family: ui-monospace, Menlo, monospace; font-size: 12px; border: 1px solid var(--border-form-default); border-radius: var(--r-button); padding: 10px; resize: vertical; }
+  .btn { border: 1px solid var(--border-form-default); background: #fff; border-radius: var(--r-button); padding: 8px 14px; cursor: pointer; font-weight: 600; }
+  .btn:hover:not(:disabled) { border-color: var(--brand-primary); }
+  .btn.primary { background: var(--brand-primary); border-color: var(--brand-primary); color: #fff; }
+  .btn.primary:hover:not(:disabled) { background: var(--brand-primary-dark); }
+  .btn:disabled { opacity: .45; cursor: not-allowed; }
+  .btn.sm { padding: 4px 10px; font-size: 13px; }
+  .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .msg { padding: 10px 12px; border-radius: 8px; font-size: 13px; margin-top: 10px; }
+  .msg.err { background: var(--status-danger-bg); color: var(--status-danger-fg); }
+  .msg.warn { background: var(--status-warning-bg); color: var(--status-warning-fg); }
+  .msg.ok { background: var(--status-success-bg); color: var(--status-success-fg); }
+  .steps { margin: 8px 0 0; padding-left: 20px; }
+  .steps li { margin-bottom: 4px; }
+  .empty { text-align: center; padding: 48px 24px; color: var(--text-secondary); }
+  .empty ol { text-align: left; display: inline-block; margin-top: 12px; }
+  /* ranking */
+  .rank-list { list-style: none; margin: 8px 0 0; padding: 0; }
+  .rank-item { display: grid; grid-template-columns: 32px 56px minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 10px; border: 1px solid var(--border-default); border-radius: 8px; margin-bottom: 6px; background: #fff; cursor: grab; }
+  .rank-item.selected { border-color: var(--brand-primary); box-shadow: 0 0 0 1px var(--brand-primary); }
+  .rank-item.dragging { opacity: .4; }
+  .rank-item.drop-above { box-shadow: inset 0 3px 0 var(--brand-primary); }
+  .rank-pos { font-size: 18px; font-weight: 700; text-align: center; color: var(--brand-primary); }
+  .rank-logo { width: 56px; height: 32px; object-fit: contain; }
+  .rank-name { font-weight: 600; overflow-wrap: anywhere; }
+  .rank-meta { font-size: 12px; color: var(--text-secondary); }
+  .moved { font-size: 11px; color: var(--status-warning-fg); background: var(--status-warning-bg); border-radius: 999px; padding: 1px 8px; margin-left: 6px; font-weight: 600; }
+  .edited { font-size: 11px; color: var(--brand-primary); background: var(--brand-primary-light); border-radius: 999px; padding: 1px 8px; margin-left: 6px; font-weight: 600; }
+  /* form */
+  .fgroup { border-top: 1px solid var(--border-default); padding-top: 4px; }
+  .field { margin: 10px 0; }
+  .field label { display: block; font-weight: 600; font-size: 13px; margin-bottom: 4px; }
+  .hint, .field .hint { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+  .field input[type=text], .field textarea, .field select { width: 100%; border: 1px solid var(--border-form-default); border-radius: 8px; padding: 8px 10px; background: #fff; }
+  .field textarea { min-height: 70px; resize: vertical; }
+  .field.changed input, .field.changed textarea { border-color: var(--brand-primary); background: #F7FAFF; }
+  .field .was { font-size: 12px; color: var(--text-muted); margin-top: 2px; overflow-wrap: anywhere; }
+  .field .bad { font-size: 12px; color: var(--status-danger-fg); margin-top: 2px; }
+  .tagrow { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 110px auto; gap: 6px; margin-bottom: 6px; }
+  /* review */
+  table.changes { width: 100%; border-collapse: collapse; font-size: 13px; }
+  table.changes th, table.changes td { text-align: left; padding: 8px; border-bottom: 1px solid var(--border-default); vertical-align: top; white-space: pre-wrap; overflow-wrap: anywhere; }
+  table.changes th { font-size: 12px; color: var(--text-secondary); font-weight: 600; }
+  .diff { font-family: ui-monospace, Menlo, monospace; font-size: 11.5px; max-height: 320px; overflow: auto; border: 1px solid var(--border-default); border-radius: 8px; }
+  .diff div { padding: 1px 8px; white-space: pre-wrap; overflow-wrap: anywhere; }
+  .diff .add { background: #E8F7EE; } .diff .del { background: #FDECEC; }
+  .copybar { position: fixed; left: 0; right: 0; bottom: 0; background: #fff; border-top: 1px solid var(--border-default); padding: 12px 24px; display: flex; gap: 12px; align-items: center; justify-content: flex-end; flex-wrap: wrap; z-index: 5; }
+  .copybar .status { margin-right: auto; font-size: 13px; }
+  .mod .badge.pending { background: var(--status-warning-bg); color: var(--status-warning-fg); }
+  .seg { display: inline-flex; border: 1px solid var(--border-form-default); border-radius: var(--r-button); overflow: hidden; flex: none; }
+  .seg button { border: 0; background: #fff; padding: 6px 12px; cursor: pointer; font-weight: 600; font-size: 13px; }
+  .seg button.on { background: var(--brand-primary); color: #fff; }
+  .seg.wide { display: flex; flex-wrap: wrap; margin-bottom: 12px; }
+  textarea.code.tall { min-height: 480px; }
+  label.check { display: flex; gap: 8px; align-items: flex-start; margin-top: 10px; font-size: 13px; }
+  .search { width: 100%; border: 1px solid var(--border-form-default); border-radius: 8px; padding: 8px 10px; margin-bottom: 8px; }
+  .where { font-weight: 400; color: var(--text-muted); font-family: ui-monospace, Menlo, monospace; font-size: 11.5px; margin-left: 6px; }
+  .locked { background: #F5F7FA; border: 1px dashed var(--border-default); border-radius: 8px; padding: 8px 10px; color: var(--text-secondary); overflow-wrap: anywhere; }
+  .thumb { display: block; max-width: 100%; max-height: 90px; margin-top: 6px; border-radius: 6px; border: 1px solid var(--border-default); }
+  .slide { border: 1px solid var(--border-default); border-radius: 8px; padding: 4px 12px 8px; margin-bottom: 10px; }
+  .tablewrap { overflow-x: auto; }
+  table.rates { border-collapse: collapse; font-size: 13px; }
+  table.rates th, table.rates td { border-bottom: 1px solid var(--border-default); padding: 6px; text-align: left; white-space: nowrap; }
+  table.rates td.changed { background: #F7FAFF; box-shadow: inset 0 0 0 1px var(--brand-primary); }
+  table.rates input[type=number] { width: 86px; border: 1px solid var(--border-form-default); border-radius: 6px; padding: 4px 6px; }
+  .pair { display: flex; gap: 4px; }
+  label.na { font-size: 12px; color: var(--text-secondary); display: flex; gap: 4px; align-items: center; margin-top: 2px; }
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div>
+    <h1>HubSpot Page Editor</h1>
+    <div class="sub">Change products on a MoneyHero page without touching code. The tool writes the new code for you.</div>
+  </div>
+</header>
+<nav class="tabs" id="tabs" role="tablist"></nav>
+<main class="layout">
+  <aside id="left"></aside>
+  <section id="right"></section>
+</main>
+<div class="copybar" id="copybar" hidden></div>
+
+<script>/*@@ENGINE@@*/</script>
+<script>/*@@PAGES@@*/</script>
+<script>/*@@MODULES@@*/</script>
+<script>/*@@REVIEW@@*/</script>
+<script>/*@@APP@@*/</script>
+</body>
+</html>

@@ -1,0 +1,6 @@
+dist/
+site/
+node_modules/
+.DS_Store
+# Lovable build prompts are kept locally only (superseded by GitHub Pages hosting)
+lovable/

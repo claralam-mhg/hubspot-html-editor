@@ -1,0 +1,1266 @@
+/* ─────────────────────────────────────────────────────────────
+   MoneyHero Group Alpha Design System — Colors & Type Tokens
+   Synced to Figma file: MHG Alpha Design System (82tOs1i8NmsLWxZkHTzB80)
+   Sources:
+     • EN type scale  → node 1638:5894 (Albert Sans)
+     • ZH type scale  → node 2198:10388 (Noto Sans TC)
+     • Semantic color alias naming → Figma collection `tokens-brand`
+   Fonts: Albert Sans (EN, 100–900) + Noto Sans TC (繁中, 100–900)
+   ───────────────────────────────────────────────────────────── */
+
+/* Font @font-face rules extracted to ./fonts.css — load it alongside this file. */
+
+/* ─────────────────────────────────────────────────────────────
+   LAYER 1 — PRIMITIVES (Figma "Modulab Primitives" collection)
+   Raw values. No semantic meaning. Components MUST NOT reference
+   these directly — go through the semantic tokens below.
+   ───────────────────────────────────────────────────────────── */
+
+:root {
+  /* ─── Color primitives ─── */
+  /* Blue */
+  --color-blue-50:   #e7ebf6;
+  --color-blue-100:  #c2cbe9;
+  --color-blue-700:  #2257b8;
+  --color-blue-900:  #002981;
+  --color-blue-950:  #001a5c;
+  /* Note: --color-blue-800 removed; #04709b is teal, see --color-teal-700 */
+
+  /* Teal (SingSaver primary) */
+  --color-teal-50:   #e0f4f8;  /* updated from #e8f6fa — confirmed in Figma SS node 20631:7539 */
+  --color-teal-700:  #04709b;
+  --color-teal-900:  #004a68;
+
+  /* Amber / Orange */
+  --color-amber-400: #ffaf26;
+  --color-amber-700: #ef6c00;
+  --color-amber-800: #e65100;
+  --color-amber-900: #8d4501;
+
+  /* Olive (SingSaver secondary) */
+  --color-olive-700: #5d8433;
+  --color-olive-900: #3d6a01;
+
+  /* Green */
+  --color-green-50:  #e8f5e9;
+  --color-green-500: #16a34a;
+  --color-green-700: #33691e;
+
+  /* Red */
+  --color-red-50:    #ffebee;
+  --color-red-500:   #dc2626;
+  --color-red-700:   #b71c1c;
+
+  /* Yellow / Warning */
+  --color-yellow-50: #fffbeb;
+  --color-yellow-100:#fff9c4;
+  --color-yellow-500:#d97706;
+  --color-yellow-700:#92400e;
+  --color-yellow-800:#6a4a19;
+
+  /* Orange highlights */
+  --color-orange-50: #fff3e0;
+  --color-orange-700:#bf360c;
+
+  /* Gray */
+  --color-gray-50:   #fafafa;
+  --color-gray-100:  #f5f5f5;
+  --color-gray-200:  #e0e0e0;
+  --color-gray-300:  #bdbdbd;
+  --color-gray-400:  #9e9e9e;
+  --color-gray-500:  #757575;
+  --color-gray-600:  #616161;
+  --color-gray-700:  #424242;
+  --color-gray-800:  #212121;
+  --color-gray-900:  #111111;
+
+  /* White / Black */
+  --color-white:     #ffffff;
+  --color-black:     #000000;
+
+  /* ─── Spacing primitives (4px scale, Figma `Spacing/*`) ─── */
+  --color-blue-50-rgb: 231, 235, 246; /* for legacy uses */
+}
+
+:root {
+  /* ============ FONT FAMILIES ============
+     Figma variable: font/font
+       EN surfaces (SingSaver, MoneyHero Singapore)  → Albert Sans
+       ZH surfaces (MoneyHero Hong Kong / Credit Hero Club 繁中) → Noto Sans TC
+  */
+  --font-sans:    'Albert Sans', 'Noto Sans TC', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-sans-tc: 'Noto Sans TC', 'Albert Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono:    ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+
+  /* ============ TYPE SCALE — tokens direct from Figma ============
+     Pattern: --<token>-size / --<token>-lh / --<token>-weight
+     Matches Figma: font-size/<token>, line-height/<token>, font-weight/<token>
+     Mobile (360) defaults here; tablet+ values are overridden in @media blocks.
+     Data sourced from CHC file (SBWAmXMaDf8KRIUbWiKQvJ) across 4 breakpoints.
+  */
+
+  /* display-1 → 20/24 mobile, 24/31 tablet+ */
+  --display-1-size:    20px;
+  --display-1-lh:      24px;
+  --display-1-weight:  700;
+  --display-1-blog-lh: 26px;   /* line-height/display-1-blog: 26 mobile, 31 tablet+ */
+
+  /* display-2 → 24/31 mobile, 28/36 tablet+ */
+  --display-2-size:    24px;
+  --display-2-lh:      31px;
+  --display-2-weight:  700;
+
+  /* display-3 → 28/36 mobile, 34/40 tablet+ */
+  --display-3-size:    28px;
+  --display-3-lh:      36px;
+  --display-3-weight:  700;
+
+  /* display-4 → 28/36 mobile, 42/52 tablet+ */
+  --display-4-size:    28px;
+  --display-4-lh:      36px;
+  --display-4-weight:  700;
+
+  /* display-5 → 34/40 mobile, 48/58 tablet+ */
+  --display-5-size:    34px;
+  --display-5-lh:      40px;
+  --display-5-weight:  700;
+
+  /* title-1 → 18/22 mobile, 24/31 tablet+ */
+  --title-1-size:      18px;
+  --title-1-lh:        22px;
+  --title-1-weight:    700;
+
+  /* title-2 → 16/20 mobile, 22/28 tablet+ */
+  --title-2-size:      16px;
+  --title-2-lh:        20px;
+  --title-2-weight:    700;
+
+  /* subheading-1 → 18/22 mobile, 24/31 tablet+ */
+  --subheading-1-size:   18px;
+  --subheading-1-lh:     22px;
+  --subheading-1-weight: 600;
+
+  /* subheading-2 → 16/20 mobile, 20/24 tablet+ */
+  --subheading-2-size:     16px;
+  --subheading-2-lh:       20px;
+  --subheading-2-weight:   600;
+  --subheading-2-blog-lh:  21px;  /* line-height/sm-plus — fixed across bp */
+
+  /* body-1 → 16/20 mobile, 18/22 tablet+, 18/27 desktop (1440 back to 22) */
+  --body-1-size:         16px;
+  --body-1-lh:           20px;
+  --body-1-weight:       500;
+  --body-1-relaxed-lh:   26px;   /* body-1-relaxed: 26 mobile, 27 tablet+ */
+
+  /* body-2 → 14/18 mobile, 16/20 tablet+ */
+  --body-2-size:         14px;
+  --body-2-lh:           18px;
+  --body-2-weight:       500;
+  --body-2-relaxed-lh:   23px;   /* body-2-relaxed: 23 mobile, 26 tablet+ */
+
+  /* body-1-blog / body-2-blog — long-form blog body variants.
+     Same size + line-height as the relaxed variants, but lighter weight (400).
+     Used by Blog scenario-accordion, pre-comparison-checklist, etc. */
+  --body-1-blog-size:    var(--body-1-size);
+  --body-1-blog-lh:      var(--body-1-relaxed-lh);
+  --body-1-blog-weight:  400;
+  --body-2-blog-size:    var(--body-2-size);
+  --body-2-blog-lh:      var(--body-2-relaxed-lh);
+  --body-2-blog-weight:  400;
+
+  /* bullet-1 → 16/20 mobile, 18/22 tablet+ */
+  --bullet-1-size:       16px;
+  --bullet-1-lh:         20px;
+  --bullet-1-weight:     600;
+
+  /* bullet-2 → 14/18 mobile, 16/20 tablet+ */
+  --bullet-2-size:       14px;
+  --bullet-2-lh:         18px;
+  --bullet-2-weight:     600;
+
+  /* overline → 14/18 mobile, 16/20 tablet, 22/28 desktop+ (3-stage!) */
+  --overline-size:       14px;
+  --overline-lh:         18px;
+  --overline-weight:     600;
+
+  /* caption → 12/16 mobile, 14/18 tablet+ */
+  --caption-size:        12px;
+  --caption-lh:          16px;
+  --caption-weight:      500;
+
+  /* tag → 14/19 mobile/tablet, 16/23 desktop+ */
+  --tag-size:            14px;
+  --tag-lh:              19px;
+  --tag-weight:          500;
+
+  /* badge → 12/16 mobile, 14/18 tablet+ */
+  --badge-size:          12px;
+  --badge-lh:            16px;
+  --badge-weight:        500;
+
+  /* breadcrumb → 12/16 mobile, 14/18 tablet+ (Medium) */
+  --breadcrumb-size:     12px;
+  --breadcrumb-lh:       16px;
+  --breadcrumb-weight:   500;
+
+  /* Form input (Figma `form/input`) → 16/20 mobile, 18/22 tablet+ (SemiBold 600) */
+  --form-input-size:     16px;
+  --form-input-lh:       20px;
+  --form-input-weight:   600;
+
+  /* Button typography — legacy aliases (actual definitions are in BUTTON TOKENS block below) */
+
+  /* Table typography — responsive via @media blocks */
+  --table-header-size:       14px;  /* 14 mobile, 15 tablet+ */
+  --table-header-lh:         18px;  /* 18 mobile, 21 tablet+ */
+  --table-header-weight:     700;
+  --table-cell-size:         13px;  /* 13 mobile, 14 tablet+ */
+  --table-cell-lh:           17px;  /* 17 mobile, 18 tablet+ */
+  --table-cell-weight:       500;
+  --table-cell-primary-size: 14px;  /* 14 mobile, 15 tablet+ */
+  --table-cell-primary-lh:   18px;  /* 18 mobile, 21 tablet+ */
+  --table-cell-strong-weight:700;
+
+  /* Letter & paragraph spacing (Figma: text-style/letter-spacing, paragraph-spacing/normal) */
+  --letter-spacing-normal:    0;
+  --paragraph-spacing-normal: 0;
+
+  /* ============ TEXT — Figma `text/*` alias tokens ============ */
+  /* MoneyHero is the default brand. SingSaver overrides --text-link below. */
+  --text-primary:           var(--color-gray-800);   /* text/primary          — body copy, headings */
+  --text-secondary:         var(--color-gray-700);   /* text/secondary        — secondary copy */
+  --text-secondary-lighter: var(--color-gray-600);   /* text/secondary-lighter — labels, metadata */
+  --text-muted:             #6b7280;                 /* muted captions, placeholder (app convention) */
+  --text-disabled:          var(--color-gray-400);   /* text/disabled */
+  --text-link:              var(--color-blue-700);   /* text/link — defaults to MoneyHero blue; overridden in .brand-singsaver */
+  --text-on-dark:           var(--color-white);
+  --text-on-dark-2:         var(--color-blue-100);   /* secondary text on navy hero */
+  --text-accent:            var(--color-blue-900);   /* dark-blue accent text (hero card titles) */
+
+  /* ============ FILLS / SURFACES — Figma `fill/*` alias tokens ============ */
+  --fill-base:            var(--color-gray-50);    /* fill/base           — app background */
+  --fill-card:            var(--color-white);      /* fill/card           — cards, elevated surfaces */
+  --fill-primary:         var(--color-blue-700);   /* fill/primary        — primary brand fill (MoneyHero default) */
+  --fill-primary-dark:    var(--color-blue-900);   /* fill/primary-dark   — hero, emphasis */
+  --fill-primary-light:   var(--color-blue-50);    /* fill/primary-light  — tinted surfaces */
+  --fill-primary-deeper:  var(--color-blue-950);   /* deepest navy stop */
+  --fill-secondary:       var(--color-amber-400);  /* fill/secondary      — accent amber ("New" pills) */
+  --fill-secondary-dark:  var(--color-amber-700);  /* fill/secondary-dark — CTA orange (Apply / Compare) */
+  --fill-secondary-light: #FFF3D6;                 /* fill/secondary-light — tinted amber surfaces */
+  --fill-alternative-1:   var(--color-gray-100);   /* fill/alternative-1  — table-header row, muted zones */
+  --fill-alternative-2:   #f7f8fa;                 /* fill/alternative-2  — alternate gray (blog) */
+  --fill-alternative-3:   var(--color-gray-200);   /* fill/alternative-3  — divider-like fills */
+
+  /* ============ BORDERS — Figma `borders/*` alias tokens ============ */
+  --border-default:     var(--color-gray-200);    /* borders/default */
+  --border-soft:        #e5e7eb;
+  --border-dark:        #d1d5db;
+  --border-form-default:#d1d5db;                  /* borders/form-default */
+  --border-form-hover:  var(--color-blue-700);    /* borders/form-hover */
+  --border-form-error:  var(--color-red-500);     /* borders/form-error */
+
+  /* Figma path-aligned alias for `borders/default` (newer Figma path) */
+  --borders-default:    var(--border-default);
+
+  /* ============ BRAND — MoneyHero / Credit Hero Club (DEFAULT) ============ */
+  /* Deep confident navy-blue paired with optimistic amber. Default at :root. */
+  --brand-primary:         var(--fill-primary);
+  --brand-primary-dark:    var(--fill-primary-dark);
+  --brand-primary-light:   var(--fill-primary-light);
+  --brand-primary-deeper:  var(--color-blue-950);
+  --brand-accent-orange:   var(--fill-secondary);
+  --brand-cta-orange:      var(--fill-secondary-dark);
+  --brand-cta-orange-hover:var(--color-amber-800);
+
+  /* ============ BRAND — SingSaver (Blog / Editorial) ============ */
+  /* Legacy aliases (kept for back-compat with existing previews / ui-kits).
+     Do not invent new uses — prefer .brand-singsaver scope (see below). */
+  --ss-brand:       var(--color-teal-700);
+  --ss-brand-dark:  var(--color-teal-900);
+  --ss-brand-bg:    var(--color-teal-50);
+
+  /* ============ SEMANTIC — STATUS ============ */
+  --success:          var(--color-green-500);
+  --success-dark:     var(--color-green-700);
+  --success-bg:       #f0fdf4;
+  --success-border:   #bbf7d0;
+  --success-light-bg: var(--color-green-50);
+
+  --warning:        var(--color-yellow-500);
+  --warning-bg:     var(--color-yellow-50);
+  --warning-border: #fde68a;
+  --warning-text:   var(--color-yellow-700);
+
+  --danger:    var(--color-red-500);
+  --danger-bg: #fef2f2;
+
+  --info:    var(--brand-primary);
+  --info-bg: var(--brand-primary-light);
+
+  /* ============ STATUS — Figma path alias (newer naming) ============ */
+  --status-success-bg: var(--highlight-green-light);
+  --status-success-fg: var(--highlight-green-dark);
+  --status-warning-bg: var(--highlight-yellow-light);
+  --status-warning-fg: var(--highlight-yellow-dark);
+  --status-danger-bg:  var(--highlight-red-light);
+  --status-danger-fg:  var(--color-red-500);
+
+  /* ============ HIGHLIGHT COLORS — Figma `highlights/*` ============
+     Used for status pills, approval-odds badges, promotional tags.
+     Each tone has -dark (text/border) + -light (background) variants.
+  */
+  --highlight-green-dark:  var(--color-green-700);
+  --highlight-green-light: var(--color-green-50);
+  --highlight-yellow-dark: var(--color-yellow-800);
+  --highlight-yellow-light:var(--color-yellow-100);
+  --highlight-orange-dark: var(--color-orange-700);
+  --highlight-orange-light:var(--color-orange-50);
+  --highlight-red-dark:    var(--color-red-700);
+  --highlight-red-light:   var(--color-red-50);
+  --highlight-gray-dark:   var(--color-gray-700);
+  --highlight-gray-light:  var(--color-gray-100);
+
+  /* ============ LEGACY ALIASES (kept for back-compat with existing code) ============ */
+  --fg-primary:           var(--text-primary);
+  --fg-secondary:         var(--text-secondary);
+  --fg-secondary-lighter: var(--text-secondary-lighter);
+  --fg-muted:             var(--text-muted);
+  --fg-disabled:          var(--text-disabled);
+  --fg-on-dark:           var(--text-on-dark);
+  --fg-on-dark-2:         var(--text-on-dark-2);
+  --fg-accent:            var(--text-accent);
+  --border:               var(--border-default);
+
+  /* ============ NEUTRALS ============ */
+  --neutral-button:      var(--color-gray-500);
+  --neutral-button-dark: var(--color-gray-800);
+  --black:               var(--color-gray-900);
+
+  /* ============ RADIUS (Figma `radius/*`) ============
+     radius/button: 6 on mobile (node 1926:22353), 8 on tablet+ (node 12425:44493).
+     Mobile defaults here; @media overrides below.
+  */
+  --r-none:       0;
+  --r-button:     6px;    /* radius/button (mobile) — updated 4→6px per Figma v2 spec (KE node 20631:7539, NS node 21413:10542) */
+  --r-tooltip:    6px;    /* radius/tooltip: 6 on tablet, 8 on desktop+ */
+  --r-table:      6px;    /* radius/table — 6 mobile, 8 tablet+ (verified Figma radius/table) */
+  --r-card:       10px;   /* radius/card — 10 mobile, 16 tablet+ (verified Figma radius/card) */
+  --r-card-inner: 12px;   /* radius/card-inner */
+  --r-pill:       999px;
+
+  /* ============ SPACING PRIMITIVES (Modulab Core — static, same across breakpoints) ============
+     Figma variable: Spacing/0.5, Spacing/1..15 (4px base scale)
+  */
+  --space-0-5: 2px;
+  --space-1:   4px;
+  --space-2:   8px;
+  --space-3:   12px;
+  --space-4:   16px;
+  --space-5:   20px;
+  --space-6:   24px;
+  --space-7:   28px;
+  --space-8:   32px;
+  --space-9:   36px;
+  --space-10:  40px;
+  --space-11:  44px;
+  --space-12:  48px;
+  --space-13:  52px;
+  --space-15:  60px;
+
+  /* ============ SPACING ALIASES — Figma `tokens-breakpoint` (responsive) ============
+     Values verified across CHC (Credit Hero Club), Blog, and MHG Alpha library files:
+       • Mobile (360):  CHC node 20151:61724
+       • Tablet (768):  CHC node 20269:57608
+       • Desktop (1280): CHC node 20269:57815
+       • Desktop-lg (1440): CHC node 20269:57706
+     Mobile defaults declared here; @media blocks override for larger breakpoints.
+
+     Category legend:
+       spacing/padding/*  → inner padding (component interior)
+       spacing/gap/*      → flex/grid gap between siblings
+       spacing/margin/*   → outer margin / page gutters
+       button/*           → button-specific spacing + sizing
+       form/*, tag/*      → component-specific spacing
+  */
+
+  /* spacing/padding — inner padding (mobile 360) */
+  --padding-section-x: 16px;   /* spacing/padding/section-x */
+  --padding-section-y: 24px;   /* spacing/padding/section-y */
+  --padding-x:         16px;   /* spacing/padding/x */
+  --padding-x-sm:      12px;   /* spacing/padding/x-sm (inferred; consistent across bp) */
+  --padding-x-xs:      4px;    /* spacing/padding/x-xs */
+  --padding-y:         16px;   /* spacing/padding/y */
+  --padding-y-sm:      12px;   /* spacing/padding/y-sm — 12 mobile (KE Figma 20631:7539), 16 tablet+ */
+  --padding-y-xs:      8px;    /* spacing/padding/y-xs (inferred) */
+
+  /* spacing/padding/soft-* — also shrink on mobile (smaller than their numeric name suggests) */
+  --padding-soft-4:    2px;    /* spacing/padding/soft-4px  → 2 on mobile, 4 on tablet+ */
+  --padding-soft-6:    4px;    /* spacing/padding/soft-6px  → 4 on mobile, 6 on tablet+ */
+  --padding-soft-8:    6px;    /* spacing/padding/soft-8px  → 6 on mobile, 8 on tablet+ */
+  --padding-soft-12:   8px;    /* spacing/padding/soft-12px → 8 / 10 / 12 / 12 */
+
+  /* spacing/gap — flex / grid gap (mobile 360) */
+  --gap-x:             16px;   /* spacing/gap/x */
+  --gap-x-sm:          8px;    /* spacing/gap/x-sm */
+  --gap-x-xs:          4px;    /* spacing/gap/x-xs */
+  --gap-y:             16px;   /* spacing/gap/y */
+  --gap-y-sm:          8px;    /* spacing/gap/y-sm */
+  --gap-y-xs:          4px;    /* spacing/gap/y-xs */
+  --gap-section-y:     16px;   /* spacing/gap/section-y */
+  --gap-section-y-lg:  32px;   /* spacing/gap/section-y-lg */
+
+  /* spacing/gap/soft-* — same responsive pattern as padding/soft-* */
+  --gap-soft-4:        2px;    /* spacing/gap/soft-4px  → 2 on mobile, 4 on tablet+ */
+  --gap-soft-6:        4px;    /* spacing/gap/soft-6px  → 4 on mobile, 6 on tablet+ */
+  --gap-soft-8:        6px;    /* spacing/gap/soft-8px  → 6 on mobile, 8 on tablet+ */
+  --gap-soft-12:       8px;    /* spacing/gap/soft-12px → 8 / 10 / 12 / 12 */
+
+  /* spacing/margin — page-level gutters (mobile 360) */
+  --margin-x:          16px;   /* spacing/margin/x */
+  --margin-y:          16px;   /* spacing/margin/y */
+
+  /* Form + tag spacing (Figma `form/*`, `tag/*`) */
+  --form-inner-padding: 10px;  /* form/inner-element-padding: 10 / 12 / 12 / 12 */
+  --tag-padding-icon:   4px;   /* tag/padding-icon — fixed across breakpoints */
+
+  /* ============ BUTTON TOKENS (Figma `button/*` + `buttons/*`) ============
+     Mobile (≤767px) values from nodes 1926:22353 (SingSaver) / 12425:44840 (MoneyHero).
+     Tablet+ values (≥768px) from node 12425:44493 — overridden in @media below.
+     Spacing/sizing is brand-agnostic; only primary + secondary colors swap per brand.
+     All buttons use font: SemiBold Albert Sans.
+  */
+
+  /* Button colors — MoneyHero / Credit Hero Club (default brand)
+     Override with `.brand-singsaver` class (or legacy `[data-brand="singsaver"]`) scope. */
+  --button-primary:          var(--color-blue-700);   /* buttons/primary        — MoneyHero navy */
+  --button-primary-hover:    var(--color-blue-900);   /* buttons/primary-hover */
+  --button-secondary:        var(--color-amber-400);  /* buttons/secondary      — MoneyHero amber */
+  --button-secondary-hover:  var(--color-amber-900);  /* buttons/secondary-hover */
+  --button-secondary-text:   var(--color-blue-900);   /* dark navy text on amber for AA contrast */
+  --button-outline-hover-bg: var(--color-blue-50);    /* outline-button hover surface */
+
+  /* Button colors — shared across brands */
+  --button-cta:              var(--color-amber-700);  /* buttons/cta            — Apply/Compare orange */
+  --button-cta-hover:        var(--color-amber-800);  /* buttons/cta-hover */
+  --button-neutral:          var(--color-gray-500);   /* buttons/neutral */
+  --button-neutral-hover:    var(--color-gray-800);   /* buttons/neutral-hover */
+  --button-disabled:         var(--color-gray-300);   /* buttons/disable */
+  --button-base:             var(--color-white);      /* buttons/base           — outline/ghost fill */
+
+  /* ─── Figma path alias (newer Figma naming `buttons/*`) ─── */
+  --buttons-primary:         var(--button-primary);
+  --buttons-primary-hover:   var(--button-primary-hover);
+  --buttons-secondary:       var(--button-secondary);
+  --buttons-secondary-hover: var(--button-secondary-hover);
+  --buttons-secondary-text:  var(--button-secondary-text);
+  --buttons-outline-hover-bg:var(--button-outline-hover-bg);
+  --buttons-cta:             var(--button-cta);
+  --buttons-cta-hover:       var(--button-cta-hover);
+  --buttons-neutral:         var(--button-neutral);
+  --buttons-neutral-hover:   var(--button-neutral-hover);
+  --buttons-disable:         var(--button-disabled);
+  --buttons-base:            var(--button-base);
+
+  /* Button spacing + sizing — Figma `button/*` (mobile 360 defaults, brand-agnostic) */
+  --button-gap:                   4px;   /* button/gap — fixed across breakpoints */
+  --button-padding-toggle:        2px;   /* button/padding-toggle */
+  --button-padding-small-x:       8px;   /* button/padding-small-x */
+  --button-padding-small-x-icon:  6px;   /* button/padding-small-x-icon */
+  --button-padding-regular-x:     12px;  /* button/padding-regular-x */
+  --button-padding-regular-x-icon:8px;   /* button/padding-regular-x-icon */
+  --button-size-small:            30px;  /* button/size-small */
+  --button-size-regular:          36px;  /* button/size-regular */
+  --button-icon-small:            18px;  /* button/icon-small */
+  --button-icon-regular:          22px;  /* button/icon-regular */
+
+  /* Button typography — mobile 360 defaults */
+  --button-1-size:       16px;   /* font-size/button-1 */
+  --button-1-lh:         20px;   /* line-height/button-1 */
+  --button-1-weight:     600;
+  --button-2-size:       14px;   /* font-size/button-2 */
+  --button-2-lh:         18px;   /* line-height/button-2 */
+  --button-2-weight:     600;
+
+  /* ============ ICON SIZES (Figma `shapes/icon-size-*`) ============ */
+  --icon-sm: 18px;   /* shapes/icon-size-sm */
+  --icon-md: 18px;   /* shapes/icon-size-md — 18 mobile, 22 tablet+, 24 on desktop-lg (1440) */
+  --icon-lg: 24px;   /* shapes/icon-size-lg */
+
+  /* ============ LAYOUT MAX-WIDTHS (Figma `general/*`) ============ */
+  --content-max-width:     100%;   /* general/content-max-width (mobile fluid) */
+  --content-with-panel:    720px;  /* general/content-with-panel — body column inside an article (becomes 760 on desktop) */
+  --narrow-content-width:  328px;  /* general/narrow-content-max-width-3 (mobile 328, tablet 720, desktop+ 1130) */
+  --content-panel:         720px;  /* general/content-panel — note: becomes 346 on desktop */
+  --col-2-width:           100%;   /* general/2-col-width — desktop only (184/206) */
+  --qa-table-width:        100%;   /* quick-answer/table-width — mobile fluid */
+  --top-nav-height:        48px;   /* size/top-nav-1 (mobile); scales 64→72→80 */
+  --breakpoint-content-lg: 1360px; /* breakpoints/content/lg — desktop-lg content cap */
+
+  /* ============ LEGACY ALIASES for section-x / section-y / gap-y ============ */
+  --section-x: var(--padding-section-x);
+  --section-y: var(--padding-section-y);
+
+  /* ============ SHADOWS / ELEVATION ============ */
+  --shadow-header: 0 1px 0 rgba(0,0,0,.06);
+  --shadow-card:   0 1px 3px rgba(0,0,0,0.04);
+  --shadow-md:     0 4px 6px -1px rgba(0, 0, 0, 0.10), 0 2px 4px -2px rgba(0, 0, 0, 0.10);
+  --shadow-pop:    0 4px 16px rgba(0,0,0,0.15);
+  --shadow-modal:  0 4px 24px rgba(0,0,0,0.20);
+  --shadow-heavy:  0 0 12px rgba(0,0,0,0.15);
+
+  /* ============================================================
+     LAYER 4 — FIGMA PATH ALIASES
+     Match the exact Figma variable paths so CSS exported by
+     Figma/Claude can be pasted in without renaming. Every alias
+     points back to the canonical short-name token defined above.
+     ============================================================ */
+
+  /* Color palette — observed steps in 1-12 scale (alongside 50-950) */
+  --color-blue-1:    var(--color-blue-50);
+  --color-blue-2:    #c2cbe9;
+  --color-blue-3:    #8aa1d6;
+  --color-blue-7:    var(--color-blue-700);
+  --color-blue-8:    #1d4ba0;
+  --color-blue-9:    var(--color-blue-900);
+  --color-blue-10:   var(--color-blue-950);
+  --color-blue-11:   #001244;
+  --color-blue-12:   #000a2b;
+
+  /* Spacing — Figma `spacing/padding/*`, `spacing/gap/*`, `spacing/margin/*` */
+  --spacing-padding-x:        var(--padding-x);
+  --spacing-padding-x-sm:     var(--padding-x-sm);
+  --spacing-padding-x-xs:     var(--padding-x-xs);
+  --spacing-padding-y:        var(--padding-y);
+  --spacing-padding-y-sm:     var(--padding-y-sm);
+  --spacing-padding-y-xs:     var(--padding-y-xs);
+  --spacing-padding-section-x: var(--padding-section-x);
+  --spacing-padding-section-y: var(--padding-section-y);
+  --spacing-padding-soft-4:    var(--padding-soft-4);
+  --spacing-padding-soft-6:    var(--padding-soft-6);
+  --spacing-padding-soft-8:    var(--padding-soft-8);
+  --spacing-padding-soft-12:   var(--padding-soft-12);
+  --spacing-gap-x:            var(--gap-x);
+  --spacing-gap-x-sm:         var(--gap-x-sm);
+  --spacing-gap-x-xs:         var(--gap-x-xs);
+  --spacing-gap-y:            var(--gap-y);
+  --spacing-gap-y-sm:         var(--gap-y-sm);
+  --spacing-gap-y-xs:         var(--gap-y-xs);
+  --spacing-gap-section-y:    var(--gap-section-y);
+  --spacing-gap-soft-4:       var(--gap-soft-4);
+  --spacing-gap-soft-6:       var(--gap-soft-6);
+  --spacing-gap-soft-8:       var(--gap-soft-8);
+  --spacing-gap-soft-12:      var(--gap-soft-12);
+  --spacing-margin-x:         var(--margin-x);
+
+  /* Radius — Figma `radius/*` */
+  --radius-none:        var(--r-none);
+  --radius-button:      var(--r-button);
+  --radius-tooltip:     var(--r-tooltip);
+  --radius-tag:         var(--r-tag);
+  --radius-input:       var(--r-input);
+  --radius-card-inner:  var(--r-card-inner);
+  --radius-card:        var(--r-card);
+  --radius-modal:       var(--r-modal);
+  --radius-pill:        var(--r-pill);
+
+  /* Shadow — Figma `shadow/*` */
+  --shadow-card-floating-x: var(--shadow-card);
+  --shadow-pop-x:           var(--shadow-pop);
+  --shadow-modal-x:         var(--shadow-modal);
+  --shadow-heavy-x:         var(--shadow-heavy);
+
+  /* Type — Figma `font-size/*`, `line-height/*`, `font-weight/*`
+     (path-style aliases for export compatibility) */
+  --font-size-display-1:    var(--display-1-size);
+  --font-size-display-2:    var(--display-2-size);
+  --font-size-display-3:    var(--display-3-size);
+  --font-size-display-4:    var(--display-4-size);
+  --font-size-display-5:    var(--display-5-size);
+  --font-size-title-1:      var(--title-1-size);
+  --font-size-title-2:      var(--title-2-size);
+  --font-size-subheading-1: var(--subheading-1-size);
+  --font-size-subheading-2: var(--subheading-2-size);
+  --font-size-body-1:       var(--body-1-size);
+  --font-size-body-2:       var(--body-2-size);
+  --font-size-body-1-blog:  var(--body-1-blog-size);
+  --font-size-body-2-blog:  var(--body-2-blog-size);
+  --font-size-bullet-1:     var(--bullet-1-size);
+  --font-size-bullet-2:     var(--bullet-2-size);
+  --font-size-overline:     var(--overline-size);
+  --font-size-caption:      var(--caption-size);
+  --font-size-tag:          var(--tag-size);
+  --font-size-button:       var(--button-size);
+  --font-size-button-small: var(--button-2-size, 14px);
+  --line-height-button-small: var(--button-2-lh, 18px);
+  --font-weight-button-small: var(--button-2-weight, 600);
+
+  --line-height-display-1:    var(--display-1-lh);
+  --line-height-display-2:    var(--display-2-lh);
+  --line-height-display-3:    var(--display-3-lh);
+  --line-height-display-4:    var(--display-4-lh);
+  --line-height-display-5:    var(--display-5-lh);
+  --line-height-title-1:      var(--title-1-lh);
+  --line-height-title-2:      var(--title-2-lh);
+  --line-height-subheading-1: var(--subheading-1-lh);
+  --line-height-subheading-2: var(--subheading-2-lh);
+  --line-height-body-1:       var(--body-1-lh);
+  --line-height-body-2:       var(--body-2-lh);
+  --line-height-body-1-blog:  var(--body-1-blog-lh);
+  --line-height-body-2-blog:  var(--body-2-blog-lh);
+  --line-height-bullet-1:     var(--bullet-1-lh);
+  --line-height-bullet-2:     var(--bullet-2-lh);
+  --line-height-overline:     var(--overline-lh);
+  --line-height-caption:      var(--caption-lh);
+  --line-height-tag:          var(--tag-lh);
+  --line-height-button:       var(--button-lh);
+
+  --font-weight-regular:    400;
+  --font-weight-medium:     500;
+  --font-weight-semibold:   600;
+  --font-weight-bold:       700;
+
+  /* Layout — Figma `general/*` */
+  --general-content-panel:        var(--content-panel);
+  --general-narrow-content-3:     var(--narrow-content-width);
+  --general-top-nav-height:       var(--top-nav-height);
+
+  /* Form / Tag — Figma `form/*`, `tag/*` */
+  --form-input-padding-x:    var(--padding-form-x);
+  --form-input-padding-y:    var(--padding-form-y);
+  --form-input-radius:       var(--r-input);
+  --tag-padding-x:           var(--padding-tag-x);
+  --tag-padding-y:           var(--padding-tag-y);
+  --tag-radius:              var(--r-tag);
+
+  /* Spacing primitive scale — Figma `spacing/0.5`, `spacing/1..15` */
+  --spacing-0-5: var(--space-0-5);
+  --spacing-1:   var(--space-1);
+  --spacing-2:   var(--space-2);
+  --spacing-3:   var(--space-3);
+  --spacing-4:   var(--space-4);
+  --spacing-5:   var(--space-5);
+  --spacing-6:   var(--space-6);
+  --spacing-7:   var(--space-7);
+  --spacing-8:   var(--space-8);
+  --spacing-9:   var(--space-9);
+  --spacing-10:  var(--space-10);
+  --spacing-11:  var(--space-11);
+  --spacing-12:  var(--space-12);
+  --spacing-13:  var(--space-13);
+  --spacing-15:  var(--space-15);
+
+  /* Spacing soft variants — extra alias for `soft-12px` Figma path
+     (Figma stores it with the px suffix; CSS-side alias to short name) */
+  --spacing-padding-soft-12px: var(--padding-soft-12);
+  --spacing-padding-soft-8px:  var(--padding-soft-8);
+  --spacing-padding-soft-6px:  var(--padding-soft-6);
+  --spacing-padding-soft-4px:  var(--padding-soft-4);
+  --spacing-gap-soft-12px:     var(--gap-soft-12);
+  --spacing-gap-soft-8px:      var(--gap-soft-8);
+  --spacing-gap-soft-6px:      var(--gap-soft-6);
+  --spacing-gap-soft-4px:      var(--gap-soft-4);
+
+  /* Button typography — Figma `font-size/button-1`, `line-height/button-1` */
+  --font-size-button-1:    var(--button-1-size);
+  --line-height-button-1:  var(--button-1-lh);
+  --font-weight-button-1:  var(--button-1-weight);
+  --font-size-button-2:    var(--button-2-size);
+  --line-height-button-2:  var(--button-2-lh);
+  --font-weight-button-2:  var(--button-2-weight);
+
+  /* Badge typography */
+  --font-size-badge:       var(--badge-size);
+  --line-height-badge:     var(--badge-lh);
+  --font-weight-badge:     var(--badge-weight);
+
+  /* Per-style font-weight Figma path aliases */
+  --font-weight-display-1:    var(--display-1-weight);
+  --font-weight-display-2:    var(--display-2-weight);
+  --font-weight-display-3:    var(--display-3-weight);
+  --font-weight-title-1:      var(--title-1-weight);
+  --font-weight-title-2:      var(--title-2-weight);
+  --font-weight-subheading-1: var(--subheading-1-weight);
+  --font-weight-subheading-2: var(--subheading-2-weight);
+  --font-weight-body-1:       var(--body-1-weight);
+  --font-weight-body-2:       var(--body-2-weight);
+  --font-weight-body-1-blog:  var(--body-1-blog-weight);
+  --font-weight-body-2-blog:  var(--body-2-blog-weight);
+  --font-weight-bullet-1:     var(--bullet-1-weight);
+  --font-weight-bullet-2:     var(--bullet-2-weight);
+  --font-weight-bullet:       var(--bullet-2-weight);  /* generic alias */
+  --font-weight-overline:     var(--overline-weight);
+  --font-weight-caption:      var(--caption-weight);
+  --font-weight-tag:          var(--tag-weight);
+
+  /* Icon sizes — Figma `shapes/icon-size-*` */
+  --shapes-icon-size-sm: var(--icon-sm);
+  --shapes-icon-size-md: var(--icon-md);
+  --shapes-icon-size-lg: var(--icon-lg);
+
+  /* Font family — Figma path alias */
+  --font-family-default: var(--font-sans);
+  --font-family-tc:      var(--font-sans-tc);
+  --font-font:           var(--font-sans);   /* Figma: font/font — overridden to --font-sans-tc in :lang(zh-Hant) context */
+
+  /* Border path alias (Figma `borders/default` keeps a plural form
+     used by some exports) */
+  --borders-default:   var(--border-default);
+  --borders-input:     var(--border-input);
+  --borders-input-active: var(--border-input-active);
+  --borders-form-hover:   var(--border-form-hover);
+  --borders-divider:   var(--border-divider);
+
+  /* Radius — small numeric alias scale used by some Figma libraries
+     (radius/2 = 8, radius/4 = 16 etc) */
+  --radius-2: 8px;
+  --radius-4: 16px;
+
+  /* ============ STROKES & FOCUS — primitives shared across components ============
+     Per CLAUDE.md Rule 2: components must reference tokens, never hardcode 1px / 2px.
+     These are intentionally raw px values (the *base unit* of stroke width) — they're
+     primitives, not aliases of another token. */
+  --stroke-thin:        1px;   /* default hairline (cards, dividers, table rules) */
+  --stroke-emphasis:    2px;   /* emphatic divider / focus ring thickness */
+  --focus-ring-offset:  2px;   /* outline-offset on :focus-visible across components */
+
+  /* ============ TYPE — table cells (Figma `font-size/table/*` paths) ============
+     Aliases pointing at the existing body-2 / bullet-2 scales so table styling
+     scales automatically across all breakpoints via tokens.css. */
+  --font-size-table-header:           var(--bullet-2-size);
+  --line-height-table-header:         var(--bullet-2-lh);
+  --font-weight-table-header:         var(--font-weight-bold);
+
+  --font-size-table-cell:             var(--body-2-size);
+  --line-height-table-cell:           var(--body-2-lh);
+  --font-weight-table-cell-normal:    var(--body-2-weight);   /* 500 */
+  --font-weight-table-cell-strong:    var(--font-weight-bold);     /* 700 */
+
+  --font-size-table-cell-primary:     var(--bullet-2-size);
+  --line-height-table-cell-primary:   var(--bullet-2-lh);
+  --font-weight-table-cell-primary:   var(--font-weight-semibold);  /* 600 */
+
+  /* Body-2-relaxed alias on the path-style naming scheme. */
+  --line-height-body-2-relaxed:       var(--body-2-relaxed-lh);
+
+  /* ─────────────────────────────────────────────
+     v=16 additions — fill remaining Figma path-style
+     aliases so component CSS can use either short or
+     path-style names. Each var() resolves at use-time
+     so @media overrides on the underlying tokens
+     propagate automatically.
+     ───────────────────────────────────────────── */
+
+  /* Borders — Figma `borders/*` (plural) */
+  --borders-soft:         var(--border-soft);
+  --borders-dark:         var(--border-dark);
+  --borders-form-default: var(--border-form-default);
+  --borders-form-error:   var(--border-form-error);
+
+  /* Radius — table (newly responsive at v=16) */
+  --radius-table:         var(--r-table);
+
+  /* Spacing — margin-y + section-y-lg gap */
+  --spacing-margin-y:         var(--margin-y);
+  --spacing-gap-section-y-lg: var(--gap-section-y-lg);
+
+  /* Spacing — soft-* with explicit `px` suffix (Figma path style) */
+  --spacing-padding-soft-4px:  var(--padding-soft-4);
+  --spacing-padding-soft-6px:  var(--padding-soft-6);
+  --spacing-padding-soft-8px:  var(--padding-soft-8);
+  --spacing-padding-soft-12px: var(--padding-soft-12);
+  --spacing-gap-soft-4px:      var(--gap-soft-4);
+  --spacing-gap-soft-6px:      var(--gap-soft-6);
+  --spacing-gap-soft-8px:      var(--gap-soft-8);
+  --spacing-gap-soft-12px:     var(--gap-soft-12);
+
+  /* Layout — Figma `general/*` */
+  --general-content-max-width:    var(--content-max-width);
+  --general-content-with-panel:   var(--content-with-panel);
+  --general-narrow-content-width: var(--narrow-content-width);
+  --general-2-col-width:          var(--col-2-width);
+  --general-qa-table-width:       var(--qa-table-width);
+
+  /* Form — Figma `form/inner-element-padding` */
+  --form-inner-element-padding: var(--form-inner-padding);
+
+  /* Typography — body-1 relaxed line-height path alias */
+  --line-height-body-1-relaxed:   var(--body-1-relaxed-lh);
+
+  /* Typography — breadcrumb */
+  --font-size-breadcrumb:   var(--breadcrumb-size);
+  --line-height-breadcrumb: var(--breadcrumb-lh);
+  --font-weight-breadcrumb: var(--breadcrumb-weight);
+
+  /* Typography — form-input */
+  --font-size-form-input:   var(--form-input-size);
+  --line-height-form-input: var(--form-input-lh);
+  --font-weight-form-input: var(--form-input-weight);
+
+  /* Typography — display-4 / display-5 weights */
+  --font-weight-display-4: var(--display-4-weight);
+  --font-weight-display-5: var(--display-5-weight);
+
+  /* ─── Composite font: shorthand tokens ───────────────────────────────────────
+     Used by mhg-ns.css (Newsletter Sign-up) and future modules that need a
+     single var() for a complete font: shorthand declaration.
+     Sub-tokens are all responsive — the @media cascade in colors_and_type.css
+     propagates automatically at var() resolution time.
+     --font-font resolves to --font-sans-tc inside :lang(zh-Hant) elements
+     (see :lang block below) so TC layouts automatically get the Noto Sans TC stack.
+     ──────────────────────────────────────────────────────────────────────────── */
+  --headline-subheading-2: var(--font-weight-subheading-2) var(--font-size-subheading-2)/var(--line-height-subheading-2) var(--font-font);
+  --body-1-blog:           var(--font-weight-body-1-blog) var(--font-size-body-1-blog)/var(--line-height-body-1-blog) var(--font-font);
+  --button-regular:        var(--font-weight-button-1) var(--font-size-button-1)/var(--line-height-button-1) var(--font-font);
+}
+
+/* ──────────────────────────────────────────────────────
+   BRAND SCOPE — MoneyHero (default) + SingSaver overrides
+
+   Set ONE brand class on <html>:
+     <html class="brand-moneyhero">  → navy + amber (default at :root)
+     <html class="brand-singsaver">  → teal + olive (overrides below)
+
+   Legacy [data-brand="singsaver"] is also supported for back-compat.
+   New code should use the class form.
+   Only color tokens swap per brand. Spacing / sizing / type are brand-agnostic.
+   ────────────────────────────────────────────────────── */
+
+.brand-moneyhero {
+  /* Re-asserts MoneyHero defaults so you can scope a region back. */
+  --button-primary:          var(--color-blue-700);
+  --button-primary-hover:    var(--color-blue-900);
+  --button-secondary:        var(--color-amber-400);
+  --button-secondary-hover:  var(--color-amber-900);
+  --button-secondary-text:   var(--color-blue-900);
+  --button-outline-hover-bg: var(--color-blue-50);
+  --buttons-primary:         var(--color-blue-700);
+  --buttons-primary-hover:   var(--color-blue-900);
+  --buttons-secondary:       var(--color-amber-400);
+  --buttons-secondary-hover: var(--color-amber-900);
+  --buttons-secondary-text:  var(--color-blue-900);
+  --buttons-outline-hover-bg:var(--color-blue-50);
+  --fill-primary:            var(--color-blue-700);
+  --fill-primary-dark:       var(--color-blue-900);
+  --fill-primary-light:      var(--color-blue-50);
+  --fill-primary-deeper:     var(--color-blue-950);
+  --fill-secondary:          var(--color-amber-400);
+  --fill-secondary-dark:     var(--color-amber-700);
+  --text-link:               var(--color-blue-700);
+  --border-form-hover:       var(--color-blue-700);
+}
+
+.brand-singsaver,
+[data-brand="singsaver"] {
+  --button-primary:          var(--color-teal-700);
+  --button-primary-hover:    var(--color-teal-900);
+  --button-secondary:        var(--color-olive-700);
+  --button-secondary-hover:  var(--color-olive-900);
+  --button-secondary-text:   var(--color-white);
+  --button-outline-hover-bg: var(--color-teal-50);
+  --buttons-primary:         var(--color-teal-700);
+  --buttons-primary-hover:   var(--color-teal-900);
+  --buttons-secondary:       var(--color-olive-700);
+  --buttons-secondary-hover: var(--color-olive-900);
+  --buttons-secondary-text:  var(--color-white);
+  --buttons-outline-hover-bg:var(--color-teal-50);
+  --fill-primary:            var(--color-teal-700);
+  --fill-primary-dark:       var(--color-teal-900);
+  --fill-primary-light:      var(--color-teal-50);
+  --fill-primary-deeper:     var(--color-teal-900);
+  --fill-secondary:          var(--color-olive-700);
+  --fill-secondary-dark:     var(--color-olive-900);
+  --text-link:               var(--color-teal-700);
+  --text-accent:             var(--color-teal-900);  /* text/accent — teal-darker (#004A68); distinct from button-primary teal */
+  --border-form-hover:       var(--color-teal-700);
+}
+
+/* ──────────────────────────────────────────────────────
+   SEMANTIC ELEMENT DEFAULTS
+   Drop colors_and_type.css into any page for sensible defaults.
+   Heading mapping uses Figma display / title tokens directly.
+   ────────────────────────────────────────────────────── */
+
+html, body {
+  font-family: var(--font-sans);
+  font-size: var(--body-1-size);
+  line-height: var(--body-1-lh);
+  font-weight: var(--body-1-weight);
+  color: var(--text-primary);
+  background: var(--fill-base);
+  letter-spacing: var(--letter-spacing-normal);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Auto-switch font stack for Traditional Chinese surfaces (CHC / MoneyHero HK).
+   Triggered by <html lang="zh-Hant">, <html lang="zh-HK">, or any ancestor
+   with a matching lang attribute. No manual class needed. */
+:lang(zh-Hant),
+:lang(zh-HK),
+:lang(zh-TW) {
+  font-family: var(--font-sans-tc);
+  --font-font:  var(--font-sans-tc); /* composite shorthand tokens use TC stack in CJK context */
+}
+
+h1 {
+  font-size:   var(--display-3-size);
+  line-height: var(--display-3-lh);
+  font-weight: var(--display-3-weight);
+  color:       var(--text-primary);
+  margin: 0 0 var(--space-3);
+}
+h2 {
+  font-size:   var(--display-2-size);
+  line-height: var(--display-2-lh);
+  font-weight: var(--display-2-weight);
+  color:       var(--text-primary);
+  margin: 0 0 var(--space-3);
+}
+h3 {
+  font-size:   var(--display-1-size);
+  line-height: var(--display-1-lh);
+  font-weight: var(--display-1-weight);
+  color:       var(--text-primary);
+  margin: 0 0 var(--space-2);
+}
+h4 {
+  font-size:   var(--title-1-size);
+  line-height: var(--title-1-lh);
+  font-weight: var(--title-1-weight);
+  color:       var(--text-primary);
+  margin: 0 0 var(--space-2);
+}
+h5 {
+  font-size:   var(--title-2-size);
+  line-height: var(--title-2-lh);
+  font-weight: var(--title-2-weight);
+  color:       var(--text-primary);
+  margin: 0 0 var(--space-2);
+}
+p {
+  font-size:   var(--body-1-size);
+  line-height: var(--body-2-relaxed-lh);
+  color:       var(--text-secondary);
+  margin: 0 0 var(--space-3);
+}
+small, .caption {
+  font-size:   var(--caption-size);
+  line-height: var(--caption-lh);
+  font-weight: var(--caption-weight);
+  color:       var(--text-muted);
+}
+a {
+  color: var(--text-link);
+  text-decoration: none;
+  font-weight: 500;
+}
+a:hover { text-decoration: underline; }
+code, kbd, samp { font-family: var(--font-mono); font-size: 13px; }
+
+/* ──────────────────────────────────────────────────────
+   TYPE UTILITY CLASSES — 1:1 with Figma text styles
+   Usage: <h2 class="t-display-2">…</h2>, <span class="t-overline">…</span>
+   ────────────────────────────────────────────────────── */
+
+.t-display-1      { font: var(--display-1-weight) var(--display-1-size)/var(--display-1-lh) var(--font-sans); }
+.t-display-1-blog { font: var(--display-1-weight) var(--display-1-size)/var(--display-1-blog-lh) var(--font-sans); }
+.t-display-2      { font: var(--display-2-weight) var(--display-2-size)/var(--display-2-lh) var(--font-sans); }
+.t-display-3      { font: var(--display-3-weight) var(--display-3-size)/var(--display-3-lh) var(--font-sans); }
+.t-display-4      { font: var(--display-4-weight) var(--display-4-size)/var(--display-4-lh) var(--font-sans); }
+.t-display-5      { font: var(--display-5-weight) var(--display-5-size)/var(--display-5-lh) var(--font-sans); }
+
+.t-title-1        { font: var(--title-1-weight) var(--title-1-size)/var(--title-1-lh) var(--font-sans); }
+.t-title-2        { font: var(--title-2-weight) var(--title-2-size)/var(--title-2-lh) var(--font-sans); }
+
+.t-subheading-1      { font: var(--subheading-1-weight) var(--subheading-1-size)/var(--subheading-1-lh) var(--font-sans); }
+.t-subheading-2      { font: var(--subheading-2-weight) var(--subheading-2-size)/var(--subheading-2-lh) var(--font-sans); }
+.t-subheading-2-blog { font: 700 var(--subheading-2-size)/var(--subheading-2-blog-lh) var(--font-sans); }
+
+.t-body-1                    { font: var(--body-1-weight) var(--body-1-size)/var(--body-1-lh) var(--font-sans); }
+.t-body-1-relaxed            { font: var(--body-1-weight) var(--body-1-size)/var(--body-1-relaxed-lh) var(--font-sans); }
+.t-body-1-blog               { font: 400 var(--body-1-size)/var(--body-1-relaxed-lh) var(--font-sans); }
+.t-body-1-underlined         { font: var(--body-1-weight) var(--body-1-size)/var(--body-1-lh) var(--font-sans); text-decoration: underline; }
+.t-body-1-relaxed-underlined { font: var(--body-1-weight) var(--body-1-size)/var(--body-1-relaxed-lh) var(--font-sans); text-decoration: underline; }
+
+.t-body-2                    { font: var(--body-2-weight) var(--body-2-size)/var(--body-2-lh) var(--font-sans); }
+.t-body-2-relaxed            { font: var(--body-2-weight) var(--body-2-size)/var(--body-2-relaxed-lh) var(--font-sans); }
+.t-body-2-blog               { font: 400 var(--body-2-size)/var(--body-2-relaxed-lh) var(--font-sans); }
+.t-body-2-underlined         { font: var(--body-2-weight) var(--body-2-size)/var(--body-2-lh) var(--font-sans); text-decoration: underline; }
+.t-body-2-relaxed-underlined { font: var(--body-2-weight) var(--body-2-size)/var(--body-2-relaxed-lh) var(--font-sans); text-decoration: underline; }
+
+.t-bullet-1   { font: var(--bullet-1-weight) var(--bullet-1-size)/var(--bullet-1-lh) var(--font-sans); }
+.t-bullet-2   { font: var(--bullet-2-weight) var(--bullet-2-size)/var(--bullet-2-lh) var(--font-sans); }
+
+.t-overline   { font: var(--overline-weight) var(--overline-size)/var(--overline-lh) var(--font-sans); }
+.t-caption    { font: var(--caption-weight) var(--caption-size)/var(--caption-lh) var(--font-sans); }
+.t-caption-underlined { font: var(--caption-weight) var(--caption-size)/var(--caption-lh) var(--font-sans); text-decoration: underline; }
+.t-tag        { font: var(--tag-weight) var(--tag-size)/var(--tag-lh) var(--font-sans); }
+.t-badge      { font: var(--badge-weight) var(--badge-size)/var(--badge-lh) var(--font-sans); }
+.t-breadcrumb { font: var(--breadcrumb-weight) var(--breadcrumb-size)/var(--breadcrumb-lh) var(--font-sans); }
+.t-form-input { font: var(--form-input-weight) var(--form-input-size)/var(--form-input-lh) var(--font-sans); }
+
+/* Table type utilities */
+.t-table-header       { font: var(--table-header-weight) var(--table-header-size)/var(--table-header-lh) var(--font-sans); }
+.t-table-cell         { font: var(--table-cell-weight) var(--table-cell-size)/var(--table-cell-lh) var(--font-sans); }
+.t-table-cell-strong  { font: var(--table-cell-strong-weight) var(--table-cell-size)/var(--table-cell-lh) var(--font-sans); }
+.t-table-cell-primary { font: var(--table-cell-strong-weight) var(--table-cell-primary-size)/var(--table-cell-primary-lh) var(--font-sans); }
+
+/* ──────────────────────────────────────────────────────
+   COMPONENT UTILITIES (optional)
+   ────────────────────────────────────────────────────── */
+
+.mhg-card {
+  background: var(--fill-card);
+  border: 1px solid var(--border-default);
+  border-radius: var(--r-card);
+  padding: var(--space-4);
+  box-shadow: var(--shadow-card);
+}
+
+/* ──────────────────────────────────────────────────────
+   BUTTON UTILITIES  →  see ./components/buttons.css (authoritative)
+   ────────────────────────────────────────────────────── */
+
+/* ──────────────────────────────────────────────────────
+   BADGE UTILITY
+   ────────────────────────────────────────────────────── */
+
+.mhg-badge-new {
+  background: var(--fill-secondary);
+  color: var(--fill-primary-dark);
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: var(--r-button);
+  font-size: var(--tag-size);
+  line-height: var(--tag-lh);
+}
+
+/* ──────────────────────────────────────────────────────
+   RESPONSIVE TOKEN OVERRIDES
+   Figma `tokens-breakpoint` collection resolves to different pixel
+   values depending on the surface's viewport width. Mirror that here.
+
+   Breakpoints (MoneyHero Group convention):
+     mobile         ≤ 767px   (MoneyHero Alpha 360 node)
+     tablet         ≥ 768px
+     desktop        ≥ 1280px
+     desktop-lg     ≥ 1440px
+   ────────────────────────────────────────────────────── */
+
+@media (min-width: 768px) {
+  :root {
+    /* ========= TYPE SCALE — tablet+ ========= */
+
+    /* Displays */
+    --display-1-size:    24px;
+    --display-1-lh:      31px;
+    --display-1-blog-lh: 31px;
+    --display-2-size:    28px;
+    --display-2-lh:      36px;
+    --display-3-size:    34px;
+    --display-3-lh:      40px;
+    --display-4-size:    42px;
+    --display-4-lh:      52px;
+    --display-5-size:    48px;
+    --display-5-lh:      58px;
+
+    /* Titles */
+    --title-1-size:      24px;
+    --title-1-lh:        31px;
+    --title-2-size:      22px;
+    --title-2-lh:        28px;
+
+    /* Subheadings */
+    --subheading-1-size: 24px;
+    --subheading-1-lh:   31px;
+    --subheading-2-size: 20px;
+    --subheading-2-lh:   24px;
+
+    /* Body */
+    --body-1-size:       18px;
+    --body-1-lh:         22px;
+    --body-1-relaxed-lh: 27px;
+    --body-2-size:       16px;
+    --body-2-lh:         20px;
+    --body-2-relaxed-lh: 26px;
+
+    /* Bullets */
+    --bullet-1-size:     18px;
+    --bullet-1-lh:       22px;
+    --bullet-2-size:     16px;
+    --bullet-2-lh:       20px;
+
+    /* Overline bumps (1st of 2 stages) */
+    --overline-size:     16px;
+    --overline-lh:       20px;
+
+    /* Captions + badges + breadcrumb */
+    --caption-size:      14px;
+    --caption-lh:        18px;
+    --badge-size:        14px;
+    --badge-lh:          18px;
+    --breadcrumb-size:   14px;
+    --breadcrumb-lh:     18px;
+
+    /* Form input */
+    --form-input-size:   18px;
+    --form-input-lh:     22px;
+
+    /* Table */
+    --table-header-size:       15px;
+    --table-header-lh:         21px;
+    --table-cell-size:         14px;
+    --table-cell-lh:           18px;
+    --table-cell-primary-size: 15px;
+    --table-cell-primary-lh:   21px;
+
+    /* ========= SPACING — tablet+ ========= */
+    --padding-section-x: 24px;
+    --padding-section-y: 32px;
+    --padding-x:         16px;
+    --padding-x-sm:      12px;
+    --padding-x-xs:      8px;
+    --padding-y:         20px;
+    --padding-y-sm:      16px;
+
+    /* spacing/padding/soft-* bump up one step on tablet+ */
+    --padding-soft-4:    4px;
+    --padding-soft-6:    6px;
+    --padding-soft-8:    8px;
+    --padding-soft-12:   10px;
+
+    /* spacing/gap — loosens horizontally */
+    --gap-x:             20px;
+    --gap-x-sm:          12px;
+    --gap-x-xs:          8px;
+    --gap-y:             24px;
+    --gap-y-sm:          16px;
+    --gap-y-xs:          8px;
+    --gap-section-y:     24px;
+    --gap-section-y-lg:  40px;
+
+    /* spacing/gap/soft-* bump up one step on tablet+ */
+    --gap-soft-4:        4px;
+    --gap-soft-6:        6px;
+    --gap-soft-8:        8px;
+    --gap-soft-12:       10px;
+
+    /* spacing/margin */
+    --margin-x:          16px;
+    --margin-y:          16px;
+
+    /* Form spacing bumps up */
+    --form-inner-padding: 12px;
+
+    /* ========= BUTTONS — tablet+ ========= */
+    --button-padding-small-x:         12px;
+    --button-padding-small-x-icon:    10px;
+    --button-padding-regular-x:       14px;
+    --button-padding-regular-x-icon:  12px;
+    --button-size-small:              36px;
+    --button-size-regular:            40px;
+    --button-icon-small:              20px;
+    --button-icon-regular:            24px;
+    --button-1-size:                  20px;
+    --button-1-lh:                    24px;
+    --button-2-size:                  16px;
+    --button-2-lh:                    20px;
+
+    /* radius/button: 6 (mobile, set in :root) → 8 on tablet+ (confirmed KE 20631:7219, NS 21413:10528) */
+    --r-button:          8px;
+
+    /* radius/table bumps from 6 → 8 on tablet+ (stays 8 through desktop) */
+    --r-table:           8px;
+
+    /* radius/card bumps from 10 → 16 on tablet+ (stays 16 through desktop) */
+    --r-card:            16px;
+
+    /* shapes/icon-size-md bumps from 18 → 22 on tablet+ (stays 22 through desktop, 24 on desktop-lg) */
+    --icon-md:           22px;
+
+    /* layout */
+    --content-max-width:     720px;
+    --content-with-panel:    720px;
+    --narrow-content-width:  720px;
+    --content-panel:         720px;
+    --col-2-width:           168px;   /* general/2-col-width (tablet) */
+    --qa-table-width:        720px;   /* quick-answer/table-width (tablet) */
+    --top-nav-height:        64px;
+  }
+}
+
+@media (min-width: 1280px) {
+  :root {
+    /* ========= TYPE SCALE — desktop+ ========= */
+    /* body-1 line-height loosens for desktop reading (drops back to 22 at 1440) */
+    --body-1-lh:         27px;
+
+    /* overline — 2nd stage, jumps to display-like size */
+    --overline-size:     22px;
+    --overline-lh:       28px;
+
+    /* tag bumps up on desktop+ */
+    --tag-size:          16px;
+    --tag-lh:            23px;
+
+    /* ========= SPACING — desktop+ ========= */
+    --padding-section-x: 32px;
+    --padding-section-y: 48px;
+    --padding-x:         24px;
+    --padding-x-sm:      16px;
+    --padding-x-xs:      12px;
+    --padding-y:         24px;
+
+    /* spacing/padding/soft-12 bumps from 10 → 12 on desktop (soft-4/6/8 stay at tablet values) */
+    --padding-soft-12:   12px;
+    --gap-soft-12:       12px;
+
+    /* spacing/gap */
+    --gap-x:             24px;
+    --gap-x-sm:          16px;
+    --gap-section-y:     28px;
+    --gap-section-y-lg:  48px;
+
+    /* spacing/margin */
+    --margin-x:          24px;
+    --margin-y:          24px;
+
+    /* Button tokens — desktop bumps button/size-regular from 40 → 44.
+       All other button tokens remain at tablet values (see 768 block). */
+    --button-size-regular: 44px;
+
+    /* radius/tooltip bumps from 6 → 8 on desktop */
+    --r-tooltip:         8px;
+
+    /* radius/button final bump 6 → 8 on desktop+ */
+    --r-button:          8px;
+
+    /* layout */
+    --content-max-width:    1216px;
+    --content-with-panel:   760px;
+    --narrow-content-width: 1130px;
+    --content-panel:        346px;   /* narrow side panel on wide layouts */
+    --col-2-width:          184px;   /* general/2-col-width (desktop) */
+    --qa-table-width:       760px;   /* quick-answer/table-width (desktop+) */
+    --top-nav-height:       72px;
+  }
+}
+
+@media (min-width: 1440px) {
+  :root {
+    /* ========= TYPE SCALE — desktop-lg ========= */
+    /* body-1 line-height tightens back to tablet value (confirmed across library, Blog, CHC) */
+    --body-1-lh:          22px;
+
+    /* ========= SPACING — desktop-lg ========= */
+    --padding-section-x:  40px;
+    --gap-section-y:      32px;
+
+    /* icon size bumps from 22 → 24 */
+    --icon-md:            24px;
+
+    /* layout */
+    --content-max-width:  1360px;
+    --col-2-width:        206px;   /* general/2-col-width (desktop-lg) */
+    --top-nav-height:     80px;
+  }
+}

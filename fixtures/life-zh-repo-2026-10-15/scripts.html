@@ -1,0 +1,908 @@
+<script>
+/* ===== i18n ===== */
+var LANG='zh';
+var T={
+  zh:{
+    heroEyebrow:'香港保監局持牌保險經紀',
+    heroTitle:'<em>定期人壽保險</em><br>邊間好？即時比較',
+    heroDesc:'💪🏻自己保險自己買！線上人壽保險均無儲蓄成份，對比經agent買保費更相宜、更具彈性！MoneyHero為你比較各大保險公司的定期人壽保險，一目了然分析保障範圍、保費及獨家折扣，助你輕鬆揀啱最適合的計劃。投保以自助形式、於保險公司網站進行，方便快捷、3分鐘搞掂！<br><br><span style="font-size:var(--caption-size)">【重要聲明】本頁之產品排列順序乃隨機產生，或按產品資訊之最後更新日期依序置頂，並不代表亦不應被視為對任何產品之對比、評估或推薦；頁面所提供之全部產品資料僅供參考，並不構成對閣下之個人建議。保費以保險公司最終核保結果為準。投保過程中MoneyHero並不採集或保留任何客戶資料。</span>',
+    statPlans:'保險計劃',statInsurers:'合作保險公司',statUsers:'用戶信賴',statFree:'比較費用',
+    trust1:'受保監局規管的授權保險經紀',trust2:'資料保密安全',trust3:'即時報價比較',trust4:'專人全程跟進',trust5:'比較完全免費',
+    whyBarTitle:'點解你需要終身人壽保險？',
+    usp1Title:'保障家人生活',usp1Desc:'萬一不幸離世，賠償金可確保家人維持生活水平，覆蓋日常開支及供樓還款。',
+    usp2Title:'長線儲蓄增值',usp2Desc:'終身壽險具儲蓄成分，現金價值隨時間穩定增長，可作退休或教育基金。',
+    usp3Title:'附加危疾保障',usp3Desc:'可附加危疾保障附約，一旦確診嚴重疾病即獲一筆過賠償，減輕醫療負擔。',
+    usp4Title:'遺產及稅務規劃',usp4Desc:'人壽保險賠償一般不納入遺產，有效進行財富傳承規劃。',
+    hideBar:'收起',
+    catRecommended:'推薦',catAdult:'成人',catChildren:'少兒',catElderly:'老人',catFamily:'家庭',
+    allPlans:'所有計劃',lowestPrice:'最低價格',featured:'精選推介',cashValueTab:'現金價值',highestDiscount:'最高折扣',
+    resultsCount:'{n} 個結果',helpMe:'幫我揀選 ',
+    applyNow:'立即投保',compare:'比較',compareProducts:'比較產品',productComparison:'產品比較',
+    exclusiveLabel:'獨家優惠',
+    analysisLabel:'MoneyHero 產品分析',discount:'即減',
+    cmpTitle:'先比後買，省心又安心',cmpSub:'MoneyHero 支援各大保險公司計劃並排比較，看清差異做出最明智選擇。',
+    cmpB1:'支援香港所有主要保險公司',cmpB2:'透明費用，無隱藏收費',cmpB3:'即時申請，最快當日獲批',cmpBtn:'立即比較計劃',
+    claimsLabel:'投保流程',claimsTitle:'經 MoneyHero 投保，3步搞掂',
+    step1:'比較',step1Sub:'一站式比較多間保險公司計劃',step2:'申請',step2Sub:'揀好計劃，點擊即跳轉投保',step3:'受保',step3Sub:'可網上完成申請；部分計劃最快可即時批核，實際以產品條款及核保結果為準。',
+    whyMH:'為什麼選擇 MoneyHero？',whyMHSub:'香港用戶信賴的金融比較平台',
+    feat1:'受保監局規管的授權保險經紀',feat1D:'MoneyHero Insurance Brokers Limited 為受保監局規管的授權保險經紀（牌照號碼 FB1740），提供保險比較及申請服務。',feat2:'即時比較報價',feat2D:'無需等候，即時獲取詳細報價及條款。',
+    filterProviders:'保險公司',
+    caseName:'陳先生的投保經歷',caseMeta:'32 歲｜經 MoneyHero 投保',
+    tl1:'比較',tc1:'在 MoneyHero 比較多間保險公司定期壽險',tl2:'慳錢',tc2:'發現經 MoneyHero 投保可享首年 <strong>3折</strong> 優惠',tl3:'投保',tc3:'點擊「立即投保」直接跳轉保險公司網站完成申請',tl4:'完成',tc4:'全程網上 10 分鐘搞掂，慳咗 <strong>HK$950</strong> ',
+    faqLabel:'常見問題',faqTitle:'熱門問題',
+    fctaTitle:'立即免費比較人壽保險計劃',fctaSub:'3 分鐘找到最合適的保障，為家人安排最可靠的後盾',fctaBtn1:'免費比較 →',
+    login:'登入',langToggle:'EN',
+    monthlyPremium:'每月保費',annualPremium:'每年保費',sumAssured:'保額',deathBenefit:'身故賠償',cashValue:'現金價值',ciRider:'危疾保障',premiumWaiver:'保費豁免',
+    faq1q:'定期人壽保險常見不保事項是什麼？',faq1a:'自殺不保期視乎產品條款而定，常見為 1 年或 2 年；應以個別保單條款及簽發日期為準。',
+    faq2q:'定期人壽保險到期可領回保費嗎？',faq2a:'定期人壽屬消費型產品，保單到期後一般不會退還保費。具退還保費設計的產品，保費一般會較純保障型定期壽險高；實際差距視乎產品結構及條款而定。',
+    faq3q:'定期人壽賠償算遺產嗎？',faq3a:'如保單訂明賠償納入遺產（"Own Estate"）或者沒有訂明受益人，賠償會作受保人的遺產處理（有遺囑或無遺囑分配方式各異）。如保單已指定受益人，理賠安排一般較清晰；是否涉及遺產程序，仍須視乎保單條款及個案情況。',
+    faq4q:'網上買定期人壽是否較平？',faq4a:'對比線下銷售，保險公司於網上能節省大量營銷成本（例如代理人佣金），部分網上定期人壽產品因銷售模式不同，保費或較具競爭力；實際保費仍須視乎產品及申請人資料。'
+  }
+};
+
+/* ===== BOWTIE RATE TABLE (from official premium schedule, monthly per HK$1M, non-smoker) ===== */
+var BOWTIE_RATES={
+  /* key: age, value: {male: monthlyPer1M, female: monthlyPer1M} */
+  18:{male:56,female:23},19:{male:54,female:23},20:{male:52,female:24},
+  21:{male:50,female:24},22:{male:49,female:25},23:{male:48,female:26},
+  24:{male:47,female:26},25:{male:47,female:27},26:{male:46,female:27},
+  27:{male:44,female:28},28:{male:42,female:28},29:{male:40,female:29},
+  30:{male:37.78,female:29},31:{male:38,female:30},32:{male:39,female:31},
+  33:{male:41,female:33},34:{male:46,female:36},35:{male:53,female:40},
+  36:{male:55,female:41},37:{male:57,female:42},38:{male:60,female:44},
+  39:{male:63,female:46},40:{male:68,female:48},41:{male:72,female:51},
+  42:{male:77,female:55},43:{male:83,female:59},44:{male:93,female:66},
+  45:{male:108,female:75},46:{male:112,female:78},47:{male:118,female:82},
+  48:{male:125,female:88},49:{male:137,female:98},50:{male:152,female:113},
+  51:{male:162,female:120},52:{male:175,female:128},53:{male:192,female:140},
+  54:{male:213,female:155},55:{male:240,female:172},56:{male:265,female:190},
+  57:{male:295,female:212},58:{male:332,female:240},59:{male:378,female:275},
+  60:{male:430,female:315},61:{male:492,female:360},62:{male:565,female:412},
+  63:{male:650,female:475},64:{male:748,female:548},65:{male:860,female:632}
+};
+function getBowtiePrice(age,gender,coverage){
+  var r=BOWTIE_RATES[age];
+  if(!r)r=BOWTIE_RATES[Math.min(65,Math.max(18,age))];
+  var monthlyPer1M=gender==='male'?r.male:r.female;
+  var units=parseInt(coverage)/1000000;
+  var monthly=monthlyPer1M*units;
+  var yearly=Math.round(monthly*12*10)/10;
+  monthly=Math.round(monthly*10)/10;
+  return{yearly:yearly,monthly:monthly};
+}
+
+/* ===== TERM LIFE PREMIUM TABLE — sum insured HK$3M, 10-year renewal annual premium ===== */
+/* Source: docs/Term Life Premium table - 2026 MAY - updated.xlsx (FWD / Blue / Zurich) */
+/*         docs/Term Life Premium table - 06082026.xlsx (Bowtie — Aug 2026 offer) */
+/* Schema — PREMIUM_RATES[productId][age][gender+'-'+smoking] = [originalAnnual, discountedOfferAnnual] */
+var PREMIUM_RATES={
+  /* fwd-standard — updated 2026-09-29 from "Term Life RP Product Details 28092026.xlsx" tab "Premium FWD"
+     (Oct 2026 offer, 首年保費1折). Original premiums unchanged; only the discount moved from 2折 to 1折. */
+  'fwd-standard':{
+    30:{'male-smoker':[3480,348],'male-non-smoker':[1770,177],'female-smoker':[2520,252],'female-non-smoker':[1350,135]},
+    35:{'male-smoker':[4500,450],'male-non-smoker':[2310,231],'female-smoker':[3390,339],'female-non-smoker':[1830,183]},
+    40:{'male-smoker':[7050,705],'male-non-smoker':[3570,357],'female-smoker':[4740,474],'female-non-smoker':[2610,261]},
+    45:{'male-smoker':[11100,1110],'male-non-smoker':[5610,561],'female-smoker':[7410,741],'female-non-smoker':[3720,372]},
+    50:{'male-smoker':[18090,1809],'male-non-smoker':[9300,930],'female-smoker':[11940,1194],'female-non-smoker':[6120,612]}
+  },
+  /* fwd-premier — updated 2026-09-29 from "Term Life RP Product Details 28092026.xlsx" tab "Premium FWD"
+     (Oct 2026 offer, 首年保費1折). Original premiums unchanged; only the discount moved from 2折 to 1折. */
+  'fwd-premier':{
+    30:{'male-smoker':[3810,381],'male-non-smoker':[2100,210],'female-smoker':[2700,270],'female-non-smoker':[1530,153]},
+    35:{'male-smoker':[4950,495],'male-non-smoker':[2760,276],'female-smoker':[3600,360],'female-non-smoker':[2040,204]},
+    40:{'male-smoker':[7650,765],'male-non-smoker':[4170,417],'female-smoker':[4950,495],'female-non-smoker':[2820,282]},
+    45:{'male-smoker':[11790,1179],'male-non-smoker':[6300,630],'female-smoker':[7680,768],'female-non-smoker':[3990,399]},
+    50:{'male-smoker':[18990,1899],'male-non-smoker':[10200,1020],'female-smoker':[12240,1224],'female-non-smoker':[6420,642]}
+  },
+  /* bowtie — updated 2026-10-02 from "Term Life RP Product Details 29092026.xlsx" tab "Premium Bowtie" (Oct 2026 offer, 85折 first year, 10-year term). Original premiums unchanged; only the discount moved from 7折 to 85折. */
+  'bowtie':{
+    30:{'male-smoker':[3096,2631.6],'male-non-smoker':[1776,1509.6],'female-smoker':[2400,2040],'female-non-smoker':[1332,1132.2]},
+    35:{'male-smoker':[4440,3774],'male-non-smoker':[2472,2101.2],'female-smoker':[3288,2794.8],'female-non-smoker':[1776,1509.6]},
+    40:{'male-smoker':[6612,5620.2],'male-non-smoker':[3612,3070.2],'female-smoker':[4848,4120.8],'female-non-smoker':[2568,2182.8]},
+    45:{'male-smoker':[10080,8568],'male-non-smoker':[5424,4610.4],'female-smoker':[7416,6303.6],'female-non-smoker':[3888,3304.8]},
+    50:{'male-smoker':[16896,14361.6],'male-non-smoker':[9000,7650],'female-smoker':[11232,9547.2],'female-non-smoker':[5868,4987.8]}
+  },
+  'blue-tl3':{
+    30:{'male-smoker':[2640,792],'male-non-smoker':[1740,522],'female-smoker':[2010,603],'female-non-smoker':[1320,396]},
+    35:{'male-smoker':[4050,1215],'male-non-smoker':[2280,684],'female-smoker':[2820,846],'female-non-smoker':[1800,540]},
+    40:{'male-smoker':[6450,1935],'male-non-smoker':[3540,1062],'female-smoker':[4230,1269],'female-non-smoker':[2580,774]},
+    45:{'male-smoker':[9930,2979],'male-non-smoker':[5310,1593],'female-smoker':[6420,1926],'female-non-smoker':[3690,1107]},
+    50:{'male-smoker':[16620,4986],'male-non-smoker':[8280,2484],'female-smoker':[9090,2727],'female-non-smoker':[5700,1710]}
+  },
+  'blue-tf1':{
+    30:{'male-smoker':[3150,945],'male-non-smoker':[2070,621],'female-smoker':[2250,675],'female-non-smoker':[1590,477]},
+    35:{'male-smoker':[4830,1449],'male-non-smoker':[3000,900],'female-smoker':[3180,954],'female-non-smoker':[2340,702]},
+    40:{'male-smoker':[7710,2313],'male-non-smoker':[4620,1386],'female-smoker':[4770,1431],'female-non-smoker':[3420,1026]},
+    45:{'male-smoker':[11880,3564],'male-non-smoker':[7290,2187],'female-smoker':[7230,2169],'female-non-smoker':[5100,1530]},
+    50:{'male-smoker':[19920,5976],'male-non-smoker':[11850,3555],'female-smoker':[10230,3069],'female-non-smoker':[7560,2268]}
+  },
+  /* Updated: Zurich June offer — 40% off first-year premium (source: New_Term Life Premium table - Zurich (20260617).xlsx) */
+  'zurich':{
+    30:{'male-smoker':[4410,2646],'male-non-smoker':[2689.2,1613.52],'female-smoker':[3720,2232],'female-non-smoker':[2268,1360.8]},
+    35:{'male-smoker':[7020,4212],'male-non-smoker':[3240,1944],'female-smoker':[4830,2898],'female-non-smoker':[2818.8,1691.28]},
+    40:{'male-smoker':[9600,5760],'male-non-smoker':[4536,2721.6],'female-smoker':[5940,3564],'female-non-smoker':[3693.6,2216.16]},
+    45:{'male-smoker':[16200,9720],'male-non-smoker':[7049.1,4229.46],'female-smoker':[9660,5796],'female-non-smoker':[5734.8,3440.88]},
+    50:{'male-smoker':'NA','male-non-smoker':'NA','female-smoker':'NA','female-non-smoker':'NA'}
+  }
+};
+/* Returns {original, discounted, monthly, discountPct} for current filter; snaps to nearest 5-yr bucket. */
+function getPlanPrice(productId,age,gender,smoking){
+  var plan=PREMIUM_RATES[productId];if(!plan)return null;
+  var key=gender+'-'+smoking;
+  var ages=[30,35,40,45,50],snap=ages[0];
+  for(var i=0;i<ages.length;i++){if(Math.abs(ages[i]-age)<Math.abs(snap-age))snap=ages[i]}
+  var entry=plan[snap]&&plan[snap][key];if(!entry)return null;if(entry==='NA')return{na:true};
+  var orig=entry[0],disc=entry[1];
+  var pct=orig>0?Math.round((1-disc/orig)*100):0;
+  return{original:orig,discounted:disc,monthly:disc/12,discountPct:pct};
+}
+function fmtPrice(n){return Math.round(n).toLocaleString('en-US')}
+function fmtMonthly(n){var v=Math.round(n*10)/10;return v.toLocaleString('en-US',{minimumFractionDigits:v%1?1:0,maximumFractionDigits:1})}
+
+/* ===== QUOTE BAR HANDLERS (re-wires the existing age/gender/smoking controls in mobile-quote-bar) ===== */
+function populateAgeSelect(){
+  var ages=[30,35,40,45,50];
+  document.querySelectorAll('.qf-age-select').forEach(function(sel){
+    sel.innerHTML=ages.map(function(a){return '<option value="'+a+'"'+(a===state.age?' selected':'')+'>'+a+(LANG==='zh'?' 歲':'')+'</option>'}).join('');
+  });
+}
+function setAge(val,fromUser){
+  state.age=parseInt(val,10);
+  document.querySelectorAll('.qf-age-select').forEach(function(sel){sel.value=state.age});
+  if(fromUser)dlPush({event:'filter_action',component_type:'sidebar',component_title:'Filter Attribute/Dropdown_Age',action:'select',filter_key:'Age',filter_value:String(state.age)});
+  renderProducts();
+}
+function setGender(val){
+  state.gender=val;
+  document.querySelectorAll('.qf-toggle-btn[data-value="male"],.qf-toggle-btn[data-value="female"]').forEach(function(b){
+    b.classList.toggle('active',b.getAttribute('data-value')===val);
+  });
+  dlPush({event:'filter_action',component_type:'sidebar',component_title:'Filter Attribute/Toggle_Gender',action:'click',filter_key:'Gender',filter_value:val});
+  renderProducts();
+}
+function setSmoking(val){
+  state.smoking=val;
+  document.querySelectorAll('.qf-toggle-btn[data-value="smoker"],.qf-toggle-btn[data-value="non-smoker"]').forEach(function(b){
+    b.classList.toggle('active',b.getAttribute('data-value')===val);
+  });
+  dlPush({event:'filter_action',component_type:'sidebar',component_title:'Filter Attribute/Toggle_Smoking',action:'click',filter_key:'Smoking',filter_value:val});
+  renderProducts();
+}
+
+/* Product data loaded from product-data.html — do not add product data here */
+
+/* ===== STATE ===== */
+var state={age:30,gender:'male',smoking:'non-smoker',coverage:'3000000',sort:'recommended',compared:[],expandedProduct:null,providerFilter:[]};
+function t(k){return T[LANG][k]||k}
+function trackEvent(n,p){window.dataLayer=window.dataLayer||[];window.dataLayer.push(Object.assign({event:n},p))}
+function isDefaultQuote(){return state.age===30&&state.gender==='male'&&state.smoking==='non-smoker'&&state.coverage==='3000000'}
+
+/* ===== DATA TEAM STANDARD TRACKING (Apr 2025) ===== */
+/* dlPush: push to dataLayer per company standard */
+function dlPush(obj){window.dataLayer=window.dataLayer||[];window.dataLayer.push(obj)}
+
+/* Build filter_applied string: key1-val1|key2-val2 */
+function getFilterApplied(){
+  var parts=[];
+  if(state.providerFilter.length)parts.push('provider-'+state.providerFilter.join(','));
+  if(state.sort)parts.push('sort-'+state.sort);
+  return parts.join('|');
+}
+
+/* Build ContentStack item_id: HK.LFI.BRAND.PRODUCT-SLUG (UPPERCASE per A&A spec Apr 2026).
+   Prefers explicit p.csId (hardcoded per product in product-data.html) so the value matches
+   the actual ContentStack record. Falls back to auto-slugged English name. */
+/* Bilingual array accessor. Falls back to the other language, then to an empty list, so a single
+   untranslated field can never throw inside the product map and blank the entire list. This is a
+   real case: fwd-premier has no moreInfo.en, which took every card off the EN page. */
+/* Read one value out of a product's coverage table by its ZH label. Returns '-' when absent. */
+function cov1(p,label){
+  for(var i=0;i<(p.coverage||[]).length;i++){
+    if(p.coverage[i].zh===label){var v=p.coverage[i].val;return typeof v==='object'?v[LANG]:v}
+  }
+  return '-';
+}
+
+function locList(o){var v=o&&(o[LANG]||o.zh||o.en);return Object.prototype.toString.call(v)==='[object Array]'?v:[]}
+
+function csItemId(p){
+  if(p&&p.csId)return p.csId;
+  var brand=p.insurer.replace(/\s.*/,'').toUpperCase();
+  var slug=p.name.en.toUpperCase().replace(/[^A-Z0-9]+/g,'-').replace(/(^-|-$)/g,'');
+  return 'HK.LFI.'+brand+'.'+slug;
+}
+
+/* Build items array for a single product */
+function buildItem(productId,index){
+  var p=P.find(function(x){return x.id===productId});
+  if(!p)return [];
+  return [{item_id:csItemId(p),item_name:p.name[LANG],item_brand:p.insurer,index:typeof index==='number'?index:0}];
+}
+
+/* Build items array for multiple products (compare tray) */
+function buildItems(ids){
+  return ids.map(function(id,i){var p=P.find(function(x){return x.id===id});return p?{item_id:csItemId(p),item_name:p.name[LANG],item_brand:p.insurer,index:i}:null}).filter(Boolean);
+}
+
+/* Get product index in current rendered list */
+function getProductIndex(id){
+  var cards=document.querySelectorAll('.pcard[data-id]');
+  for(var i=0;i<cards.length;i++){if(cards[i].getAttribute('data-id')===id)return i}
+  return 0;
+}
+
+/* ===== CONTROLS ===== */
+function scrollToQuoteInput(){window.scrollTo({top:0,behavior:'smooth'})}
+function copyPromoCode(el,code){
+  navigator.clipboard.writeText(code).then(function(){
+    var tip=el.querySelector('.offer-code-copied');
+    if(tip){tip.classList.add('show');setTimeout(function(){tip.classList.remove('show')},1200)}
+  });
+  trackEvent('product_interact_promo-copy',{code:code});
+}
+/* ===== SOCIAL PROOF COUNTER =====
+   Displayed figure = the GA4 baseline in SOCIAL_PROOF + this visitor's own apply-clicks today.
+
+   The baseline is a REAL measurement — GA4 Sessions by productID over a 24-hour window (see the
+   SOURCE note above SOCIAL_PROOF in product-data.html). It is therefore rendered as-is: no
+   jitter, no rounding up, no synthetic floor. The badge states a fact to the user, so the number
+   must be the measured one. Refreshing it is a data task, not a code one.
+
+   Click counts are THIS BROWSER's clicks only and reset at local midnight.
+   LIMITATION: localStorage cannot see other visitors, and the baseline is a static snapshot that
+   goes stale. A live figure needs a backend endpoint aggregating the product_click_apply events
+   already going to the dataLayer. */
+var SOCIAL_PROOF_KEY='mh_li_social_proof';
+function spDayKey(){var d=new Date();return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate()}
+/* Baseline — the measured GA4 figure, verbatim. 0 when a product has no entry, which hides the badge. */
+function spBase(id){
+  var w=(typeof SOCIAL_PROOF!=='undefined')&&SOCIAL_PROOF[id];
+  return typeof w==='number'&&w>0?w:0;
+}
+/* This visitor's clicks for today. Stored shape: {d:'YYYY-M-D',c:{productId:Number}} */
+function spClicks(){
+  try{
+    var raw=localStorage.getItem(SOCIAL_PROOF_KEY);
+    if(raw){var o=JSON.parse(raw);if(o&&o.d===spDayKey()&&o.c)return o.c}
+  }catch(e){}
+  return {};
+}
+function spCount(id){return spBase(id)+(spClicks()[id]||0)}
+function loadSocialProof(){
+  /* Drop a store left from an earlier day so the count restarts at the new baseline. */
+  try{
+    var raw=localStorage.getItem(SOCIAL_PROOF_KEY);
+    if(raw){var o=JSON.parse(raw);if(!o||o.d!==spDayKey())localStorage.removeItem(SOCIAL_PROOF_KEY)}
+  }catch(e){}
+}
+/* Wrapped in try/catch so a failure here can never block the dlPush that runs after it in onclick handlers. */
+function bumpSocialProof(id){
+  try{
+    if(!id)return;
+    var c=spClicks();c[id]=(c[id]||0)+1;
+    localStorage.setItem(SOCIAL_PROOF_KEY,JSON.stringify({d:spDayKey(),c:c}));
+    var n=spBase(id)+c[id];
+    document.querySelectorAll('.social-proof[data-pid="'+id+'"] .social-proof-num').forEach(function(el){el.textContent=n});
+  }catch(e){}
+}
+function setSort(s,btn){state.sort=s;document.querySelectorAll('.ftab').forEach(function(b){b.classList.remove('active')});btn.classList.add('active');trackEvent('filter_select_sort',{sort_by:s});renderProducts()}
+function updateProviderFilter(){
+  var checked=[];
+  document.querySelectorAll('.sidebar-card .provider-filter-cb').forEach(function(cb){if(cb.checked)checked.push(cb.value)});
+  var prev=state.providerFilter;
+  var added=checked.filter(function(v){return prev.indexOf(v)<0});
+  var removed=prev.filter(function(v){return checked.indexOf(v)<0});
+  state.providerFilter=checked;
+  added.forEach(function(v){dlPush({event:'filter_action',component_type:'sidebar',component_title:'Filter Attribute/Checkbox_Insurers',action:'check',filter_key:'Insurers',filter_value:v})});
+  removed.forEach(function(v){dlPush({event:'filter_action',component_type:'sidebar',component_title:'Filter Attribute/Checkbox_Insurers',action:'uncheck',filter_key:'Insurers',filter_value:v})});
+  renderProducts();
+}
+/* ===== COMPARE ===== */
+function toggleCompare(id,btn){
+  var i=state.compared.indexOf(id);
+  if(i>=0){state.compared.splice(i,1);if(btn)btn.classList.remove('active');dlPush({event:'product_compare',component_type:btn&&btn.closest('.compare-tray-item')?'bottom-sticky':'product-card',component_title:btn&&btn.closest('.compare-tray-item')?'Compare Tray/Button_Remove':'Product Card/Button_Compare',action:'click',intent:'Remove from Compare',item_list_name:'Life Insurance Comparison',items:buildItem(id,getProductIndex(id))})}
+  else if(state.compared.length<3){state.compared.push(id);if(btn)btn.classList.add('active');dlPush({event:'product_compare',component_type:'product-card',component_title:'Product Card/Button_Compare',action:'click',intent:'Add to Compare',item_list_name:'Life Insurance Comparison',items:buildItem(id,getProductIndex(id))})}
+  /* Hide product sticky CTA when compare is active */
+  compareActive=state.compared.length>0;
+  var bar=document.getElementById('stickyBuy');
+  if(compareActive&&bar)bar.classList.remove('visible');
+  renderCompareTray();
+}
+function renderCompareTray(){
+  var tray=document.getElementById('compareTray'),items=document.getElementById('compareTrayItems');
+  if(!state.compared.length){tray.classList.remove('visible');return}
+  tray.classList.add('visible');
+  items.innerHTML=state.compared.map(function(id){var p=P.find(function(x){return x.id===id});return '<div class="compare-tray-item"><span>'+p.name[LANG]+'</span><button class="compare-tray-remove" onclick="toggleCompare(\''+id+'\',this)">✕</button></div>'}).join('');
+}
+function openCompareModal(){
+  if(state.compared.length<2)return;
+  dlPush({event:'product_compare',component_type:'bottom-sticky',component_title:'Compare Tray/CTA_Compare',action:'click',intent:'Compare Now',item_list_name:'Life Insurance Comparison',items:buildItems(state.compared)});
+  var products=state.compared.map(function(id){return P.find(function(x){return x.id===id})});
+  /* Pull a value out of the product's own 保障計劃 coverage table by its ZH label, so the compare
+     rows always match what the card shows. Accepts alternates because Zurich labels its term row
+     保單年期 instead of 續保年期. Returns '—' when a product has no such row. */
+  function cov(p,labels){
+    for(var i=0;i<labels.length;i++){
+      for(var j=0;j<p.coverage.length;j++){
+        if(p.coverage[j].zh===labels[i]){
+          var v=p.coverage[j].val;
+          return typeof v==='object'?v[LANG]:v;
+        }
+      }
+    }
+    return '—';
+  }
+  var rows=[
+    {l:t('annualPremium'),f:function(p){var pr=getPlanPrice(p.id,state.age,state.gender,state.smoking);if(pr&&pr.na)return 'NA';return 'HK'+p.yearlyPrice+'/'+(LANG==='zh'?'首年保費':'1st Year Premium')}},
+    /* Sum insured is the quote basis — identical for every product, so it is a constant, not a per-product field. */
+    {l:LANG==='zh'?'投保額':'Sum Insured',f:function(){return 'HK$3,000,000'}},
+    {l:LANG==='zh'?'投保年齡':'Entry Age',f:function(p){return cov(p,['投保年齡'])}},
+    {l:LANG==='zh'?'續保年期':'Renewal Term',f:function(p){return cov(p,['續保年期','保單年期'])}},
+    {l:LANG==='zh'?'可續保年齡':'Renewable To',f:function(p){return cov(p,['可續保年齡'])}},
+    {l:LANG==='zh'?'繳費模式':'Payment Mode',f:function(p){return cov(p,['繳費模式'])}},
+    {l:LANG==='zh'?'免驗身':'No Medical Exam',f:function(p){return cov(p,['免驗身'])}},
+    {l:LANG==='zh'?'末期疾病保障':'Terminal Illness Benefit',f:function(p){return cov(p,['末期疾病保障'])}},
+    {l:LANG==='zh'?'意外身故額外賠償':'Accidental Death Benefit',f:function(p){return cov(p,['意外身故額外賠償'])}},
+    {l:LANG==='zh'?'自殺條款':'Suicide Clause',f:function(p){return cov(p,['自殺條款'])}}
+  ];
+  var h='<thead><tr><th></th>'+products.map(function(p){return '<td class="product-col-header"><img src="'+p.logo+'" alt="'+p.insurer+'">'+p.name[LANG]+'</td>'}).join('')+'</tr></thead><tbody>';
+  rows.forEach(function(r){h+='<tr><th>'+r.l+'</th>';products.forEach(function(p){h+='<td>'+r.f(p)+'</td>'});h+='</tr>'});
+  h+='<tr class="cta-row"><th></th>';products.forEach(function(p,pi){h+='<td><a href="'+p.url+'" target="_blank" rel="noopener" class="btn-apply" onclick="bumpSocialProof(\''+p.id+'\');dlPush({event:\'product_click_apply\',component_type:\'overlay\',component_title:\'Product Comparison Table/CTA_Apply Now\',action:\'click\',item_list_name:\'Life Insurance Comparison\',items:buildItem(\''+p.id+'\','+pi+'),reward_campaign_name:\'\',reward_campaign_id:\'\'})">'+t('applyNow')+' →</a></td>'});
+  h+='</tr></tbody>';
+  document.getElementById('compareTable').innerHTML=h;
+  document.getElementById('compareModal').classList.add('open');
+  document.body.style.overflow='hidden';
+  /* Hide sticky bars to avoid clutter */
+  var sc=document.getElementById('stickyCta');if(sc)sc.style.display='none';
+  var sb=document.getElementById('stickyBuy');if(sb)sb.style.display='none';
+  var ct=document.getElementById('compareTray');if(ct)ct.style.display='none';
+}
+function closeCompareModal(){
+  document.getElementById('compareModal').classList.remove('open');
+  document.body.style.overflow='';
+  /* Restore sticky bars */
+  var sc=document.getElementById('stickyCta');if(sc)sc.style.display='';
+  var sb=document.getElementById('stickyBuy');if(sb)sb.style.display='';
+  var ct=document.getElementById('compareTray');if(ct)ct.style.display='';
+}
+
+/* ===== MOBILE FILTER SHEET ===== */
+/* 篩選 — the VHIS filter (2026-10-14). Same component as the VHIS page.
+   Mobile: the results bar (count, summary, 篩選) opens a draft sheet; nothing
+   changes until 顯示 N 個計劃. 全部清除 clears insurers only, not the quote details.
+   Desktop: the sidebar, sticky only when the whole panel fits the window.
+   Commits go through the existing setters, so pricing, rendering and the
+   filter_action events are unchanged. */
+var FILTER_CFG={"fields": ["age", "gender", "smoking"], "count": "life"};
+var vfTx={
+  zh:{quote:'報價條件',prov:'保險公司',age:'投保年齡',gender:'性別',male:'男',female:'女',smoking:'吸煙狀態',ns:'非吸煙',s:'吸煙',
+      term:'保障年期',t1:'1年',t10:'10年',show:'顯示 {n} 個計劃',none:'沒有符合的計劃',ageUnit:'歲',allProv:'所有保險公司',sep:'、'},
+  en:{quote:'Quote details',prov:'Insurers',age:'Age',gender:'Gender',male:'Male',female:'Female',smoking:'Smoking',ns:'Non-smoker',s:'Smoker',
+      term:'Term',t1:'1 year',t10:'10 years',show:'Show {n} plans',show1:'Show 1 plan',none:'No matching plans',ageUnit:'',allProv:'All insurers',sep:', '}
+}[(typeof LANG!=='undefined'&&LANG==='en')?'en':'zh'];
+var vfDraftState=null,vfSecOpen={quote:true,provider:true};
+function vfHas(f){return FILTER_CFG.fields.indexOf(f)>=0}
+function vfEsc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+function vfProvs(){
+  return [].map.call(document.querySelectorAll('.sidebar .provider-filter-cb'),function(cb){return {id:cb.value,name:cb.parentNode.textContent.trim()}});
+}
+function vfAges(){
+  var sel=document.querySelector('.sidebar .qf-age-select');
+  return sel?[].map.call(sel.options,function(o){return {v:o.value,t:o.textContent}}):[];
+}
+/* What 套用 would show, without committing. */
+function vfCount(d){
+  if(FILTER_CFG.count==='ci')return P.filter(function(p){
+    if(getPlanPrice(p.id,d.age,d.gender,d.smoking,d.term).hide)return false;
+    return !d.providers.length||d.providers.indexOf(p.providerId)>=0;
+  }).length;
+  if(FILTER_CFG.count==='life')return P.filter(function(p){return !d.providers.length||d.providers.indexOf(p.providerId)>=0}).length;
+  var keep=state.providerFilter;state.providerFilter=d.providers;
+  var n=getFiltered().length;state.providerFilter=keep;return n;
+}
+function vfSummary(){
+  var parts=[],L=vfTx;
+  if(vfHas('age'))parts.push(L.ageUnit?state.age+L.ageUnit:L.age+' '+state.age);
+  if(vfHas('gender'))parts.push(state.gender==='male'?L.male:L.female);
+  if(vfHas('smoking'))parts.push(state.smoking==='smoker'?L.s:L.ns);
+  if(vfHas('term'))parts.push(state.term==='10y'?L.t10:L.t1);
+  var ps=vfProvs().filter(function(p){return state.providerFilter.indexOf(p.id)>=0}).map(function(p){return p.name});
+  parts.push(ps.length?ps.join(L.sep):L.allProv);
+  return parts.join(' · ');
+}
+/* Called from renderProducts: the summary line and the insurer badge on 篩選. */
+function syncFilterBar(){
+  var s=document.getElementById('rhSummary');if(s)s.textContent=vfSummary();
+  var b=document.getElementById('rfBadge'),n=state.providerFilter.length;
+  if(b){b.textContent=n;b.hidden=!n}
+}
+/* Desktop panel sticks only when its natural height fits the window. */
+function fitSidebar(){
+  var s=document.querySelector('.sidebar');
+  if(s)s.classList.toggle('sidebar-fits',s.offsetHeight+112<=window.innerHeight);
+}
+window.addEventListener('resize',fitSidebar);
+function vfSeg(field,opts){
+  return '<div class="fq-seg">'+opts.map(function(o){
+    return '<button class="fq-seg-btn'+(vfDraftState[field]===o[0]?' active':'')+'" onclick="vfDraft(\''+field+'\',\''+o[0]+'\')">'+vfEsc(o[1])+'</button>';
+  }).join('')+'</div>';
+}
+function vfFsec(id,label,body){
+  var open=!!vfSecOpen[id];
+  return '<div class="fsec'+(open?' open':'')+'"><button class="fsec-head" aria-expanded="'+open+'" onclick="vfSec(\''+id+'\')">'+
+    '<span class="fsec-label">'+vfEsc(label)+'</span><span class="fsec-arrow">▼</span></button><div class="fsec-body">'+body+'</div></div>';
+}
+function vfRenderSheet(){
+  var d=vfDraftState,L=vfTx;if(!d)return;
+  var q='';
+  if(vfHas('age'))q+='<div class="fq-row"><label class="fq-label">'+L.age+'</label><select class="fsheet-select" onchange="vfDraft(\'age\',parseInt(this.value,10))">'+
+    vfAges().map(function(a){return '<option value="'+a.v+'"'+(String(a.v)===String(d.age)?' selected':'')+'>'+vfEsc(a.t)+'</option>'}).join('')+'</select></div>';
+  if(vfHas('gender'))q+='<div class="fq-row"><label class="fq-label">'+L.gender+'</label>'+vfSeg('gender',[['male','♂ '+L.male],['female','♀ '+L.female]])+'</div>';
+  if(vfHas('smoking'))q+='<div class="fq-row"><label class="fq-label">'+L.smoking+'</label>'+vfSeg('smoking',[['non-smoker','🚭 '+L.ns],['smoker','🚬 '+L.s]])+'</div>';
+  if(vfHas('term'))q+='<div class="fq-row"><label class="fq-label">'+L.term+'</label>'+vfSeg('term',[['1y',L.t1],['10y',L.t10]])+'</div>';
+  var p=vfProvs().map(function(pr){
+    return '<label class="fcheck"><input type="checkbox"'+(d.providers.indexOf(pr.id)>=0?' checked':'')+' onchange="vfProv(\''+pr.id+'\',this.checked)">'+vfEsc(pr.name)+'</label>';
+  }).join('');
+  document.getElementById('fsheetBody').innerHTML=(q?vfFsec('quote',L.quote,q):'')+vfFsec('provider',L.prov,p);
+  /* The button says what you will get, and warns when nothing matches. */
+  var n=vfCount(d),btn=document.getElementById('fsheetApply');
+  btn.textContent=n?(n===1&&L.show1?L.show1:L.show.replace('{n}',n)):L.none;
+  btn.disabled=!n;
+}
+function openFilterSheet(){
+  vfDraftState={age:state.age,gender:state.gender,smoking:state.smoking,term:state.term,providers:state.providerFilter.slice()};
+  vfRenderSheet();
+  dlPush({event:'modal_view',component_type:'overlay',component_title:'Sort & Filter Sheet/Modal',action:'view'});
+  document.getElementById('filterSheet').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+function closeFilterSheet(){
+  vfDraftState=null;
+  document.getElementById('filterSheet').classList.remove('open');
+  document.body.style.overflow='';
+}
+function vfDraft(k,v){vfDraftState[k]=v;vfRenderSheet()}
+function vfSec(id){vfSecOpen[id]=!vfSecOpen[id];vfRenderSheet()}
+function vfProv(id,on){
+  var a=vfDraftState.providers,i=a.indexOf(id);
+  if(on&&i<0)a.push(id);if(!on&&i>=0)a.splice(i,1);
+  vfRenderSheet();
+}
+function clearFilters(){
+  dlPush({event:'filter_action',component_type:'filter-sheet',component_title:'Filter Attribute/CTA_ClearAll',action:'click',filter_key:'ClearAll',filter_value:'1'});
+  vfDraftState.providers=[];vfRenderSheet();
+}
+function applyFilters(){
+  var d=vfDraftState;if(!d)return;
+  if(vfHas('age')&&d.age!==state.age)setAge(d.age,true);
+  if(vfHas('gender')&&d.gender!==state.gender)setGender(d.gender);
+  if(vfHas('smoking')&&d.smoking!==state.smoking)setSmoking(d.smoking);
+  if(vfHas('term')&&d.term!==state.term)setTerm(d.term);
+  if(d.providers.join()!==state.providerFilter.join()){
+    document.querySelectorAll('.sidebar .provider-filter-cb').forEach(function(cb){cb.checked=d.providers.indexOf(cb.value)>=0});
+    updateProviderFilter();
+  }
+  closeFilterSheet();
+  syncFilterBar();
+  /* Back to the top of the results, as on VHIS. */
+  var main=document.querySelector('.main-content');
+  if(main){var y=main.getBoundingClientRect().top+window.scrollY-8;if(window.scrollY>y)window.scrollTo({top:y,behavior:'smooth'})}
+}
+
+/* ===== RENDER ===== */
+/* Accordion icons: the same Material Symbols as the VHIS page (Clara, 2026-10-14). */
+var SECTION_ICON={cov:'M480-80q-139-35-229.5-159.5T160-516v-244l320-120 320 120v244q0 152-90.5 276.5T480-80Zm0-84q104-33 172-132t68-220v-189l-240-90-240 90v189q0 121 68 220t172 132Zm0-316Z',info:'M440-280h80v-240h-80v240Zm40-320q17 0 28.5-11.5T520-640q0-17-11.5-28.5T480-680q-17 0-28.5 11.5T440-640q0 17 11.5 28.5T480-600Zm0 520q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z',docs:'M320-240h320v-80H320v80Zm0-160h320v-80H320v80ZM240-80q-33 0-56.5-23.5T160-160v-640q0-33 23.5-56.5T240-880h320l240 240v480q0 33-23.5 56.5T720-80H240Zm280-520v-200H240v640h480v-440H520ZM240-800v200-200 640-640Z'};
+function secIcon(id){return '<svg class="pcard-section-icon" viewBox="0 -960 960 960" aria-hidden="true"><path d="'+SECTION_ICON[id]+'"/></svg>'}
+function renderProducts(){
+  var list=P.filter(function(p){
+    if(state.providerFilter.length>0){if(state.providerFilter.indexOf(p.providerId)<0)return false}
+    return true;
+  });
+  function getEffectiveYearly(p){
+    return parseFloat(p.yearlyPrice.replace(/[$,]/g,''));
+  }
+  if(state.sort==='price-asc')list.sort(function(a,b){return getEffectiveYearly(a)-getEffectiveYearly(b)});
+  else if(state.sort==='discount-desc')list.sort(function(a,b){return b.discountPct-a.discountPct});
+
+  document.getElementById('resultsCount').innerHTML='<strong>'+list.length+'</strong> '+t('resultsCount').replace('{n}','');syncFilterBar();fitSidebar();
+  /* Update pricing basis note — reflects current Quote Bar filter */
+  var basisEl=document.getElementById('pricingBasis');
+  if(basisEl){
+    var ageStr=state.age,
+        genderStr=LANG==='zh'?(state.gender==='male'?'男性':'女性'):(state.gender==='male'?'male':'female'),
+        smokeStr=LANG==='zh'?(state.smoking==='non-smoker'?'非吸煙':'吸煙'):(state.smoking==='non-smoker'?'non-smoking':'smoking'),
+        sumStr='HK$'+parseInt(state.coverage,10).toLocaleString('en-US');
+    /* One sentence in the grey strip, as on the VHIS page (2026-10-14). The sum insured sits in the
+       sentence instead of its own large line. The persona reads from the filter rather than being
+       hardcoded: the card prices change with it, so a fixed "30歲非吸煙男性" would contradict them. */
+    basisEl.innerHTML='<div class="pb-text"><div class="pb-sum">'+(LANG==='zh'
+      ?'顯示保費為首年保費，以投保額 '+sumStr+'（除另有標明）、續保年期為10年(如適用)、'+ageStr+'歲'+smokeStr+genderStr+'計算；個別保險公司保費按投保人下次生日年齡計算，實際保費以保險公司核保結果為準。'
+      :'Premiums shown are first-year premiums, based on a '+sumStr+' sum insured (unless otherwise stated), a 10-year renewal term (where applicable), '+ageStr+'-year-old '+smokeStr+' '+genderStr+'; individual insurers calculate premiums by age next birthday, and the actual premium is subject to the insurer\'s underwriting result.')+'</div></div>';
+  }
+
+  document.getElementById('productList').innerHTML=list.map(function(p){
+    var isC=state.compared.indexOf(p.id)>=0;
+    var covVal=function(v){return typeof v==='object'?v[LANG]:v};
+    /* Dynamic pricing — reads PREMIUM_RATES per current Quote Bar filter; falls back to product-data baseline when no rate row exists. */
+    var price=getPlanPrice(p.id,state.age,state.gender,state.smoking);var isNA=price&&price.na;
+    var yp,oyp,mp,disc;
+    if(price){
+      yp='$'+fmtPrice(price.discounted);
+      oyp='$'+fmtPrice(price.original);
+      mp='$'+fmtMonthly(price.monthly);
+      disc=price.discountPct;
+    }else{
+      yp=p.yearlyPrice;oyp=p.origYearlyPrice;mp=p.monthlyPrice;disc=p.discountPct;
+    }
+    /* Policy provisions — accepts a plain URL string (one link, default label) or an array of
+       {label:{zh,en},url} when a product has more than one provision PDF. Normalised to a list
+       here so the render below is the same either way. */
+    var provList=(!p.docs||!p.docs.provision)?[]:(Array.isArray(p.docs.provision)?p.docs.provision:[{label:null,url:p.docs.provision}]);
+    return '<div class="pcard" data-id="'+p.id+'">'+
+      /* Top highlight ribbon (optional) */
+      (p.topHighlight?'<div class="pcard-highlight">🔥 '+p.topHighlight[LANG]+'</div>':'')+
+      /* USP chips */
+      '<div class="usp-chips">'+p.hl.map(function(h){var v=typeof h.val==='object'?h.val[LANG]:h.val;return '<span class="usp-chip">'+v+'</span>'}).join('')+'</div>'+
+      /* Insurer header */
+      '<div class="pcard-top"><div class="insurer-chip"><div class="insurer-avatar"><img src="'+p.logo+'" alt="'+p.insurer+'"></div><span class="insurer-name">'+p.insurer+'</span></div></div>'+
+      '<div class="pcard-body">'+
+        '<div class="pcard-name">'+p.name[LANG]+'</div>'+
+        /* Price banner — golden gradient like FWD */
+        (isNA?'<div class="price-banner" style="background:#eef2f6;display:block;text-align:center">'+
+            '<div style="font-size:var(--display-3-size);font-weight:700;color:#1a2b3c;line-height:1.1">NA</div>'+
+            '<div style="font-size:var(--caption-size);color:#5a6b7b;margin-top:6px;line-height:1.4">'+(LANG==='zh'?'50 歲以上未能提供 HK$3,000,000 投保額報價':'No HK$3,000,000 quote available over age 50')+'</div>'+
+          '</div>':'<div class="price-banner">'+
+          '<span class="price-badge">'+(LANG==='zh'?'限時優惠':'Limited offer')+'</span>'+
+          '<div class="price-banner-inner">'+
+            '<span class="price-currency">HK$</span>'+
+            '<span class="price-num">'+yp.replace('$','')+'</span>'+
+            '<span class="price-unit">/'+(LANG==='zh'?'首年保費':'1st Year Premium')+'</span>'+
+          '</div>'+
+          /* 原價： and /年 sit outside .price-orig — that class is line-through, and only the
+             figure itself should be struck through, not the label or the unit. */
+          '<div style="text-align:right;margin-top:2px">'+
+            '<span style="font-size:var(--caption-size);color:var(--ink-muted)">'+(LANG==='zh'?'原價：':'Original: ')+'</span>'+
+            '<span class="price-orig">HK'+oyp+'</span>'+
+            '<span style="font-size:var(--caption-size);color:var(--ink-muted)"> /'+(LANG==='zh'?'年':'yr')+'</span>'+
+          '</div>'+
+          '<div class="price-monthly">'+
+            '<span class="price-monthly-label">'+(LANG==='zh'?'即每月':'Monthly')+'</span>'+
+            /* Inline override: .price-monthly-val is 18px/800 in styles.html, but this line should
+               read at the same weight and size as its 即每月 label. */
+            '<span class="price-monthly-val" style="font-size:var(--caption-size);font-weight:500">HK'+mp+'</span>'+
+          '</div>'+
+        '</div>')+
+      /* ===== HIGHLIGHTS — three key figures, directly under the price =====
+         投保額 is the shop-wide quote basis (HK$3,000,000 for every card); the other two read
+         from this product's own coverage table so they can never drift apart. */
+      '<div class="pcard-highlights">'+
+        '<div class="hl-row"><span class="hl-k">'+(LANG==='zh'?'投保額':'Sum insured')+'</span><span class="hl-v">HK$'+parseInt(state.coverage,10).toLocaleString('en-US')+'</span></div>'+
+        '<div class="hl-row"><span class="hl-k">'+(LANG==='zh'?'末期疾病保障':'Terminal Illness Benefit')+'</span><span class="hl-v">'+cov1(p,'末期疾病保障')+'</span></div>'+
+        '<div class="hl-row"><span class="hl-k">'+(LANG==='zh'?'意外身故額外賠償':'Accidental Death Benefit')+'</span><span class="hl-v">'+cov1(p,'意外身故額外賠償')+'</span></div>'+
+      '</div>'+
+      '</div>'+
+      /* Promo highlight strip with inline code */
+      '<div class="promo-strip">'+
+        '<span class="promo-strip-icon" aria-hidden="true">🎁</span>'+
+        '<div class="promo-strip-body">'+
+          '<span class="promo-strip-text">'+p.exclusive.text[LANG]+'</span>'+
+          (p.exclusive.gift?'<span class="promo-strip-gift">'+p.exclusive.gift[LANG]+'</span>':'')+
+          '<div class="promo-strip-footer">'+
+            '<span class="promo-strip-code" onclick="copyPromoCode(this,\''+p.exclusive.code+'\')" title="'+(LANG==='zh'?'點擊複製':'Click to copy')+'">'+(LANG==='zh'?'優惠碼：':'Code: ')+p.exclusive.code+'<span class="offer-code-copied">'+(LANG==='zh'?'已複製 ✓':'Copied ✓')+'</span></span>'+
+            '<span class="promo-strip-expiry">'+p.exclusive.expiry[LANG]+'</span>'+
+          '</div>'+
+        '</div>'+
+      '</div>'+
+      /* Badge is suppressed when there is no measured figure — better absent than showing 0. */
+      (spCount(p.id)>0?'<div class="social-proof" data-pid="'+p.id+'"> '+(LANG==='zh'?'過去24小時內有<strong class="social-proof-num">'+spCount(p.id)+'</strong>人對此產品感興趣':'<strong class="social-proof-num">'+spCount(p.id)+'</strong> people viewed this product in the last 24 hours')+'</div>':'')+
+      /* CTA row */
+      '<div class="pcard-cta-row">'+
+        '<button class="btn-compare'+(isC?' active':'')+'" onclick="toggleCompare(\''+p.id+'\',this)">'+t('compare')+'</button>'+
+        '<a href="'+p.url+'" target="_blank" rel="noopener" class="btn-apply btn-apply-main" onclick="bumpSocialProof(\''+p.id+'\');dlPush({event:\'product_click_apply\',component_type:\'product-card\',component_title:\'Product Card/CTA_Apply Now\',action:\'click\',filter_applied:getFilterApplied(),item_list_name:\'Life Insurance Comparison\',items:buildItem(\''+p.id+'\',getProductIndex(\''+p.id+'\')),reward_campaign_name:\'\',reward_campaign_id:\'\'})">'+t('applyNow')+' →</a>'+
+      '</div>'+
+      /* Coverage table */
+      '<div class="pcard-section"><button class="pcard-section-header" data-product-id="'+p.id+'" onclick="expandProduct(\''+p.id+'\')"><span class="pcard-section-title">'+secIcon('cov')+''+(LANG==='zh'?'關於計劃':'About the Plan')+'</span><span class="arrow">▼</span></button>'+
+      '<div class="pcard-section-body"><table class="coverage-table">'+
+        p.coverage.map(function(c){var covVal=function(v){return typeof v==='object'?v[LANG]:v};return '<tr><td>'+c[LANG]+'</td><td>'+String(covVal(c.val)).replace(/\n/g,'<br>')+'</td></tr>'}).join('')+
+      '</table></div></div>'+
+      /* More Info */
+      '<div class="pcard-section"><button class="pcard-section-header" data-product-id="'+p.id+'" data-section="More Info" onclick="toggleSec(this)"><span class="pcard-section-title">'+secIcon('info')+''+(LANG==='zh'?'更多資訊':'More Info')+'</span><span class="arrow">▼</span></button><div class="pcard-section-body" onclick="collapseBodyClick(event,this)"><ul class="info-list">'+
+        locList(p.moreInfo).map(function(m){return '<li>'+m+'</li>'}).join('')+
+      '</ul></div></div>'+
+      /* ===== Coverage Documents (保單文件) — renders only if at least one PDF exists ===== */
+      (p.docs&&(p.docs.brochure||provList.length)?
+      '<div class="pcard-section"><button class="pcard-section-header" data-product-id="'+p.id+'" data-section="Coverage Documents" onclick="toggleSec(this)"><span class="pcard-section-title">'+secIcon('docs')+''+(LANG==='zh'?'保單文件':'Coverage Documents')+'</span><span class="arrow">▼</span></button><div class="pcard-section-body" onclick="collapseBodyClick(event,this)"><div class="doc-list">'+
+        (p.docs.brochure?'<a href="'+p.docs.brochure+'" target="_blank" rel="noopener" class="doc-link" onclick="dlPush({event:\'navigate\',component_type:\'product-card\',component_title:\'Product Card/Link_Product Brochure\',action:\'click\',filter_applied:getFilterApplied(),item_list_name:\'Life Insurance Comparison\',items:buildItem(\''+p.id+'\',getProductIndex(\''+p.id+'\'))})">'+(LANG==='zh'?'產品單張 (PDF)':'Product Brochure (PDF)')+'</a>':'')+
+        provList.map(function(d){
+          var lbl=d.label?d.label[LANG]:(LANG==='zh'?'保單條款 (PDF)':'Policy Provisions (PDF)');
+          /* Keep the tracking title byte-identical for single-provision products so existing
+             reports are unaffected; name the individual PDF only where there is more than one. */
+          var ttl=(provList.length>1&&d.label&&d.label.en)?d.label.en:'Policy Provisions';
+          return '<a href="'+d.url+'" target="_blank" rel="noopener" class="doc-link" onclick="dlPush({event:\'navigate\',component_type:\'product-card\',component_title:\'Product Card/Link_'+ttl+'\',action:\'click\',filter_applied:getFilterApplied(),item_list_name:\'Life Insurance Comparison\',items:buildItem(\''+p.id+'\',getProductIndex(\''+p.id+'\'))})">'+lbl+'</a>';
+        }).join('')+
+      '</div></div></div>':'')+
+    '</div>';
+  }).join('');
+  /* If expanded product is no longer visible, clear it */
+  if(state.expandedProduct&&!list.find(function(p){return p.id===state.expandedProduct})){
+    state.expandedProduct=null;
+  }
+  updateStickyBuy();
+  renderProductDots(list);
+}
+/* Product navigation dots */
+function renderProductDots(list){
+  var dotsEl=document.getElementById('productDots');
+  if(!dotsEl)return;
+  dotsEl.innerHTML=list.map(function(p,i){
+    return '<button class="product-dot'+(i===0?' active':'')+'" data-idx="'+i+'" data-id="'+p.id+'" onclick="scrollToProduct(\''+p.id+'\','+i+')" title="'+p.name[LANG]+'"></button>';
+  }).join('');
+}
+function scrollToProduct(id,idx){
+  var card=document.querySelector('.pcard[data-id="'+id+'"]');
+  if(card)card.scrollIntoView({behavior:'smooth',block:'start'});
+  /* Update active dot */
+  document.querySelectorAll('.product-dot').forEach(function(d,i){d.classList.toggle('active',i===idx)});
+}
+/* Update dots on scroll */
+function updateProductDots(){
+  var cards=document.querySelectorAll('.pcard');
+  var dots=document.querySelectorAll('.product-dot');
+  if(!dots.length)return;
+  var viewH=window.innerHeight;
+  for(var i=0;i<cards.length;i++){
+    var r=cards[i].getBoundingClientRect();
+    if(r.top<viewH*0.5&&r.bottom>viewH*0.3){
+      dots.forEach(function(d,j){d.classList.toggle('active',j===i)});
+      break;
+    }
+  }
+}
+window.addEventListener('scroll',updateProductDots,{passive:true});
+
+/* ===== PRODUCT EXPAND & STICKY BUY ===== */
+function expandProduct(id){
+  var card=document.querySelector('.pcard[data-id="'+id+'"]');
+  if(!card)return;
+  var header=card.querySelector('.pcard-section-header[data-product-id="'+id+'"]');
+  var body=header?header.nextElementSibling:null;
+  if(!header||!body)return;
+  var wasOpen=body.classList.contains('open');
+  if(wasOpen){
+    header.classList.remove('open');
+    body.classList.remove('open');
+    dlPush({event:'product_interaction',component_type:'accordion',component_title:'Product Card_About the Plan',action:'collapse',filter_applied:getFilterApplied(),item_list_name:'Life Insurance Comparison',items:buildItem(id,getProductIndex(id)),reward_campaign_name:'',reward_campaign_id:'',search_result_parameter:''});
+    state.expandedProduct=null;
+  }else{
+    /* close any other open coverage section first */
+    var prev=document.querySelector('.pcard-section-header.open[data-product-id]');
+    if(prev){prev.classList.remove('open');prev.nextElementSibling.classList.remove('open')}
+    header.classList.add('open');
+    body.classList.add('open');
+    state.expandedProduct=id;
+    dlPush({event:'product_interaction',component_type:'accordion',component_title:'Product Card_About the Plan',action:'expand',filter_applied:getFilterApplied(),item_list_name:'Life Insurance Comparison',items:buildItem(id,getProductIndex(id)),reward_campaign_name:'',reward_campaign_id:'',search_result_parameter:''});
+  }
+  updateStickyBuy();
+}
+
+function updateStickyBuy(){
+  var bar=document.getElementById('stickyBuy');
+  /* The compare tray owns the bottom of the screen while comparing. Without this guard,
+     expanding a card section (or any re-render) re-shows the product bar on top of the tray. */
+  if(compareActive){bar.classList.remove('visible');return}
+  if(!state.expandedProduct){bar.classList.remove('visible');return}
+  var p=P.find(function(x){return x.id===state.expandedProduct});
+  if(!p){bar.classList.remove('visible');return}
+  bar.classList.add('visible');
+  document.getElementById('stickyBuyLogo').style.background='#fff';
+  document.getElementById('stickyBuyLogo').innerHTML='<img src="'+p.logo+'" alt="'+p.insurer+'" style="width:100%;height:100%;object-fit:contain">';
+  document.getElementById('stickyBuyName').textContent=p.name[LANG];
+  var syp=p.yearlyPrice;
+  document.getElementById('stickyBuyPrice').innerHTML='HK'+syp+'<span class="unit">/'+(LANG==='zh'?'首年保費':'1st Year Premium')+'</span>';
+  var btn=document.getElementById('stickyBuyBtn');
+  btn.href=p.url;
+  btn.textContent=LANG==='zh'?'立即投保 →':'Apply Now →';
+  btn.onclick=function(){bumpSocialProof(p.id);dlPush({event:'product_click_apply',component_type:'bottom-sticky',component_title:'Bottom Sticky/CTA_Apply Now',action:'click',filter_applied:getFilterApplied(),item_list_name:'Life Insurance Comparison',items:buildItem(p.id,getProductIndex(p.id)),reward_campaign_name:'',reward_campaign_id:''})};
+  if(typeof checkStickyCta==='function')checkStickyCta();
+}
+function toggleSec(btn){var b=btn.nextElementSibling;b.classList.toggle('open');btn.classList.toggle('open');var pid=btn.getAttribute('data-product-id');var sec=btn.getAttribute('data-section');if(pid&&sec){var act=b.classList.contains('open')?'expand':'collapse';dlPush({event:'product_interaction',component_type:'accordion',component_title:'Product Card_'+sec,action:act,filter_applied:getFilterApplied(),item_list_name:'Life Insurance Comparison',items:buildItem(pid,getProductIndex(pid)),reward_campaign_name:'',reward_campaign_id:'',search_result_parameter:''})}}
+
+/* Close a pcard section by clicking anywhere inside its open body.
+   Ignores clicks that land on interactive elements (buttons, links, inputs). */
+function collapseBodyClick(event,bodyEl){
+  var el=event.target;
+  while(el&&el!==bodyEl){
+    var tag=el.tagName;
+    if(tag==='BUTTON'||tag==='A'||tag==='INPUT'||tag==='SELECT'||tag==='TEXTAREA')return;
+    el=el.parentElement;
+  }
+  var header=bodyEl.previousElementSibling;
+  var pid=header&&header.getAttribute('data-product-id');
+  if(pid){expandProduct(pid)}else{toggleSec(header)}
+}
+
+/* ===== FAQ ===== */
+function renderFAQ(){
+  var faqs=[{q:t('faq1q'),a:t('faq1a')},{q:t('faq2q'),a:t('faq2a')},{q:t('faq3q'),a:t('faq3a')},{q:t('faq4q'),a:t('faq4a')}];
+  document.getElementById('faqList').innerHTML=faqs.map(function(f,i){
+    return '<div class="faq-card"><div class="faq-q"><span class="faq-num">'+(i+1)+'</span>'+f.q+'</div><div class="faq-a">'+f.a+'</div></div>';
+  }).join('');
+}
+
+/* ===== STICKY CTA (scroll-triggered) =====
+   The bottom "免費比較" bar was removed from the markup Aug 2026. Every reference below is
+   null-guarded so the page runs identically whether or not #stickyCta exists — without the
+   guards, a missing element throws here at top level and nothing after it (including
+   initPage) ever runs, leaving a blank page. */
+var stickyCtaDismissed=false;
+var stickyCtaEl=document.getElementById('stickyCta');
+if(stickyCtaEl)stickyCtaEl.style.position='fixed';
+
+function checkStickyCta(){
+  if(!stickyCtaEl)return;
+  if(stickyCtaDismissed){stickyCtaEl.classList.remove('visible');return}
+  var scrolled=window.scrollY||document.documentElement.scrollTop;
+  var productBuyVisible=document.getElementById('stickyBuy').classList.contains('visible');
+  if(scrolled>400&&!productBuyVisible){stickyCtaEl.classList.add('visible')}
+  else{stickyCtaEl.classList.remove('visible')}
+}
+function dismissStickyCta(){stickyCtaDismissed=true;if(stickyCtaEl)stickyCtaEl.classList.remove('visible');trackEvent('navigate_click_dismiss-cta',{})}
+window.addEventListener('scroll',checkStickyCta,{passive:true});
+
+/* ===== STICKY PRODUCT CTA ON SCROLL (mobile + desktop) ===== */
+var scrollProductCta=null;
+var compareActive=false;
+function checkProductInView(){
+  if(state.expandedProduct||compareActive)return;
+  var cards=document.querySelectorAll('.pcard');
+  var found=null;
+  var viewH=window.innerHeight;
+  for(var i=0;i<cards.length;i++){
+    var r=cards[i].getBoundingClientRect();
+    if(r.top<viewH*0.6&&r.bottom>viewH*0.3){
+      found=cards[i].getAttribute('data-id');
+      break;
+    }
+  }
+  var bar=document.getElementById('stickyBuy');
+  if(found&&found!==scrollProductCta){
+    scrollProductCta=found;
+    var p=P.find(function(x){return x.id===found});
+    if(!p)return;
+    bar.classList.add('visible');
+    document.getElementById('stickyBuyLogo').innerHTML='<img src="'+p.logo+'" alt="'+p.insurer+'" style="width:100%;height:100%;object-fit:contain;padding:3px">';
+    document.getElementById('stickyBuyName').textContent=p.name[LANG];
+    var syp=p.yearlyPrice;
+    document.getElementById('stickyBuyPrice').innerHTML='HK'+syp+'<span class="unit">/'+(LANG==='zh'?'首年保費':'1st Year Premium')+'</span>';
+    var btn=document.getElementById('stickyBuyBtn');
+    btn.href=p.url;
+    btn.textContent=t('applyNow')+' →';
+    btn.onclick=function(){bumpSocialProof(p.id);dlPush({event:'product_click_apply',component_type:'bottom-sticky',component_title:'Bottom Sticky/CTA_Apply Now',action:'click',filter_applied:getFilterApplied(),item_list_name:'Life Insurance Comparison',items:buildItem(p.id,getProductIndex(p.id)),reward_campaign_name:'',reward_campaign_id:''})};
+  }else if(!found){
+    scrollProductCta=null;
+    if(!state.expandedProduct)bar.classList.remove('visible');
+  }
+}
+window.addEventListener('scroll',checkProductInView,{passive:true});
+
+/* ===== PROMO BANNER CAROUSEL ===== */
+(function(){
+  var track=document.getElementById('promoTrack');
+  var dotsWrap=document.getElementById('promoDots');
+  if(!track||!dotsWrap)return;
+  var slides=track.querySelectorAll('.promo-slide');
+  var total=slides.length;
+  if(total<1)return;
+  /* Hide arrows + dots when only one banner */
+  if(total<=1){
+    var pc=document.getElementById('promoCarousel');
+    if(pc){
+      var lArr=pc.querySelector('.promo-arrow-left');if(lArr)lArr.style.display='none';
+      var rArr=pc.querySelector('.promo-arrow-right');if(rArr)rArr.style.display='none';
+    }
+    dotsWrap.style.display='none';
+  }
+  var current=0;
+  var autoTimer=null;
+  for(var i=0;i<total;i++){
+    var d=document.createElement('button');
+    d.className='promo-dot'+(i===0?' active':'');
+    d.onclick=(function(idx){return function(){goTo(idx)}})(i);
+    dotsWrap.appendChild(d);
+  }
+  function goTo(idx){
+    current=((idx%total)+total)%total;
+    track.style.transform='translateX(-'+current*100+'%)';
+    dotsWrap.querySelectorAll('.promo-dot').forEach(function(d,i){d.classList.toggle('active',i===current)});
+    resetAuto();
+  }
+  window.promoSlide=function(dir){goTo(current+dir)};
+  function resetAuto(){clearInterval(autoTimer);autoTimer=setInterval(function(){goTo(current+1)},5000)}
+  resetAuto();
+  var carousel=document.getElementById('promoCarousel');
+  /* #2207 - Image Carousel click tracking */
+  carousel.addEventListener('click',function(e){
+    var slide=e.target.closest('.promo-slide');if(!slide)return;
+    var img=slide.querySelector('img');
+    var alt=img?img.getAttribute('alt')||'':'';
+    var title=slide.getAttribute('data-title')||carousel.getAttribute('aria-label')||'Promo Banner';
+    dlPush({event:'navigate',component_type:'image-carousel',component_title:title+'_'+alt,action:'click',index:String(current)});
+  });
+  carousel.addEventListener('mouseenter',function(){clearInterval(autoTimer)});
+  carousel.addEventListener('mouseleave',resetAuto);
+  var startX=0,moved=false;
+  track.addEventListener('touchstart',function(e){startX=e.touches[0].clientX;moved=false},{passive:true});
+  track.addEventListener('touchmove',function(e){if(Math.abs(e.touches[0].clientX-startX)>30)moved=true},{passive:true});
+  track.addEventListener('touchend',function(e){
+    if(!moved)return;
+    var diff=e.changedTouches[0].clientX-startX;
+    if(diff>40)promoSlide(-1);
+    else if(diff<-40)promoSlide(1);
+  });
+})();
+
+/* ===== SCROLL DEPTH TRACKING ===== */
+(function(){
+  var milestones={25:false,50:false,75:false,100:false};
+  function getScrollPct(){
+    var scrollTop=window.scrollY||document.documentElement.scrollTop;
+    var docHeight=Math.max(document.body.scrollHeight,document.documentElement.scrollHeight)-window.innerHeight;
+    if(docHeight<=0)return 100;
+    return Math.round(scrollTop/docHeight*100);
+  }
+  window.addEventListener('scroll',function(){
+    var pct=getScrollPct();
+    [25,50,75,100].forEach(function(m){
+      if(!milestones[m]&&pct>=m){
+        milestones[m]=true;
+        trackEvent('scroll_vertical_pc_'+m,{});
+      }
+    });
+  },{passive:true});
+})();
+
+/* ===== PRODUCT CARD IMPRESSION TRACKING ===== */
+(function(){
+  if(!('IntersectionObserver' in window))return;
+  var impressed={};
+  var observer=new IntersectionObserver(function(entries){
+    entries.forEach(function(entry){
+      if(!entry.isIntersecting)return;
+      var card=entry.target;
+      var id=card.getAttribute('data-id');
+      if(!id||impressed[id])return;
+      impressed[id]=true;
+      trackEvent('product_interact_impression',{product_id:id});
+      observer.unobserve(card);
+    });
+  },{threshold:0.5});
+  /* Observe cards after render — re-run on each renderProducts call */
+  var origRender=window.renderProducts;
+  if(typeof origRender==='function'){
+    window.renderProducts=function(){
+      origRender.apply(this,arguments);
+      impressed={};
+      document.querySelectorAll('.pcard[data-id]').forEach(function(card){
+        observer.observe(card);
+      });
+    };
+  }
+  /* Also observe any cards already in DOM */
+  document.querySelectorAll('.pcard[data-id]').forEach(function(card){
+    observer.observe(card);
+  });
+})();
+
+/* ===== INIT ===== */
+function initPage(){
+  if(typeof P==='undefined'){setTimeout(initPage,50);return}
+  document.querySelectorAll('[data-i18n]').forEach(function(el){var k=el.getAttribute('data-i18n');if(T[LANG][k])el.textContent=T[LANG][k]});
+  document.querySelectorAll('[data-i18n-html]').forEach(function(el){var k=el.getAttribute('data-i18n-html');if(T[LANG][k])el.innerHTML=T[LANG][k]});
+  var ht=document.getElementById('heroTitle');if(ht)ht.innerHTML=T[LANG].heroTitle;
+  var hd=document.getElementById('heroDesc');if(hd)hd.innerHTML=T[LANG].heroDesc;
+  loadSocialProof();
+  populateAgeSelect();
+  renderProducts();renderFAQ();
+}
+initPage();
+</script>

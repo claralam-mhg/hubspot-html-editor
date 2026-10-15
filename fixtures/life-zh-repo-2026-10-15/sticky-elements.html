@@ -1,0 +1,48 @@
+<!-- Component: Sticky Elements — Buy CTA, Comparison Tray, Comparison Modal -->
+<!-- The scroll-triggered bottom CTA bar (#stickyCta, "免費比較") was removed Aug 2026.
+     scripts.html null-guards every reference to it, so nothing else needs to change.
+     Do not re-add it without checking checkStickyCta() / dismissStickyCta(). -->
+
+<!-- STICKY BUY CTA (shown when product detail expanded) -->
+<div class="sticky-buy" id="stickyBuy">
+  <div class="sticky-buy-inner">
+    <div class="sticky-buy-info">
+      <div class="sticky-buy-logo" id="stickyBuyLogo"></div>
+      <div class="sticky-buy-name" id="stickyBuyName"></div>
+    </div>
+    <div class="sticky-buy-price" id="stickyBuyPrice"></div>
+    <a href="#" target="_blank" rel="noopener" class="btn-buy-now" id="stickyBuyBtn" data-i18n="buyNow">立即投保 →</a>
+  </div>
+</div>
+
+<!-- COMPARISON TRAY -->
+<div class="compare-tray" id="compareTray">
+  <div class="compare-tray-inner">
+    <div class="compare-tray-items" id="compareTrayItems"></div>
+    <button class="btn-compare-now" onclick="openCompareModal()" data-i18n="compareProducts">比較產品</button>
+  </div>
+</div>
+
+
+<!-- COMPARISON MODAL -->
+<div class="compare-modal-overlay" id="compareModal" onclick="if(event.target===this)closeCompareModal()">
+  <div class="compare-modal">
+    <div class="compare-modal-header"><h2 data-i18n="productComparison">產品比較</h2><button class="compare-modal-close" onclick="closeCompareModal()">✕</button></div>
+    <div class="compare-table-wrap"><table class="compare-table" id="compareTable"></table></div>
+  </div>
+</div>
+
+<!-- 篩選 sheet (VHIS filter, 2026-10-14) -->
+<div class="fsheet-overlay" id="filterSheet" onclick="if(event.target===this)closeFilterSheet()">
+  <div class="fsheet" role="dialog" aria-modal="true" aria-label="篩選">
+    <div class="fsheet-head">
+      <div class="fsheet-title">篩選</div>
+      <button class="fsheet-close" onclick="closeFilterSheet()" aria-label="關閉">✕</button>
+    </div>
+    <div class="fsheet-body" id="fsheetBody"></div>
+    <div class="fsheet-foot">
+      <button class="fsheet-clear" onclick="clearFilters()">全部清除</button>
+      <button class="fsheet-apply" id="fsheetApply" onclick="applyFilters()"></button>
+    </div>
+  </div>
+</div>
