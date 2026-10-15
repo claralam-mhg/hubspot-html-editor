@@ -118,15 +118,29 @@
       liveUrl: 'https://www.moneyhero.com.hk/zh/life-insurance',
       hubspotPage: 'Life Insurance — 繁中',
       modules: lifeModules('zh'),
+      shortcuts: [
+        { label: 'Premiums', file: 'scripts', tab: 'PREMIUM_RATES' },
+        { label: 'Ranking & offers', file: 'product-data', tab: 'products' },
+        { label: 'Banners', file: 'promo-banner' },
+        { label: 'Page text', file: 'scripts', tab: 'T' }
+      ],
       // Elements whose text scripts overwrite on load → the key in scripts › Page text that really controls it.
       overriddenIds: { heroTitle: 'heroTitle', heroDesc: 'heroDesc' },
       data: lifeData('zh')
     },
     {
       key: 'life-en', label: 'Life (EN)', status: 'live',
-      liveUrl: 'https://www.moneyhero.com.hk/en/campaign/life-insurance-testing-page',
-      hubspotPage: 'Life Insurance — English (life-insurance-testing-page)',
+      // Clara 2026-10-15: the EN page is /en/life-insurance (returned 404 that day — not yet published).
+      // Until it is live, "Load live version" says so and PCT pastes from HubSpot.
+      liveUrl: 'https://www.moneyhero.com.hk/en/life-insurance',
+      hubspotPage: 'Life Insurance — English',
       modules: lifeModules('en'),
+      shortcuts: [
+        { label: 'Premiums', file: 'scripts', tab: 'PREMIUM_RATES' },
+        { label: 'Ranking & offers', file: 'product-data', tab: 'products' },
+        { label: 'Banners', file: 'promo-banner' },
+        { label: 'Page text', file: 'scripts', tab: 'T' }
+      ],
       overriddenIds: { heroTitle: 'heroTitle', heroDesc: 'heroDesc' },
       data: lifeData('en')
     },
@@ -134,6 +148,13 @@
       key: 'ci', label: 'CI 危疾', status: 'live',
       liveUrl: 'https://www.moneyhero.com.hk/zh/insurance/critical-illness-insurance',
       hubspotPage: 'Critical Illness Insurance — 繁中',
+      shortcuts: [
+        { label: 'Premiums', file: 'product-data', tab: 'PREMIUM_RATES' },
+        { label: 'Ranking, show/hide & offers', file: 'product-data', tab: 'products' },
+        { label: 'FAQ', file: 'product-data', tab: 'FAQS' },
+        { label: 'Banners', file: 'promo-banner' },
+        { label: 'Page text', file: 'scripts', tab: 'T' }
+      ],
       modules: [
         { file: 'head', editor: 'content', fingerprint: 'Component: Head', find: '<!-- Component: Head', what: 'Browser tab title, Google description, social share text' },
         { file: 'styles', editor: 'code', fingerprint: 'HUBSPOT OVERRIDES', find: '<style> /* ── HUBSPOT OVERRIDES', what: 'Colours, spacing, layout. Code only — check the preview on phone and desktop.' },
@@ -183,6 +204,12 @@
       key: 'osi', label: 'OSI 海外升學', status: 'live',
       liveUrl: 'https://www.moneyhero.com.hk/zh/insurance/oversea-student-insurance',
       hubspotPage: 'Overseas Student Insurance — 繁中',
+      shortcuts: [
+        { label: 'Premiums', file: 'product-data', tab: '@premiums' },
+        { label: 'Ranking & offers', file: 'product-data', tab: 'products' },
+        { label: 'FAQ', file: 'product-data', tab: 'FAQS' },
+        { label: 'Banners', file: 'promo-banner' }
+      ],
       modules: [
         { file: 'head', editor: 'content', fingerprint: '<title>', find: '<meta charset="UTF-8">', what: 'Browser tab title, Google description, social share text' },
         { file: 'styles', editor: 'code', fingerprint: 'HUBSPOT OVERRIDES', find: '<style> /* ── HUBSPOT OVERRIDES', what: 'Colours, spacing, layout. Code only — check the preview on phone and desktop.' },
@@ -197,7 +224,10 @@
         { file: 'footer-cta', editor: 'content', fingerprint: '<!-- FOOTER CTA -->', find: '<!-- FOOTER CTA -->', what: 'Bottom call-to-action' },
         { file: 'sticky-elements', editor: 'content', fingerprint: '<!-- STICKY BOTTOM CTA -->', find: '<!-- STICKY BOTTOM CTA -->', what: 'Sticky bottom bar, compare tray, compare pop-up' },
         { file: 'product-data', editor: 'products', fingerprint: 'var ISSUERS', find: '<!-- ══════ 產品資料 PRODUCT DATA', what: 'Ranking, prices, discounts, codes, badges, coverage amounts, links, FAQ',
-          vars: [{ v: 'FAQS', title: 'FAQ 常見問題', kind: 'list', fields: [{ p: 'q', label: '問題 Question' }, { p: 'a', label: '答案 Answer', long: true }] }],
+          vars: [
+            { v: '@premiums', title: 'Premiums 保費', kind: 'productColumns', cols: [{ p: 'price', label: '原價 Original (HK$/yr)' }, { p: 'disc', label: '折後價 Discounted (HK$/yr)', nullable: true }] },
+            { v: 'FAQS', title: 'FAQ 常見問題', kind: 'list', fields: [{ p: 'q', label: '問題 Question' }, { p: 'a', label: '答案 Answer', long: true }] }
+          ],
           note: 'Issuer names and anything not in the form → "Edit code directly".' },
         { file: 'scripts', editor: 'code', fingerprint: 'Component: Scripts', find: '<!-- Component: Scripts — All JavaScript', what: 'Page behaviour. Code only. This page has no separate page-text table: change text in the module where it appears.' }
       ],
@@ -224,18 +254,24 @@
       key: 'vhis', label: 'VHIS 自願醫保', status: 'live',
       liveUrl: 'https://www.moneyhero.com.hk/zh/insurance/vhis',
       hubspotPage: 'VHIS 自願醫保 — 繁中',
+      shortcuts: [
+        { label: 'Premiums', file: '08 product data', tab: '@premiums' },
+        { label: 'Ranking & offers', file: '08 product data', tab: 'products' },
+        { label: 'Banners', file: '09 banner', tab: 'BANNERS' }
+      ],
       // Modules are labelled "MODULE 0N —" in their first comment. MODULE 01 (fonts) lives in
       // Page Settings › Head HTML, not in a module. Product data (08) is edited here, not from the Excel
       // (Clara, 2026-10-15) — running the old Excel build would undo PCT's edits.
       modules: [
         { file: '02 styles', editor: 'code', fingerprint: 'MODULE 02 —', find: '<!-- ═══ MODULE 02 — Styles', what: 'Colours, spacing, layout. Code only — check the preview on phone and desktop.' },
         { file: '03 hero', editor: 'content', fingerprint: 'MODULE 03 —', find: '<!-- ═══ MODULE 03 — Hero', what: 'Hero heading and intro' },
-        { file: '05 results + banners', editor: 'content', fingerprint: 'MODULE 05 —', find: '<!-- ═══ MODULE 05 — Results bar + sidebar + product list', what: 'Results bar, filters, banner slots. Banner images and alt text are in 09 › Banners.' },
+        { file: '05 results + banners', editor: 'content', fingerprint: 'MODULE 05 —', find: '<!-- ═══ MODULE 05 — Results bar + sidebar + product list', what: 'Results bar, filters, banner slots. Banner images and alt text are in 09 banner.' },
         { file: '06 tax note', editor: 'content', fingerprint: 'MODULE 06 —', find: '<!-- ═══ MODULE 06 — Tax deduction note', what: 'Tax deduction note' },
         { file: '07 overlays', editor: 'content', fingerprint: 'MODULE 07 —', find: '<!-- ═══ MODULE 07 — Tooltip, compare tray', what: 'Tooltip, compare tray, compare pop-up, filter sheet' },
-        { file: '08 product data', editor: 'products', fingerprint: 'MODULE 08 —', find: '<!-- ═══ MODULE 08 — Product data', what: 'Ranking, plan names, tags, offers, codes, offer end dates, apply links',
-          note: 'Premiums, deductible tiers, discounts and coverage → "Edit code directly". This module is one very long line of code, so the form is the easier way in.' },
-        { file: '09 behaviour', editor: 'scripts', fingerprint: 'MODULE 09 —', find: '<!-- ═══ MODULE 09 — Behaviour', what: 'Top and bottom banners (image, alt text, linked plan). The rest is page behaviour.',
+        { file: '08 product data', editor: 'products', fingerprint: 'MODULE 08 —', find: '<!-- ═══ MODULE 08 — Product data', what: 'Ranking, plan names, tags, offers, codes, offer end dates, apply links, premiums',
+          vars: [{ v: '@premiums', title: 'Premiums 保費', kind: 'productRates', path: 'premiums', discPath: 'discount.prices', tiersPath: 'deductibleTiers' }],
+          note: 'Deductible levels, discount label and coverage → "Edit code directly". This module is one very long line of code, so the form is the easier way in.' },
+        { file: '09 banner', editor: 'scripts', fingerprint: 'MODULE 09 —', find: '<!-- ═══ MODULE 09 — Behaviour', what: 'Top and bottom banners (image, alt text, linked plan). The rest is page behaviour.',
           vars: [{ v: 'BANNERS', title: 'Banners', kind: 'list', fields: [
             { p: 'alt', label: 'Banner text (alt) — also what screen readers and tracking use', long: true },
             { p: 'desktop', label: 'Desktop image (2592×360)' }, { p: 'mobile', label: 'Mobile image (750×375)' },
@@ -259,8 +295,12 @@
           { path: 'offer.text', label: '優惠內容', group: 'Offer', type: 'textarea' },
           { path: 'offer.code', label: '優惠碼 Promo code', group: 'Offer', type: 'text-null', pattern: '^[A-Za-z0-9_-]*$', patternMsg: 'Letters, numbers, - and _ only', hint: 'Leave empty if there is no code.' },
           { path: 'offer.end', label: '優惠截止 Offer ends (YYYY-MM-DD)', group: 'Offer', type: 'text-null', pattern: '^(\\d{4}-\\d{2}-\\d{2})?$', patternMsg: 'Use YYYY-MM-DD, e.g. 2026-11-30', hint: 'The offer (and any banner linked to this plan) hides after this date.' },
-          { path: 'url', label: '投保連結 Apply link', group: 'Link', type: 'url' }
+          { path: 'url', label: '投保連結 Apply link', group: 'Link', type: 'url' },
+          // edited in the Premiums tab; listed so the change summary shows each changed cell
+          { path: 'premiums', label: 'Premium', type: 'table', hidden: true },
+          { path: 'discount.prices', label: 'First-year discounted premium', type: 'table', hidden: true }
         ],
+        tableFields: ['premiums', 'discount.prices'],
         required: ['id', 'providerId', 'insurer', 'name', 'url'],
         urlFields: ['url'],
         expiryFields: ['offer.end']

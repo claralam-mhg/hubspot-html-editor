@@ -277,7 +277,7 @@ for (const key of ['life-en', 'ci', 'osi']) {
       const r = M.liveModuleCode(LV, m.fingerprint); assert(r.code, r.error);
       assert(M.safety(r.code, r.code).ok, M.safety(r.code, r.code).errors.join());
       if (m.editor === 'products') { const d = E.load(r.code, pc); assert(d.records.length > 3, 'records'); const c = E.check(r.code, r.code, pc); assert(c.ok, c.errors.join('; ')); const other = c.warnings.filter(w => !/expired/.test(w)); eq(other.length, 0, 'warnings on untouched live data: ' + other.join('; ')); }
-      (m.vars || []).forEach(v => assert(M.readVar(r.code, v.v), v.v + ' missing'));
+      (m.vars || []).filter(v => v.v[0] !== '@').forEach(v => assert(M.readVar(r.code, v.v), v.v + ' missing'));
       if (m.editor === 'banner') assert(M.slides(r.code).length >= 1, 'no banner slides found');
       if (m.editor === 'content' || m.editor === 'banner') M.htmlFields(r.code, { overriddenIds: page.overriddenIds });
       eq(M.liveCheck(r.code, LV, m.fingerprint).status, 'match');
@@ -384,7 +384,7 @@ console.log('\nVHIS (live copy)');
       const r = M.liveModuleCode(LV, m.fingerprint); assert(r.code, r.error);
       assert(M.safety(r.code, r.code).ok, M.safety(r.code, r.code).errors.join());
       if (m.editor === 'products') { const c = E.check(r.code, r.code, pc); assert(c.ok, c.errors.join('; ')); }
-      (m.vars || []).forEach(v => assert(M.readVar(r.code, v.v), v.v));
+      (m.vars || []).filter(v => v.v[0] !== '@').forEach(v => assert(M.readVar(r.code, v.v), v.v));
       if (m.editor === 'content') M.htmlFields(r.code, {});
       eq(M.liveCheck(r.code, LV, m.fingerprint).status, 'match');
     });
@@ -417,9 +417,30 @@ console.log('\nVHIS (live copy)');
     assert(E.check(PD, o, { ...pc, today: '2026-10-15' }).warnings.some(w => /expired/.test(w)), 'warn');
   });
   t('vhis: banner list edit (module 09) → one value changes, safety passes', () => {
-    const m9 = page.modules.find(m => m.vars), C9 = M.liveModuleCode(LV, m9.fingerprint).code;
+    const m9 = page.modules.find(m => m.file === '09 banner'), C9 = M.liveModuleCode(LV, m9.fingerprint).code;
     const o = M.applyVars(C9, [{ v: 'BANNERS', path: '0.alt', value: '新 banner 文字' }]);
     eq(M.readVar(o, 'BANNERS').data[0].alt, '新 banner 文字'); eq(E.lineDiff(C9, o).length, 2); assert(M.safety(C9, o).ok, 'safety');
+  });
+}
+
+console.log('\nVHIS premiums');
+{
+  const page = PAGES.find(p => p.key === 'vhis'), pc = page.data, pdm = page.modules.find(m => m.editor === 'products');
+  const PD = M.liveModuleCode(fs.readFileSync(path.join(here, 'fixtures/vhis-live-2026-10-15.html'), 'utf8'), pdm.fingerprint).code, D = E.load(PD, pc);
+  const id = 'fwd-vprime', old = D.records.find(r => r.id === id).data;
+  t('change one premium and one first-year price → browser sees them; summary lists each cell', () => {
+    const p1 = old.premiums['30']['male-non-smoker'].slice(); p1[0] = 9999;
+    const p2 = old.discount.prices['30']['male-non-smoker'].slice(); p2[1] = 1234;
+    const o = E.build(D, { fields: { [id]: { 'premiums.30.male-non-smoker': p1, 'discount.prices.30.male-non-smoker': p2 } } });
+    const p = runModule(o).DATA.products.find(x => x.id === id);
+    eq(p.premiums['30']['male-non-smoker'][0], 9999); eq(p.discount.prices['30']['male-non-smoker'][1], 1234);
+    assert(E.check(PD, o, pc).ok, E.check(PD, o, pc).errors.join());
+    const cl = E.changeList(PD, o, pc); eq(cl.length, 2, JSON.stringify(cl));
+    assert(/Premium 30 · male-non-smoker/.test(cl[0].field), cl[0].field);
+  });
+  t('empty premium cell → blocked', () => {
+    const p1 = old.premiums['30']['male-non-smoker'].slice(); p1[0] = NaN;
+    try { E.build(D, { fields: { [id]: { 'premiums.30.male-non-smoker': p1 } } }); throw new Error('no error'); } catch (e) { assert(/empty or not a number/.test(e.message), e.message); }
   });
 }
 

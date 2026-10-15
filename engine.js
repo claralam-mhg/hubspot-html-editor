@@ -319,6 +319,11 @@
         if (v === null && nf.nullable) return;
         if (typeof v !== 'number' || !isFinite(v) || v < 0) errors.push(label + ': ' + nf.path + ' must be a number' + (nf.nullable ? ' or empty' : '') + '.');
       });
+      (cfg.tableFields || []).forEach(function (tp) {
+        var bad = 0;
+        (function walk(v) { if (Array.isArray(v)) v.forEach(function (x) { if (Array.isArray(x) || (x && typeof x === 'object')) walk(x); else if (!(x === null || (typeof x === 'number' && isFinite(x) && x > 0))) bad++; }); else if (v && typeof v === 'object') Object.keys(v).forEach(function (k) { walk(v[k]); }); })(getPath(d, tp));
+        if (bad) errors.push(label + ': ' + bad + ' premium cell' + (bad > 1 ? 's are' : ' is') + ' not a number above 0.');
+      });
       (cfg.pairs || []).forEach(function (pr) {
         var lo = getPath(d, pr.low), hi = getPath(d, pr.high);
         if (typeof lo === 'number' && typeof hi === 'number' && lo >= hi) warnings.push(label + ': ' + pr.low + ' (' + lo + ') is not lower than ' + pr.high + ' (' + hi + ').');
@@ -383,6 +388,7 @@
       var old = a.records.filter(function (x) { return x.id === r.id; })[0]; if (!old) return;
       cfg.fields.forEach(function (f) {
         var x = getPath(old.data, f.path), y = getPath(r.data, f.path);
+        if (f.type === 'table') { leafDiff(x, y, '', function (p, a, b) { out.push({ product: cfg.productLabel(r.data), field: f.label + ' ' + p.replace(/\./g, ' · '), before: show(a), after: show(b) }); }); return; }
         if (f.path in (cfg.defaults || {})) { if (x === undefined) x = cfg.defaults[f.path]; if (y === undefined) y = cfg.defaults[f.path]; }
         if (JSON.stringify(x) !== JSON.stringify(y)) out.push({ product: cfg.productLabel(r.data), field: f.label, before: show(x, f), after: show(y, f) });
       });
@@ -390,6 +396,11 @@
     return out;
   }
 
+  function leafDiff(a, b, p, cb) {
+    var leaf = function (v) { return v === null || typeof v !== 'object' || (Array.isArray(v) && v.every(function (x) { return x === null || typeof x !== 'object'; })); };
+    if (leaf(a) || leaf(b)) { if (JSON.stringify(a) !== JSON.stringify(b)) cb(p, a, b); return; }
+    Object.keys(Object.assign({}, a, b)).forEach(function (k) { leafDiff(a ? a[k] : undefined, b ? b[k] : undefined, p ? p + '.' + k : k, cb); });
+  }
   function show(v, f) {
     if (v == null) return '';
     if (f && f.type === 'toggle') return v ? 'On (shown)' : 'Off (hidden)';

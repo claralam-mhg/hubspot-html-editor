@@ -26,6 +26,7 @@
   function renderLeft() {
     var p = S.page, h = '';
     h += '<div class="card"><h2>' + esc(p.label) + '</h2><div class="muted"><a href="' + esc(p.liveUrl) + '" target="_blank" rel="noopener">' + esc(p.liveUrl.replace('https://www.', '')) + '</a></div>';
+    if (p.shortcuts) h += '<h3>Common changes</h3><div class="shortcuts">' + p.shortcuts.map(function (sc, k) { return '<button class="btn sm" data-jump="' + k + '">' + esc(sc.label) + '</button>'; }).join('') + '</div>';
     h += '<h3>Modules (in page order)</h3><ul class="modlist">';
     p.modules.forEach(function (m, i) {
       var pending = hasChanges(i);
@@ -45,7 +46,7 @@
     h += '<div class="card"><div class="row" style="justify-content:space-between;align-items:flex-start"><div><h2>' + esc(m.file) + '</h2><div class="muted">' + esc(m.what || '') + '</div></div>';
     if (s.loaded && m.editor !== 'code') h += '<div class="seg"><button class="' + (s.mode === 'form' ? 'on' : '') + '" data-mode="form">Form</button><button class="' + (s.mode === 'code' ? 'on' : '') + '" data-mode="code">Edit code directly</button></div>';
     h += '</div></div>';
-    if (!s.loaded) { h += renderLive(m) + renderPaste(m, s); $('right').innerHTML = h; return; }
+    if (!s.loaded) { if (S.jump && S.jump.idx === S.modIdx) h += '<div class="msg ok" style="margin:-8px 0 16px">Load this module and you will land on <b>' + esc(S.jump.label) + '</b>.</div>'; h += renderLive(m) + renderPaste(m, s); $('right').innerHTML = h; return; }
     if (s.source) h += '<div class="msg ' + (s.source.kind === 'live' ? 'ok' : 'ok') + '" style="margin:-8px 0 16px">' + (s.source.kind === 'live' ? 'Editing the live page version from ' + hhmm(s.source.at) + '. Its code has no indentation. That is how HubSpot serves it, and it works the same.' : 'Editing the code you pasted from HubSpot.') + ' <button class="btn sm" id="reload">Start again</button></div>';
     if (s.mode === 'code') h += renderCode(m, s);
     else if (m.editor === 'products') h += renderProductsModule(m, s);
@@ -107,12 +108,13 @@
     s.mode = m.editor === 'code' ? 'code' : 'form';
     s.code = text;
     try { initForm(m, s, text); } catch (e) { s.mode = 'code'; s.err = 'The form could not read this module (' + e.message + '). You can still edit the code directly.'; }
+    if (S.jump && S.jump.idx === S.modIdx) { if (S.jump.tab && s.mode === 'form') s.vtab = S.jump.tab; S.jump = null; }
   }
   function initForm(m, s, text) {
     if (m.editor === 'products') {
       s.doc = E.load(text, cfg()); s.order = baseOrder(s.doc); s.fields = {}; s.sel = null;
       s.base = text; s.vedits = {}; s.vtab = 'products'; s.q = '';
-      (m.vars || []).forEach(function (v) { if (!M.readVar(text, v.v)) throw new Error(v.v + ' not found'); });
+      (m.vars || []).forEach(function (v) { if (v.v[0] !== '@' && !M.readVar(text, v.v)) throw new Error(v.v + ' not found'); });
     }
     if (m.editor === 'content' || m.editor === 'banner') { s.base = text; s.fields = M.htmlFields(text, { overriddenIds: S.page.overriddenIds }); s.edits = {}; s.q = ''; }
     if (m.editor === 'scripts') {
@@ -153,7 +155,10 @@
     var h = '<div class="card" style="padding-bottom:4px"><div class="seg wide"><button class="' + (s.vtab === 'products' ? 'on' : '') + '" data-vtab="products">Products &amp; ranking</button>' +
       m.vars.map(function (v) { return '<button class="' + (s.vtab === v.v ? 'on' : '') + '" data-vtab="' + v.v + '">' + esc(v.title) + '</button>'; }).join('') + '</div></div>';
     if (s.vtab === 'products') return h + renderProducts(m, s);
-    return h + renderVar(m, s, m.vars.filter(function (x) { return x.v === s.vtab; })[0]);
+    var vv = m.vars.filter(function (x) { return x.v === s.vtab; })[0];
+    if (vv.kind === 'productColumns') return h + renderProductColumns(s, vv);
+    if (vv.kind === 'productRates') return h + renderProductRates(s, vv);
+    return h + renderVar(m, s, vv);
   }
   function renderProducts(m, s) {
     var c = cfg(), h = '', origIds = baseOrder(s.doc);
@@ -182,9 +187,72 @@
     if (s.sel === id) h += '<li>' + renderProductForm(s, id) + '</li>';
     return h;
   }
+  // One row per product, one column per field (OSI price / discount)
+  function renderProductColumns(s, v) {
+    var c = cfg(), ids = shownIds(s, s.order).concat(s.order.filter(function (x) { return shownIds(s, s.order).indexOf(x) < 0; }));
+    var h = '<div class="card"><p class="hint">Annual premium in HK$.' + (v.cols.some(function (x) { return x.nullable; }) ? ' Leave the discounted price empty if there is no discount.' : '') + '</p><div class="tablewrap"><table class="rates"><thead><tr><th>Product</th>' + v.cols.map(function (x) { return '<th>' + esc(x.label) + '</th>'; }).join('') + '</tr></thead><tbody>';
+    ids.forEach(function (id) {
+      var d = curData(s, id);
+      h += '<tr><th style="white-space:normal;min-width:220px">' + esc(c.productLabel(d)) + '<div class="hint">' + esc(c.productSub(d)) + '</div></th>';
+      v.cols.forEach(function (x) {
+        var val = cur(s, id, x.p), o = orig(s, id, x.p);
+        h += '<td class="' + (JSON.stringify(val) !== JSON.stringify(o) ? 'changed' : '') + '"><input type="number" min="0" step="any" data-pid="' + esc(id) + '" data-ppath="' + x.p + '" data-type="' + (x.nullable ? 'number-null' : 'number') + '" value="' + (typeof val === 'number' && isFinite(val) ? val : '') + '"></td>';
+      });
+      h += '</tr>';
+    });
+    return h + '</tbody></table></div>' + pasteBox() + '</div>';
+  }
+  // VHIS: premiums[age][group] = one price per deductible level, plus the first-year discounted table
+  function renderProductRates(s, v) {
+    var c = cfg(), ids = s.order; s.vp = s.vp && ids.indexOf(s.vp) >= 0 ? s.vp : ids[0];
+    var d = curData(s, s.vp), table = get(d, v.path) || {}, ages = Object.keys(table), groups = ages.length ? Object.keys(table[ages[0]]) : [];
+    s.vg = groups.indexOf(s.vg) >= 0 ? s.vg : groups[0];
+    var tiers = (get(d, v.tiersPath) || []).map(function (t) { return t.label || ('HK$' + t.amount); }), hasDisc = !!get(d, v.discPath);
+    var h = '<div class="card"><div class="row" style="align-items:flex-end">' +
+      '<div class="field" style="flex:2;min-width:220px"><label>Plan</label><select id="vp">' + ids.map(function (id) { return '<option value="' + esc(id) + '"' + (id === s.vp ? ' selected' : '') + '>' + esc(c.productLabel(curData(s, id))) + '</option>'; }).join('') + '</select></div>' +
+      '<div class="field" style="flex:1;min-width:160px"><label>Group</label><select id="vg">' + groups.map(function (g) { return '<option' + (g === s.vg ? ' selected' : '') + '>' + esc(g) + '</option>'; }).join('') + '</select></div></div>';
+    h += '<p class="hint">Annual premium in HK$ by age, one column per deductible level.' + (hasDisc ? ' "First year" is the discounted first-year premium shown on the card.' : '') + '</p>';
+    h += '<div class="tablewrap" style="max-height:560px;overflow:auto"><table class="rates"><thead><tr><th>Age</th>' + tiers.map(function (t) { return '<th>' + esc(t) + '</th>' + (hasDisc ? '<th>' + esc(t) + ' · first year</th>' : ''); }).join('') + '</tr></thead><tbody>';
+    ages.forEach(function (a) {
+      var p1 = v.path + '.' + a + '.' + s.vg, p2 = v.discPath + '.' + a + '.' + s.vg;
+      var std = cur(s, s.vp, p1) || [], dis = hasDisc ? (cur(s, s.vp, p2) || []) : [], so = orig(s, s.vp, p1) || [], dor = hasDisc ? (orig(s, s.vp, p2) || []) : [];
+      h += '<tr><th>' + esc(a) + '</th>';
+      tiers.forEach(function (t, i) {
+        h += cellIn(p1, i, std[i], so[i]);
+        if (hasDisc) h += cellIn(p2, i, dis[i], dor[i]);
+      });
+      h += '</tr>';
+    });
+    function cellIn(p, i, val, o) { return '<td class="' + (JSON.stringify(val) !== JSON.stringify(o) ? 'changed' : '') + '"><input type="number" min="0" step="any" data-pid="' + esc(s.vp) + '" data-tpath="' + p + '" data-ti="' + i + '" value="' + (typeof val === 'number' && isFinite(val) ? val : '') + '"></td>'; }
+    return h + '</tbody></table></div>' + pasteBox() + '</div>';
+  }
+  // Paste a block copied from Excel into the table above, left to right, top to bottom
+  function pasteBox() {
+    return '<details class="paste"><summary>Paste from Excel</summary><p class="hint">Copy the numbers in Excel (rows and columns in the same order as this table) and paste them here. Commas and $ are ignored.</p>' +
+      '<textarea class="code" id="pasteGrid" style="min-height:100px" placeholder="Paste here…"></textarea>' +
+      '<label class="check"><input type="checkbox" id="pasteSkip"> The first column is the age or product name (skip it)</label>' +
+      '<div class="row" style="margin-top:6px"><button class="btn" id="pasteFill">Fill the table</button></div></details>';
+  }
+  function fillFromPaste() {
+    var rows = $('pasteGrid').value.replace(/\r/g, '').split('\n').filter(function (r) { return r.trim(); }).map(function (r) { return r.split('\t'); });
+    if ($('pasteSkip').checked) rows = rows.map(function (r) { return r.slice(1); });
+    var trs = $('pasteGrid').closest('.card').querySelectorAll('table.rates tbody tr'), n = 0;
+    S.batch = true;
+    rows.forEach(function (cells, i) {
+      if (!trs[i]) return;
+      var ins = trs[i].querySelectorAll('input[type=number]:not(:disabled)');
+      cells.forEach(function (c, j) {
+        var v = c.replace(/[,$\sHK]/g, ''); if (!ins[j] || v === '') return;
+        if (!isFinite(+v)) return; ins[j].value = v; ins[j].dispatchEvent(new Event('input', { bubbles: true })); n++;
+      });
+    });
+    S.batch = false; all();
+    alert(n + ' cells filled. Check the table and the change summary before copying.');
+  }
   function renderProductForm(s, id) {
     var c = cfg(), h = '<div class="card" style="margin:0 0 10px">', lastGroup = '';
     c.fields.forEach(function (f) {
+      if (f.hidden) return;
       var o = orig(s, id, f.path);
       if (o === undefined && f.path.indexOf('.') > 0 && get(rec(s, id).data, f.path.split('.')[0]) == null) return; // e.g. no offer on this product
       if (f.group !== lastGroup) { h += '<h3>' + esc(f.group) + '</h3>'; lastGroup = f.group; }
@@ -280,8 +348,8 @@
       var pids = Object.keys(data); s.rp = s.rp && data[s.rp] ? s.rp : pids[0];
       h += '<div class="field"><label>Product</label><select id="rp">' + pids.map(function (p) { return '<option' + (p === s.rp ? ' selected' : '') + '>' + esc(p) + '</option>'; }).join('') + '</select></div>';
       var ages = Object.keys(data[s.rp]), cols = [];
+      // columns in the data's own order (as in the Excel premium sheet), so a pasted block lines up
       ages.forEach(function (a) { Object.keys(data[s.rp][a]).forEach(function (c) { if (cols.indexOf(c) < 0) cols.push(c); }); });
-      cols.sort();
       h += '<p class="hint">Annual premium in HK$. Left = original, right = after discount' + (v.discountOptional ? ' (leave empty for no discount)' : '') + '.' + (v.na ? ' Tick N/A if the plan is not offered.' : '') + ' A dash means this combination is not offered.</p><div class="tablewrap"><table class="rates"><thead><tr><th>Age</th>' + cols.map(function (c) { return '<th>' + esc(c) + '</th>'; }).join('') + '</tr></thead><tbody>';
       ages.forEach(function (a) {
         h += '<tr><th>' + esc(a) + '</th>';
@@ -296,12 +364,12 @@
         });
         h += '</tr>';
       });
-      h += '</tbody></table></div>';
+      h += '</tbody></table></div>' + pasteBox();
     } else if (v.kind === 'grid') {
       var rows = Object.keys(data), gcols = Object.keys(data[rows[0]]);
       h += '<div class="tablewrap"><table class="rates"><thead><tr><th>Age</th>' + gcols.map(function (c) { return '<th>' + esc(c) + '</th>'; }).join('') + '</tr></thead><tbody>';
       rows.forEach(function (r) { h += '<tr><th>' + esc(r) + '</th>' + gcols.map(function (c) { var path = r + '.' + c, val = vcur(s, v.v, path, data); return '<td class="' + (val !== data[r][c] ? 'changed' : '') + '"><input type="number" step="any" data-grid="' + esc(path) + '" value="' + esc(val) + '"></td>'; }).join('') + '</tr>'; });
-      h += '</tbody></table></div>';
+      h += '</tbody></table></div>' + pasteBox();
     }
     return h + '</div>';
   }
@@ -347,7 +415,8 @@
   }
 
   /* ================= events ================= */
-  function soft() { // refresh review + module badges without rebuilding the form (keeps typing focus)
+  function soft() {
+    if (S.batch) return; // refresh review + module badges without rebuilding the form (keeps typing focus)
     var old = $('review'); if (!old) return renderRight();
     var tmp = document.createElement('div'); tmp.innerHTML = renderReview(mod(), st()); old.replaceWith(tmp.firstChild); renderLeft();
   }
@@ -356,6 +425,12 @@
     var s = S.modIdx != null ? st() : null, m = S.modIdx != null ? mod() : null;
     if (t.classList.contains('tab')) { S.page = PAGES.filter(function (p) { return p.key === t.dataset.key; })[0]; S.modIdx = null; return all(); }
     if (t.dataset.mod != null) { S.modIdx = +t.dataset.mod; return all(); }
+    if (t.dataset.jump != null) {
+      var sc = S.page.shortcuts[+t.dataset.jump], idx = S.page.modules.map(function (x) { return x.file; }).indexOf(sc.file);
+      S.modIdx = idx; var js = st(idx);
+      if (js.loaded) { if (sc.tab) { js.vtab = sc.tab; js.mode = 'form'; } } else S.jump = { idx: idx, tab: sc.tab, label: sc.label };
+      return all();
+    }
     if (t.id === 'loadBtn' || t.id === 'loadAnyway') { load(s, m, $('paste').value, t.id === 'loadAnyway'); if (s.loaded) s.source = { kind: 'paste' }; return all(); }
     if (t.id === 'loadLive') { var le = liveEntry(m); load(s, m, le.code, false); if (s.loaded) s.source = { kind: 'live', at: S.live[S.page.key].data.fetchedAt }; return all(); }
     if (t.id === 'reload') { if (hasChanges(S.modIdx) && !confirm('Discard your changes to this module?')) return; S.mods[S.page.key + ':' + S.modIdx] = null; delete S.mods[S.page.key + ':' + S.modIdx]; return all(); }
@@ -373,6 +448,7 @@
     if (t.dataset.down != null) return move(s, +t.dataset.down, +t.dataset.down + 1);
     if (t.dataset.edit) { s.sel = s.sel === t.dataset.edit ? null : t.dataset.edit; return renderRight(); }
     if (t.dataset.undo) { delete s.fields[t.dataset.undo]; s.copied = false; return all(); }
+    if (t.id === 'pasteFill') return fillFromPaste();
     if (t.id === 'tagAdd') {
       var tf = cfg().fields.filter(function (f) { return f.type === 'tags'; })[0], nt = {};
       (tf.langs || ['zh', 'en']).forEach(function (L) { nt[L] = ''; }); if (tf.langs && tf.langs.indexOf('en') < 0) nt.en = ''; if (tf.colours) nt.c = tf.colours[0].value;
@@ -389,6 +465,8 @@
     if (t.id === 'q') { s.q = t.value; var pos = t.selectionStart; renderRight(); var q = $('q'); q.focus(); q.setSelectionRange(pos, pos); return; }
     if (t.id === 'codeBox') { s.code = t.value; s.copied = false; return soft(); }
     if (t.dataset.f != null) { s.edits[t.dataset.f] = t.value; s.copied = false; t.closest('.field').classList.toggle('changed', t.value !== s.fields[+t.dataset.f].value); return soft(); }
+    if (t.dataset.ppath) { setP(s, t.dataset.pid, t.dataset.ppath, t.value === '' ? (t.dataset.type === 'number-null' ? null : NaN) : Number(t.value)); return soft(); }
+    if (t.dataset.tpath) { var ta = (cur(s, t.dataset.pid, t.dataset.tpath) || []).slice(); ta[+t.dataset.ti] = t.value === '' ? NaN : Number(t.value); setP(s, t.dataset.pid, t.dataset.tpath, ta); return soft(); }
     if (t.dataset.path) {
       var ty = t.dataset.type, val = t.value;
       if (ty === 'number') val = val === '' ? NaN : Number(val);
@@ -411,6 +489,8 @@
   document.addEventListener('change', function (e) {
     var t = e.target; if (S.modIdx == null) return; var s = st();
     if (t.id === 'rp') { s.rp = t.value; return renderRight(); }
+    if (t.id === 'vp') { s.vp = t.value; return renderRight(); }
+    if (t.id === 'vg') { s.vg = t.value; return renderRight(); }
     if (t.dataset.toggle) { setP(s, s.sel, t.dataset.toggle, t.checked); return all(); }
     // fields that decide where a product shows (e.g. OSI badge) re-sort the ranking once you leave the field
     if (t.dataset.path && cfg().displayOrder) return all();
