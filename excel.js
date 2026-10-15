@@ -250,7 +250,9 @@
     var rows = parseTSV(text), f = detect(rows);
     if (!f) {
       var cells = [].concat.apply([], rows), numeric = cells.filter(function (c) { return c !== '' && !isNaN(num(c)); }).length;
-      if (cells.length && numeric / cells.length > 0.8) return { error: 'This looks like just the numbers, without the headers. That works too: click the cell in the table below where the first number should go, and paste there (Cmd+V). Or select the whole sheet in Excel and paste it here.' };
+      if (cells.length && numeric / cells.length > 0.8) return { error: opts.numbersIntoTable
+        ? 'This looks like just the numbers, without the headers. That works too: click the cell in the table below where the first number should go, and paste there (Cmd+V). Or select the whole sheet in Excel and paste it here.'
+        : 'This looks like just the numbers. The tool needs the whole sheet, because the Product, Age, Gender and Smoking columns tell it where each number goes. Click the corner above row 1 in Excel, copy, and paste again.' };
       return { error: 'This does not look like one of the RP Product Details sheets. Select the whole sheet in Excel (click the corner above row 1), copy, and paste again. Or paste just the numbers straight into the table below.' };
     }
     if (opts.expect && opts.expect.indexOf(f) < 0) return { error: 'This looks like a different sheet (' + ({ long: 'a Life premium sheet', ci: 'the CI Premium sheet', vhis: 'a VHIS premium sheet', osi: 'the OSI sheet' })[f] + '). Paste the premium sheet for this page.' };

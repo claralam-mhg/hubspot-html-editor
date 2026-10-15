@@ -277,7 +277,7 @@
   function excelPanel(s, v) {
     if (!v.excel) return '';
     var x = s.xl && s.xl.v === v.v ? s.xl : null, h = '<div class="card xl"><h2>Paste the Excel sheet</h2><p class="hint">' + esc(v.excel.how) + '</p>' +
-      (v.kind !== 'productColumns' ? '<p class="hint"><b>Copied just the numbers?</b> Click the cell in the table below where the first number goes and paste there (Cmd+V).' + (v.groupOrder ? ' A whole column from the sheet fills all four groups.' : '') + '</p>' : '');
+      (v.kind === 'productRates' ? '<p class="hint"><b>Copied just the numbers?</b> Click the cell in the table below where the first number goes and paste there (Cmd+V). A whole column from the sheet fills all four groups.</p>' : '');
     var boxes = v.excel.two ? [{ which: 'premium', label: '1. "Premium" sheet' }, { which: 'discount', label: '2. "Discounted Premium" sheet' }] : [{ which: 'premium', label: '' }];
     boxes.forEach(function (b) {
       h += (b.label ? '<h3>' + esc(b.label) + '</h3>' : '') + '<textarea class="code" style="min-height:70px" data-xltext="' + b.which + '" placeholder="Paste the whole sheet here…"></textarea>' +
@@ -311,7 +311,7 @@
       if (e.kind === 'var') { var k = e.v + '|' + e.path; if (s.vedits[k]) return s.vedits[k].value; return get(M.readVar(s.base, e.v).data, e.path); }
       return cur(s, e.id, e.path);
     };
-    var res = X.importSheet(text, prods, { v: v.v, sumInsured: v.excel.sumInsured, expect: v.excel.expect, which: which,
+    var res = X.importSheet(text, prods, { v: v.v, sumInsured: v.excel.sumInsured, expect: v.excel.expect, which: which, numbersIntoTable: v.kind === 'productRates',
       premiumOf: function (id, a, k) { return cur(s, id, v.path + '.' + a + '.' + k); } });
     if (res.error) { s.xl = { v: v.v, error: res.error }; return; }
     var empty = function (x) { return x === null || x === '' || x === undefined; };
@@ -547,6 +547,9 @@
     if (!/[\t\n]/.test(String(text).trim())) return; // one value: normal paste
     e.preventDefault();
     if (t.dataset.ppath) { st().flash = 'Pasting several values here is turned off: this table lists products in the page order, which is different from the Excel. Paste the whole sheet in the box above instead.'; return all(); }
+    // Life / CI: Phillip's rows run age → gender → smoker, but this table has one row per age and one
+    // column per gender/smoker, so a copied column would put e.g. female prices into male columns.
+    if (t.dataset.rate) { st().flash = 'Pasting a column here is turned off: in Phillip\'s sheet each row is one age + gender + smoker, which does not line up with this table. Paste the whole sheet in the box above instead. The tool reads Product, Age, Gender and Smoking from every row.'; return all(); }
     pasteBlock(t, text);
   });
 
