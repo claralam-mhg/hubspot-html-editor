@@ -448,10 +448,16 @@ console.log('\nVHIS premiums');
     assert(r.res.ok, r.res.errors.join()); eq(r.res.warnings.length, 0, r.res.warnings.join());
     eq(badgeRow(r).after, 'HK$16,000 −63% · HK$25,000 −69% · HK$50,000 −76% · HK$100,000 −81% · HK$250,000 −85%');
   });
-  t('VHIS build source still works the badge out from the shown price (same sum as review.js)', () => {
-    const src = fs.readFileSync(path.join(here, '../../mh_vhis/docs/preview-template.html'), 'utf8');
-    assert(src.includes("function shown(i){ return discAmt(p,i)!=null ? discAmt(p,i) : rates[i]; }") && src.includes('(1 - shown(i)/basePrice)'),
-      'deductibleBlock changed - update tierBadges in review.js to match, or restore the shown-price badge');
+  t('live module 09 (16/10) works the badge out from the shown price (same sum as review.js)', () => {
+    const m9 = M.liveModuleCode(fs.readFileSync(path.join(here, 'fixtures/vhis-live-2026-10-16.html'), 'utf8'), 'MODULE 09 —').code;
+    assert(m9.includes("function shown(i){ return discAmt(p,i)!=null ? discAmt(p,i) : rates[i]; }") && m9.includes('(1 - shown(i)/basePrice)'),
+      'deductibleBlock changed - update tierBadges in review.js to match');
+  });
+  t('removing the shown-price badge from module 09 → copy blocked', () => {
+    const m9 = M.liveModuleCode(fs.readFileSync(path.join(here, 'fixtures/vhis-live-2026-10-16.html'), 'utf8'), 'MODULE 09 —').code;
+    const old = m9.replace(/function shown\(i\)\{[^\n]*\}\n\s*var basePrice = shown\(base\);/, 'var basePrice = rates[base];').replace(/shown\(i\)/g, 'rates[i]');
+    assert(old !== m9, 'replace did not apply');
+    assert(!M.safety(m9, old, {}).ok, 'safety should refuse removing shown()');
   });
   t('offer price above full premium → warning', () => {
     const r = R.review(page, pdm, fwd(FULL, [10699, 7000, 3358, 2555, 2007, 1618]));
