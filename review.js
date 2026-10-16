@@ -42,6 +42,7 @@
       if (s.mode !== 'code') res.errors = res.errors.concat(productPatternErrors(page, s));
       try { changes = E.changeList(s.original, out, cfg()); } catch (e) {}
       if (m.vars) { changes = changes.concat(varChanges(s.original, out, m)); if (s.mode !== 'code') rateWarnings(s.original, out, m).forEach(function (w) { res.warnings.push(w); }); }
+      if (m.vars) { var tb = tierBadges(page, m, s.original, out); changes = changes.concat(tb.changes); res.warnings = res.warnings.concat(tb.warnings); }
     } else if ((m.editor === 'content' || m.editor === 'banner') && s.mode !== 'code') {
       res.errors = res.errors.concat(M.htmlFieldErrors(s.fields, s.edits));
       changes = contentChanges(page, s.original, out, m);
@@ -94,6 +95,62 @@
       }); }); });
     });
     return w;
+  }
+  /* VHIS deductible badges (保費 −XX%). The page works them out in module 09 deductibleBlock();
+     this mirrors that sum so PCT sees the badges a premium upload produces before copying.
+     Per tier the price shown is the first-year offer price where there is one, else the full
+     premium; the badge compares it with the lowest deductible of the same geography.
+     Philip, 2026-10-16: FWD 尊衛您 discounts each tier differently, so promo-vs-full mixes and
+     promo above full now give visibly wrong badges. Only changed product/age/profile rows are
+     checked, so old data never floods the review. */
+  var BADGE_PREVIEW = { age: '30', combo: 'male-non-smoker' }; // the page's default profile
+  function tierBadges(page, m, original, out) {
+    var res = { changes: [], warnings: [] };
+    var v = (m.vars || []).filter(function (x) { return x.kind === 'productRates'; })[0];
+    if (!v) return res;
+    var A, B;
+    try { A = E.load(original, page.data).records; B = E.load(out, page.data).records; } catch (e) { return res; }
+    var byId = {}; A.forEach(function (r) { byId[r.id] = r.data; });
+    B.forEach(function (r) {
+      var p = r.data, o = byId[r.id], tiers = get(p, v.tiersPath) || [];
+      if (tiers.length < 2) return;
+      var rates = get(p, v.path) || {}, disc = get(p, v.discPath);
+      var ended = p.offer && p.offer.end && Date.now() > Date.parse(p.offer.end + 'T23:59:59+08:00');
+      var row = function (d, path, age, k) { var t = get(d, path); return t && t[age] ? t[age][k] : null; };
+      var changed = function (age, k) { return !o || JSON.stringify(row(p, v.path, age, k)) !== JSON.stringify(row(o, v.path, age, k)) || JSON.stringify(row(p, v.discPath, age, k)) !== JSON.stringify(row(o, v.discPath, age, k)); };
+      var badges = function (d, age, k) {
+        var full = row(d, v.path, age, k); if (!full) return null;
+        var promo = ended ? null : row(d, v.discPath, age, k);
+        var shown = function (i) { return promo && promo[i] != null ? promo[i] : full[i]; };
+        var groups = {}; (get(d, v.tiersPath) || []).forEach(function (t, i) { if (full[i] == null) return; (groups[t.variant || ''] = groups[t.variant || ''] || []).push(i); });
+        var outB = [];
+        Object.keys(groups).forEach(function (g) {
+          var idx = groups[g]; if (idx.length < 2) return;
+          var base = idx.reduce(function (a, b) { return (tiers[a].amount || 0) <= (tiers[b].amount || 0) ? a : b; });
+          idx.forEach(function (i) { if (i !== base) outB.push({ i: i, g: g, off: shown(base) ? Math.round((1 - shown(i) / shown(base)) * 100) : 0, promo: promo && promo[i] != null, basePromo: promo && promo[base] != null, high: promo && promo[i] != null && promo[i] > full[i] }); });
+        });
+        return outB;
+      };
+      var label = page.data.productLabel(p), tl = function (b) { return (b.g ? b.g + ' ' : '') + 'HK$' + (tiers[b.i].amount || 0).toLocaleString('en-US'); };
+      var high = [], mixed = [], flat = [];
+      Object.keys(rates).forEach(function (age) { Object.keys(rates[age] || {}).forEach(function (k) {
+        if (!changed(age, k)) return;
+        var bs = badges(p, age, k) || [], where = 'age ' + age + ' ' + k;
+        if (bs.some(function (b) { return b.high; })) high.push(where);
+        if (!ended && disc && bs.some(function (b) { return b.promo !== b.basePromo; })) mixed.push(where);
+        bs.filter(function (b) { return b.off <= 0; }).forEach(function (b) { flat.push(where + ' ' + tl(b) + ' (' + b.off + '%)'); });
+      }); });
+      var some = function (a) { return a.slice(0, 3).join('; ') + (a.length > 3 ? ' and ' + (a.length - 3) + ' more' : ''); };
+      if (high.length) res.warnings.push(label + ': a first-year offer price is higher than the full premium in ' + high.length + ' row(s): ' + some(high) + '.');
+      if (mixed.length) res.warnings.push(label + ': some deductible tiers have an offer price and others do not in ' + mixed.length + ' row(s): ' + some(mixed) + '. The 保費 −XX% badge would compare an offer price with a full price.');
+      if (flat.length) res.warnings.push(label + ': a higher deductible is not cheaper than the lowest one, so its badge would read 保費 −0% or less: ' + some(flat) + '.');
+      var a = BADGE_PREVIEW.age, k = BADGE_PREVIEW.combo;
+      if (changed(a, k)) {
+        var show = function (bs) { return bs ? bs.map(function (b) { return tl(b) + ' −' + b.off + '%'; }).join(' · ') : '(none)'; };
+        res.changes.push({ product: label, field: '保費 −XX% badges (age ' + a + ', ' + k + ')', before: o ? show(badges(o, a, k)) : '(new plan)', after: show(badges(p, a, k)) });
+      }
+    });
+    return res;
   }
   function productPatternErrors(page, s) {
     var cfg = function () { return page.data; };

@@ -438,6 +438,37 @@ console.log('\nVHIS premiums');
     const cl = E.changeList(PD, o, pc); eq(cl.length, 2, JSON.stringify(cl));
     assert(/Premium 30 · male-non-smoker/.test(cl[0].field), cl[0].field);
   });
+  // Philip, 2026-10-16: badges compare the prices the tiles show. FWD 尊衛您's real 16/10 numbers.
+  const st = f => ({ mode: 'form', original: PD, doc: D, order: D.records.map(r => r.id), fields: f, base: PD, vedits: {} });
+  const fwd = (full, promo) => st({ [id]: { 'premiums.30.male-non-smoker': full, 'discount.prices.30.male-non-smoker': promo } });
+  const FULL = [14265, 6700, 5756, 4380, 3441, 2774], PROMO = [10699, 3908, 3358, 2555, 2007, 1618];
+  const badgeRow = r => r.changes.find(c => /badges/.test(c.field));
+  t('premium upload → review shows the badges the page will show (−63% … −85%), no warnings', () => {
+    const r = R.review(page, pdm, fwd(FULL, PROMO));
+    assert(r.res.ok, r.res.errors.join()); eq(r.res.warnings.length, 0, r.res.warnings.join());
+    eq(badgeRow(r).after, 'HK$16,000 −63% · HK$25,000 −69% · HK$50,000 −76% · HK$100,000 −81% · HK$250,000 −85%');
+  });
+  t('VHIS build source still works the badge out from the shown price (same sum as review.js)', () => {
+    const src = fs.readFileSync(path.join(here, '../../mh_vhis/docs/preview-template.html'), 'utf8');
+    assert(src.includes("function shown(i){ return discAmt(p,i)!=null ? discAmt(p,i) : rates[i]; }") && src.includes('(1 - shown(i)/basePrice)'),
+      'deductibleBlock changed - update tierBadges in review.js to match, or restore the shown-price badge');
+  });
+  t('offer price above full premium → warning', () => {
+    const r = R.review(page, pdm, fwd(FULL, [10699, 7000, 3358, 2555, 2007, 1618]));
+    assert(r.res.warnings.some(w => /higher than the full premium/.test(w)), r.res.warnings.join());
+  });
+  t('only some tiers have an offer price → warning', () => {
+    const r = R.review(page, pdm, fwd(FULL, [10699, null, 3358, 2555, 2007, 1618]));
+    assert(r.res.warnings.some(w => /some deductible tiers have an offer price/.test(w)), r.res.warnings.join());
+  });
+  t('higher deductible not cheaper → −0% warning', () => {
+    const r = R.review(page, pdm, fwd(FULL, [3000, 3908, 3358, 2555, 2007, 1618]));
+    assert(r.res.warnings.some(w => /−0% or less/.test(w)), r.res.warnings.join());
+  });
+  t('unrelated edit (tags) → no badge row, no badge warnings', () => {
+    const r = R.review(page, pdm, st({ [id]: { tags: ['a'] } }));
+    assert(!badgeRow(r), 'unexpected badge row'); eq(r.res.warnings.length, 0, r.res.warnings.join());
+  });
   t('empty premium cell → blocked', () => {
     const p1 = old.premiums['30']['male-non-smoker'].slice(); p1[0] = NaN;
     try { E.build(D, { fields: { [id]: { 'premiums.30.male-non-smoker': p1 } } }); throw new Error('no error'); } catch (e) { assert(/empty or not a number/.test(e.message), e.message); }
