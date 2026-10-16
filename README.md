@@ -31,7 +31,7 @@ Lets MoneyHero's PCT team change HubSpot comparison pages (ranking, offers, tags
 | `pages.js` | pages, their modules (in live order), field labels, rules |
 | `app.js` + `app.src.html` | the screen; `build.mjs` bundles everything into one HTML file |
 | `scripts/snapshot.mjs` | reads the live pages into `live/<page>.json` (run by the GitHub job) |
-| `test.mjs` + `fixtures/` | 177 tests against real modules, saved copies of each live page, and real RP Product Details Excel exports |
+| `test.mjs` + `fixtures/` | 182 tests against real modules, saved copies of each live page, and real RP Product Details Excel exports |
 | `design/` | MoneyHero design-system fonts and tokens (from the `mhg-design` skill) |
 
 ```bash

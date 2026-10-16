@@ -159,6 +159,7 @@
     var vv = m.vars.filter(function (x) { return x.v === s.vtab; })[0];
     if (vv.kind === 'productColumns') return h + excelPanel(s, vv) + renderProductColumns(s, vv);
     if (vv.kind === 'productTags') return h + renderProductTags(s, vv);
+    if (vv.kind === 'addPlan') return h + renderAddPlan(m, s, vv);
     if (vv.kind === 'productRates') return h + excelPanel(s, vv) + renderProductRates(s, vv);
     return h + renderVar(m, s, vv);
   }
@@ -203,6 +204,95 @@
       h += '</tr>';
     });
     return h + '</tbody></table></div></div>';
+  }
+  /* ---------- VHIS: add a plan from Phillip's Product Details sheet ---------- */
+  function slug(t) { return String(t || '').normalize('NFKD').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, ''); }
+  function renderAddPlan(m, s, v) {
+    var a = s.add || (s.add = { step: 1 }), c = cfg(), onPage = s.doc.records.map(function (r) { return r.data.name; });
+    var h = '<div class="card xl"><h2>Add a plan 新增計劃</h2><p class="hint">Everything a VHIS plan needs is built from Phillip\'s "VHIS RP Product Details" Excel, with the same rules as the page\'s build script. Nothing is added until every check below is green and you press <b>Add to the page</b>.</p>';
+    h += '<h3>1. Paste the "Product Details" sheet</h3><p class="hint">Click the corner above row 1 in that sheet, copy, paste below.</p><textarea class="code" style="min-height:70px" id="addDetails" placeholder="Paste the whole sheet here…">' + esc(a.detText || '') + '</textarea><div class="row" style="margin-top:6px"><button class="btn primary" id="addRead">Read the sheet</button></div>';
+    if (a.err) h += '<div class="msg err">' + esc(a.err) + '</div>';
+    if (a.det) {
+      h += '<h3>2. Pick the plan</h3><div class="tablewrap"><table class="changes"><thead><tr><th></th><th>Column</th><th>Provider</th><th>Plan</th><th>Status in the sheet</th></tr></thead><tbody>';
+      a.det.plans.forEach(function (p) {
+        var there = onPage.some(function (n) { return n === p.name || n.indexOf(p.name + ' - ') === 0; });
+        h += '<tr' + (there ? ' class="muted"' : '') + '><td>' + (there ? 'on the page' : '<input type="radio" name="addPick" data-addpick="' + p.col + '"' + (a.col === p.col ? ' checked' : '') + '>') + '</td><td>' + p.letter + '</td><td>' + esc(p.insurer) + '</td><td>' + esc(p.name) + '</td><td>' + esc(p.status) + '</td></tr>';
+      });
+      h += '</tbody></table></div>';
+    }
+    if (a.det && a.col != null) {
+      var providers = {}; s.doc.records.forEach(function (r) { providers[r.data.providerId] = r.data.insurer; });
+      h += '<h3>3. Plan details</h3><div class="row" style="align-items:flex-start;gap:16px">' +
+        '<div class="field" style="flex:1;min-width:200px"><label>Plan id (used in tracking — tell the data team)</label><input type="text" id="addId" value="' + esc(a.id) + '"><div class="hint">Lower case letters, numbers and - only. Must be new.</div></div>' +
+        '<div class="field" style="flex:1;min-width:200px"><label>Provider</label><select id="addProv">' + Object.keys(providers).map(function (k) { return '<option value="' + esc(k) + '"' + (a.providerId === k ? ' selected' : '') + '>' + esc(providers[k]) + ' (' + esc(k) + ')</option>'; }).join('') + '<option value="__new"' + (a.newProvider ? ' selected' : '') + '>New provider…</option></select></div></div>';
+      if (a.newProvider) h += '<div class="row" style="align-items:flex-start;gap:16px"><div class="field" style="flex:1;min-width:200px"><label>New provider id</label><input type="text" id="addProvId" value="' + esc(a.providerId) + '"></div><div class="field" style="flex:2;min-width:260px"><label>Logo image link</label><input type="text" id="addLogo" value="' + esc(a.logo) + '"><div class="hint">Suggested from the apply link\'s website, like the other logos. Replace it with a better image if you have one.</div>' + (a.logo ? '<img class="thumb" src="' + esc(a.logo) + '" alt="">' : '') + '</div></div>';
+      h += '<div class="row" style="align-items:flex-start;gap:16px"><div class="field" style="flex:1"><label>Ranking position (1 = first)</label><input type="number" min="1" id="addRank" value="' + esc(a.rank) + '"></div><div class="field" style="flex:1"><label>"Viewed" count on the card</label><input type="number" min="0" id="addSocial" value="' + esc(a.social) + '"></div></div>';
+      h += '<h3>4. Paste the premium sheets</h3><p class="hint">Same as above: select the whole sheet, copy, paste.</p><label class="hint">"Premium" sheet</label><textarea class="code" style="min-height:60px" id="addPrem" placeholder="Paste the Premium sheet…">' + esc(a.prem || '') + '</textarea><label class="hint">"Discounted Premium" sheet (for the first-year price)</label><textarea class="code" style="min-height:60px" id="addDisc" placeholder="Paste the Discounted Premium sheet…">' + esc(a.disc || '') + '</textarea>';
+      h += '<div class="row" style="margin-top:8px"><button class="btn primary" id="addBuild">Build the plan and check it</button></div>';
+    }
+    if (a.built) h += addChecklist(s, a);
+    return h + '</div>';
+  }
+  function addChecklist(s, a) {
+    var b = a.built, h = '<h3>5. Check everything is in place</h3>', ok = function (good, text) { return '<li class="' + (good ? 'okk' : 'bad') + '">' + (good ? '✓ ' : '✗ ') + text + '</li>'; };
+    var rows = 0, tiers = b.records[0].deductibleTiers;
+    b.records.forEach(function (r) { Object.keys(r.premiums).forEach(function (age) { rows += Object.keys(r.premiums[age]).length; }); });
+    var first = b.records[0], ids = b.records.map(function (r) { return r.id; });
+    var m09 = a.m09;
+    h += '<ul class="checklist">';
+    h += ok(!b.problems.length, b.problems.length ? 'Problems: ' + esc(b.problems.join(' · ')) : 'Sheet read without problems');
+    h += ok(a.idOk, a.idOk ? 'Plan id' + (ids.length > 1 ? 's' : '') + ': ' + esc(ids.join(', ')) + ' (new, valid)' : esc(a.idMsg));
+    h += ok(!!first.url, 'Apply link: ' + esc(first.url || 'missing'));
+    h += ok(tiers.length > 0 && rows >= 324 * b.records.length, 'Premiums: ' + rows + ' of ' + 324 * b.records.length + ' age/group rows, ' + tiers.length + ' deductible level' + (tiers.length > 1 ? 's' : '') + ' (' + esc(tiers.map(function (t) { return t.label; }).join(' / ')) + ')');
+    h += ok(true, first.discount ? 'First-year price: from the Discounted Premium sheet (' + Object.keys(first.discount.prices).length + ' ages)' : 'First-year price: none' + (first.offer ? '' : ' (no offer)'));
+    h += ok(true, 'Offer: ' + (first.offer ? esc([first.offer.text, first.offer.code && 'code ' + first.offer.code, first.offer.end && 'ends ' + first.offer.end].filter(Boolean).join(' · ')) : 'none'));
+    h += ok(first.coverage.length > 10, 'Coverage table: ' + first.coverage.length + ' rows (' + first.coverage.filter(function (c) { return c.cmp; }).length + ' in the compare view)');
+    h += ok(true, 'Tags: ' + (first.tags.length ? esc(first.tags.join(' · ')) : 'none') + ' · More info: ' + first.moreInfo.length + ' · Documents: ' + first.docs.length + (first.taxCaveat ? ' · tax caveat shown' : ''));
+    h += ok(!!a.planTypeOk, 'Plan type: ' + esc(first.planType) + (a.planTypeOk ? ' (the page has an icon and filter for it)' : ' — the page has no icon/filter for this plan type; ask Clara'));
+    h += ok(a.m09ready, a.m09ready ? 'Module 09 banner: "viewed" count' + (a.newProvider ? ' and the new provider logo' : '') + ' will be added there too' : 'Module 09 banner is not loaded and there is no live copy — open "09 banner" and load or paste it first');
+    h += ok(!a.newProvider || /^https:\/\//.test(a.logo || ''), a.newProvider ? 'Provider logo: ' + esc(a.logo || 'missing') : 'Provider logo: already on the page (' + esc(a.providerId) + ')');
+    h += ok(a.rank >= 1, 'Ranking: position ' + a.rank + (ids.length > 1 ? ' and ' + (Number(a.rank) + 1) : ''));
+    h += '</ul>';
+    b.warnings.forEach(function (w) { h += '<div class="msg warn">' + esc(w) + '</div>'; });
+    var ready = addReady(a);
+    h += '<div class="row" style="margin-top:8px"><button class="btn primary" id="addGo"' + (ready ? '' : ' disabled') + '>Add to the page</button>' + (ready ? '<span class="hint">Then paste <b>08 product data</b> and <b>09 banner</b> into HubSpot. Both are needed.</span>' : '') + '</div>';
+    return h;
+  }
+  function addBuild(m, s, v) {
+    var a = s.add, c = cfg(), det = a.det, p = det.plans.filter(function (x) { return x.col === a.col; })[0];
+    var b = X.vhisBuildPlan(det, { col: a.col, id: a.id, providerId: a.providerId, premium: a.prem, discount: a.disc });
+    b.records.forEach(function (r) { r.providerId = a.providerId; });
+    var ids = b.records.map(function (r) { return r.id; }), have = s.doc.records.map(function (r) { return r.id; });
+    a.idOk = /^[a-z0-9]+(-[a-z0-9]+)*$/.test(a.id || '') && ids.every(function (id) { return have.indexOf(id) < 0; });
+    a.idMsg = !/^[a-z0-9]+(-[a-z0-9]+)*$/.test(a.id || '') ? 'Plan id: use lower case letters, numbers and - only' : 'Plan id already on the page: ' + ids.filter(function (id) { return have.indexOf(id) >= 0; }).join(', ');
+    // module 09: loaded, or load it from the live copy now
+    var i9 = S.page.modules.map(function (x) { return x.file; }).indexOf(v.banner), m9 = S.page.modules[i9], s9 = st(i9);
+    if (!s9.loaded) { var le = liveEntry(m9); if (le) { load(s9, m9, le.code, false); if (s9.loaded) s9.source = { kind: 'live', at: S.live[S.page.key].data.fetchedAt }; } }
+    a.m09ready = !!s9.loaded;
+    var icons = s9.loaded ? (M.readVar(s9.base, 'PLAN_ICON') || {}).data || {} : {};
+    a.planTypeOk = !!icons[b.records[0].planType];
+    a.built = b;
+  }
+  function addReady(a) { var b = a.built; if (!b) return false; var first = b.records[0], rows = 0; b.records.forEach(function (r) { Object.keys(r.premiums).forEach(function (age) { rows += Object.keys(r.premiums[age]).length; }); });
+    return !b.problems.length && a.idOk && first.url && rows >= 324 * b.records.length && a.planTypeOk && a.m09ready && (!a.newProvider || /^https:\/\//.test(a.logo || '')) && a.rank >= 1; }
+  function addGo(m, s, v) {
+    // rebuild from what is in the boxes right now, so an edit made after "Build" can never slip through unchecked
+    addBuild(m, s, v); if (!addReady(s.add)) return renderRight();
+    var a = s.add, c = cfg(), recs = a.built.records.map(function (r) { return JSON.parse(JSON.stringify(r)); });
+    var next = E.appendRecords(output(m, s), c, recs);
+    s.base = next; s.doc = E.load(next, c); s.fields = {}; s.vedits = {};
+    s.added = (s.added || []).concat(recs.map(function (r) { return r.id; }));
+    var order = baseOrder(s.doc).filter(function (id) { return !recs.some(function (r) { return r.id === id; }); });
+    var pos = Math.max(0, Math.min(order.length, Number(a.rank) - 1));
+    order.splice.apply(order, [pos, 0].concat(recs.map(function (r) { return r.id; })));
+    s.order = order;
+    var i9 = S.page.modules.map(function (x) { return x.file; }).indexOf(v.banner), s9 = st(i9);
+    recs.forEach(function (r) { setV(s9, 'SOCIAL_PROOF', r.id, Number(a.social) || 0); });
+    if (a.newProvider) setV(s9, 'LOGOS', a.providerId, a.logo);
+    s9.copied = false;
+    s.flash = 'Added ' + recs.map(function (r) { return r.name; }).join(' and ') + '. Now copy and paste BOTH modules: 08 product data and 09 banner.';
+    s.add = null; s.vtab = 'products'; s.copied = false; all();
+    var r = $('review'); if (r) r.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
   // Every product's tags in one place. Tag shape comes from the page's own tags field
   // (Life: zh/en/colour · CI: zh · VHIS: plain words) — or a single badge (OSI).
@@ -424,6 +514,13 @@
         if (q && (key + ' ' + val).toLowerCase().indexOf(q) < 0) return;
         h += textField(key, v.v, path, val, o, o.length > 60);
       });
+    } else if (v.kind === 'map') {
+      if (v.hint) h += '<p class="hint">' + esc(v.hint) + '</p>';
+      Object.keys(data).forEach(function (key) {
+        var val = vcur(s, v.v, key, data), o = data[key], ch = JSON.stringify(val) !== JSON.stringify(o);
+        h += '<div class="field' + (ch ? ' changed' : '') + '"><label>' + esc(key) + '</label><input type="' + (v.number ? 'number' : 'text') + '" data-v="' + v.v + '" data-p="' + esc(key) + '"' + (v.number ? ' data-num="1" min="0"' : '') + ' value="' + esc(val) + '">' + (ch ? '<div class="was">Was: ' + esc(o) + '</div>' : '') + '</div>';
+      });
+      Object.keys(s.vedits).forEach(function (k) { var e = s.vedits[k]; if (e.v === v.v && !(e.path in data)) h += '<div class="field changed"><label>' + esc(e.path) + ' <span class="edited">new</span></label><div class="locked">' + esc(e.value) + '</div></div>'; });
     } else if (v.kind === 'list') {
       data.forEach(function (item, n) {
         h += '<div class="slide"><h3>' + (n + 1) + '</h3>';
@@ -589,6 +686,12 @@
     if (t.dataset.undo) { delete s.fields[t.dataset.undo]; s.copied = false; return all(); }
     if (t.dataset.xlread) { var xv = (m.vars || []).filter(function (x) { return x.v === s.vtab; })[0]; excelRead(s, xv, t.dataset.xlread); var keep = {}; document.querySelectorAll('[data-xltext]').forEach(function (ta) { keep[ta.dataset.xltext] = ta.value; }); renderRight(); document.querySelectorAll('[data-xltext]').forEach(function (ta) { ta.value = keep[ta.dataset.xltext] || ''; }); var pv = document.querySelector('.xlprev'); if (pv) pv.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); return; }
     if (t.id === 'xlApply') { excelApply(s); return; }
+    if (t.id === 'addRead') {
+      var A = s.add || (s.add = {}); A.detText = $('addDetails').value; A.err = null; A.det = null; A.col = null; A.built = null;
+      var det = X.vhisDetails(A.detText); if (det.error) A.err = det.error; else A.det = det; return renderRight();
+    }
+    if (t.id === 'addBuild') { addBuild(m, s, (m.vars || []).filter(function (x) { return x.v === '@add'; })[0]); return renderRight(); }
+    if (t.id === 'addGo') { addGo(m, s, (m.vars || []).filter(function (x) { return x.v === '@add'; })[0]); return; }
     if (t.id === 'xlCancel') { s.xl = null; return renderRight(); }
     if (t.dataset.ptagadd) { var pa = (cur(s, t.dataset.pid, 'tags') || []).slice(); pa.push(newTag(tagsField())); setP(s, t.dataset.pid, 'tags', pa); return all(); }
     if (t.dataset.ptagdel != null) { var pd = cur(s, t.dataset.pid, 'tags').slice(); pd.splice(+t.dataset.ptagdel, 1); setP(s, t.dataset.pid, 'tags', pd); return all(); }
@@ -607,6 +710,7 @@
     var t = e.target; if (S.modIdx == null) return; var s = st(), m = mod();
     if (t.id === 'q') { s.q = t.value; var pos = t.selectionStart; renderRight(); var q = $('q'); q.focus(); q.setSelectionRange(pos, pos); return; }
     if (t.id === 'codeBox') { s.code = t.value; s.copied = false; return soft(); }
+    if (s.add && ({ addId: 'id', addProvId: 'providerId', addLogo: 'logo', addRank: 'rank', addSocial: 'social', addPrem: 'prem', addDisc: 'disc', addDetails: 'detText' })[t.id]) { s.add[({ addId: 'id', addProvId: 'providerId', addLogo: 'logo', addRank: 'rank', addSocial: 'social', addPrem: 'prem', addDisc: 'disc', addDetails: 'detText' })[t.id]] = t.value; return; }
     if (t.dataset.f != null) { s.edits[t.dataset.f] = t.value; s.copied = false; t.closest('.field').classList.toggle('changed', t.value !== s.fields[+t.dataset.f].value); return soft(); }
     if (t.dataset.ppath) {
       var pv = t.dataset.type === 'text-null' ? (t.value === '' ? null : t.value) : t.value === '' ? (t.dataset.type === 'number-null' ? null : NaN) : Number(t.value);
@@ -624,7 +728,7 @@
     }
     if (t.dataset.stag != null) { var si = cur(s, s.sel, 'tags').slice(); si[+t.dataset.stag] = t.value; setP(s, s.sel, 'tags', si); return soft(); }
     if (t.dataset.tag != null) { var tg = cur(s, s.sel, 'tags').map(function (x) { return Object.assign({}, x); }); tg[+t.dataset.tag][t.dataset.k] = t.value; setP(s, s.sel, 'tags', tg); return soft(); }
-    if (t.dataset.v) { setV(s, t.dataset.v, t.dataset.p, t.value); return soft(); }
+    if (t.dataset.v) { setV(s, t.dataset.v, t.dataset.p, t.dataset.num ? (t.value === '' ? NaN : Number(t.value)) : t.value); return soft(); }
     if (t.dataset.rate) {
       var data = M.readVar(s.base, s.vtab).data, val = vcur(s, s.vtab, t.dataset.rate, data); val = Array.isArray(val) ? val.slice() : [0, 0];
       var vdef = (mod().vars || []).filter(function (x) { return x.v === s.vtab; })[0] || {};
@@ -636,6 +740,19 @@
   });
   document.addEventListener('change', function (e) {
     var t = e.target; if (S.modIdx == null) return; var s = st();
+    if (t.dataset.addpick != null) {
+      var A = s.add, p = A.det.plans.filter(function (x) { return x.col === +t.dataset.addpick; })[0];
+      A.col = p.col; A.built = null;
+      var known = s.doc.records.filter(function (r) { return r.data.insurer === p.insurer || slug(r.data.insurer).split('-')[0] === slug(p.insurer).split('-')[0]; })[0];
+      A.newProvider = !known; A.providerId = known ? known.data.providerId : slug(p.insurer).split('-')[0] || 'provider';
+      var latin = slug(p.name.replace(new RegExp('^' + (p.insurer || '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&')), ''));
+      A.id = A.providerId + '-' + (latin || 'plan-' + p.letter.toLowerCase());
+      var url = X.cleanText(A.det.cell(A.det.R.link, p.col)) || '', host = (/^https?:\/\/([^\/]+)/.exec(url) || [])[1] || '';
+      A.logo = host ? 'https://www.google.com/s2/favicons?domain=' + host.replace(/^www\./, '') + '&sz=128' : '';
+      A.rank = s.doc.records.length + 1; A.social = 5;
+      return renderRight();
+    }
+    if (t.id === 'addProv') { var A2 = s.add; A2.newProvider = t.value === '__new'; if (!A2.newProvider) A2.providerId = t.value; A2.built = null; return renderRight(); }
     if (t.id === 'rp') { s.rp = t.value; return renderRight(); }
     if (t.id === 'vp') { s.vp = t.value; return renderRight(); }
     if (t.id === 'vg') { s.vg = t.value; return renderRight(); }

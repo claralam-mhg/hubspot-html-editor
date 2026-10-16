@@ -274,6 +274,7 @@
         { label: 'Premiums', file: '08 product data', tab: '@premiums' },
         { label: 'Ranking & offers', file: '08 product data', tab: 'products' },
         { label: 'Tags', file: '08 product data', tab: '@tags' },
+        { label: 'Add a plan', file: '08 product data', tab: '@add' },
         { label: 'Banners', file: '09 banner', tab: 'BANNERS' }
       ],
       // Modules are labelled "MODULE 0N —" in their first comment. MODULE 01 (fonts) lives in
@@ -286,13 +287,18 @@
         { file: '06 tax note', editor: 'content', fingerprint: 'MODULE 06 —', find: '<!-- ═══ MODULE 06 — Tax deduction note', what: 'Tax deduction note' },
         { file: '07 overlays', editor: 'content', fingerprint: 'MODULE 07 —', find: '<!-- ═══ MODULE 07 — Tooltip, compare tray', what: 'Tooltip, compare tray, compare pop-up, filter sheet' },
         { file: '08 product data', editor: 'products', fingerprint: 'MODULE 08 —', find: '<!-- ═══ MODULE 08 — Product data', what: 'Ranking, plan names, tags, offers, codes, offer end dates, apply links, premiums',
-          vars: [{ v: '@tags', title: 'Tags 標籤', kind: 'productTags', field: 'tags' }, { v: '@premiums', title: 'Premiums 保費', kind: 'productRates', path: 'premiums', discPath: 'discount.prices', tiersPath: 'deductibleTiers',
+          vars: [{ v: '@tags', title: 'Tags 標籤', kind: 'productTags', field: 'tags' },
+            { v: '@add', title: 'Add a plan 新增計劃', kind: 'addPlan', banner: '09 banner' },
+            { v: '@premiums', title: 'Premiums 保費', kind: 'productRates', path: 'premiums', discPath: 'discount.prices', tiersPath: 'deductibleTiers',
             // Phillip's sheet lists each column's 81 ages for these groups in this order; a pasted column runs on into the next group
             groupOrder: ['male-smoker', 'male-non-smoker', 'female-smoker', 'female-non-smoker'], round: 0,
             excel: { expect: ['vhis'], two: true, how: 'In the VHIS RP Product Details Excel, open the "Premium" sheet, click the corner above row 1 to select the whole sheet, copy, and paste in box 1. Then do the same with the "Discounted Premium" sheet in box 2.' } }],
           note: 'Deductible levels, discount label and coverage → "Edit code directly". This module is one very long line of code, so the form is the easier way in.' },
         { file: '09 banner', editor: 'scripts', fingerprint: 'MODULE 09 —', find: '<!-- ═══ MODULE 09 — Behaviour', what: 'Top and bottom banners (image, alt text, linked plan). The rest is page behaviour.',
-          vars: [{ v: 'BANNERS', title: 'Banners', kind: 'list', fields: [
+          vars: [
+            { v: 'SOCIAL_PROOF', title: '"Viewed" counts', kind: 'map', number: true, hint: 'The "N people viewed" badge on each plan card. Every plan needs one.' },
+            { v: 'LOGOS', title: 'Provider logos', kind: 'map', hint: 'One logo per provider, shown on every card of that provider.' },
+            { v: 'BANNERS', title: 'Banners', kind: 'list', fields: [
             { p: 'alt', label: 'Banner text (alt) — also what screen readers and tracking use', long: true },
             { p: 'desktop', label: 'Desktop image (2592×360)' }, { p: 'mobile', label: 'Mobile image (750×375)' },
             { p: 'productId', label: 'Links to plan (id) — the banner uses that plan\'s apply link and hides after its offer ends' }] }] }

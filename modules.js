@@ -126,7 +126,16 @@
     var spans = [];
     edits.forEach(function (e) {
       var r = readVar(html, e.v); if (!r) throw new Error(e.v + ' not found in this module');
-      var n = E.nodeAt(r.node, e.path); if (!n) throw new Error(e.v + ': "' + e.path + '" not found');
+      var n = E.nodeAt(r.node, e.path);
+      if (!n) { // a new key in an object table (e.g. SOCIAL_PROOF for a new plan): add it after the last entry
+        var parts = e.path.split('.'), key = parts.pop(), parent = parts.length ? E.nodeAt(r.node, parts.join('.')) : r.node;
+        if (!parent || parent.type !== 'object') throw new Error(e.v + ': "' + e.path + '" not found');
+        var first = parent.props[0], q = first && (html[first.keyStart] === "'" || html[first.keyStart] === '"') ? html[first.keyStart] : '';
+        var keyText = q ? q + key + q : (/^[A-Za-z_$][\w$]*$/.test(key) ? key : "'" + key + "'");
+        var at = parent.props.length ? parent.props[parent.props.length - 1].node.end : parent.start + 1;
+        spans.push({ start: at, end: at, text: (parent.props.length ? ',' : '') + keyText + ':' + E.lit(e.value, "'") });
+        return;
+      }
       if (JSON.stringify(E.toJS(n)) === JSON.stringify(e.value)) return;
       spans.push({ start: n.start, end: n.end, text: E.lit(e.value, n.quote) });
     });

@@ -265,6 +265,13 @@
     return out;
   }
 
+  /* ===== 3b. Add products: append records at the end of the list, in the module's own style ===== */
+  function appendRecords(html, cfg, records) {
+    var d = load(html, cfg), arr = d.arr, close = arr.end - 1;
+    var text = records.map(function (r) { return cfg.quote === '"' ? JSON.stringify(r) : lit(r); }).join(',');
+    return html.slice(0, close) + (arr.items.length ? ',' : '') + text + html.slice(close);
+  }
+
   /* ===== 4. Checks — the copy button stays off until all errors clear ===== */
   function check(beforeHtml, afterHtml, cfg) {
     var errors = [], warnings = [];
@@ -283,7 +290,7 @@
     // 4b. Same products in, same products out.
     var bIds = before.records.map(function (r) { return r.id; }), aIds = after.records.map(function (r) { return r.id; });
     bIds.forEach(function (id) { if (aIds.indexOf(id) < 0) errors.push('Product "' + id + '" has gone missing.'); });
-    aIds.forEach(function (id) { if (bIds.indexOf(id) < 0) errors.push('Unexpected new product "' + id + '".'); });
+    aIds.forEach(function (id) { if (bIds.indexOf(id) < 0 && (cfg.allowNewIds || []).indexOf(id) < 0) errors.push('Unexpected new product "' + id + '".'); });
 
     // 4c. Everything outside the data array must be byte-identical.
     var outsideBefore = beforeHtml.slice(0, before.arr.start) + beforeHtml.slice(before.arr.end);
@@ -385,7 +392,8 @@
       out.push({ product: 'Ranking', field: 'Order on the page', before: lst(va), after: lst(vb) });
     }
     b.records.forEach(function (r) {
-      var old = a.records.filter(function (x) { return x.id === r.id; })[0]; if (!old) return;
+      var old = a.records.filter(function (x) { return x.id === r.id; })[0];
+      if (!old) { out.push({ product: cfg.productLabel(r.data), field: 'New product', before: '', after: 'Added (id ' + r.id + ')' }); return; }
       cfg.fields.forEach(function (f) {
         var x = getPath(old.data, f.path), y = getPath(r.data, f.path);
         if (f.type === 'table') { leafDiff(x, y, '', function (p, a, b) { out.push({ product: cfg.productLabel(r.data), field: f.label + ' ' + p.replace(/\./g, ' · '), before: show(a), after: show(b) }); }); return; }
@@ -425,6 +433,6 @@
     return ops.filter(function (o) { return o.t !== '='; });
   }
 
-  var api = { lit: lit, parseValueAt: parseValueAt, toJS: toJS, nodeAt: nodeAt, load: load, build: build, check: check, changeList: changeList, lineDiff: lineDiff, parseZhDate: parseZhDate };
+  var api = { appendRecords: appendRecords, lit: lit, parseValueAt: parseValueAt, toJS: toJS, nodeAt: nodeAt, load: load, build: build, check: check, changeList: changeList, lineDiff: lineDiff, parseZhDate: parseZhDate };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.PCTEngine = api;
 })(typeof window !== 'undefined' ? window : globalThis);

@@ -20,7 +20,7 @@
   'use strict';
 
   /* ===== Excel clipboard → rows. Excel quotes cells containing tabs, newlines or quotes. ===== */
-  function parseTSV(text) {
+  function parseTSV(text, keepEmpty) {
     var rows = [], row = [], cell = '', i = 0, q = false, t = String(text || '').replace(/\r\n?/g, '\n');
     while (i < t.length) {
       var c = t[i];
@@ -34,7 +34,8 @@
       cell += c; i++;
     }
     if (cell !== '' || row.length) { row.push(cell.trim()); rows.push(row); }
-    return rows.filter(function (r) { return r.some(function (x) { return x !== ''; }); });
+    // keepEmpty: the VHIS Product Details reader counts rows by position, like the build script
+    return keepEmpty ? rows : rows.filter(function (r) { return r.some(function (x) { return x !== ''; }); });
   }
 
   /* ===== matching ===== */
@@ -259,6 +260,166 @@
     return ({ long: importLong, ci: importCI, vhis: importVHIS, osi: importOSI })[f](rows, products, opts);
   }
 
-  var api = { roundEven: roundEven, num: num, parseTSV: parseTSV, detect: detect, matchName: matchName, importSheet: importSheet, norm: norm, dice: dice };
+  /* ===== VHIS: build a new plan from the Product Details sheet (+ Premium / Discounted Premium) =====
+     A line-by-line port of mh_vhis/docs/source/extract-excel.py, so a plan added here is the same
+     record the build script would have produced. */
+  var PICTO = '\u{1F000}-\u{1FAFF}☀-✒✔✖-➿⬀-⯿';
+  var EMOJI = new RegExp('[' + PICTO + ']️?(?:‍[' + PICTO + ']️?)*', 'gu');
+  var FAMILY = /[\u{1F468}\u{1F469}\u{1F466}\u{1F467}][\u{1F3FB}-\u{1F3FF}]?(?:‍[\u{1F468}\u{1F469}\u{1F466}\u{1F467}][\u{1F3FB}-\u{1F3FF}]?)+/gu;
+  function clean(v) { if (v == null) return null; var t = String(v).replace(EMOJI, '').trim(); return t || null; }
+  function keepEmoji(v) { if (v == null) return null; var t = String(v).trim(); return t || null; }
+  function endDate(v) {
+    if (!v) return null; var t = String(v), m = /(\d{4})[-\/](\d{1,2})[-\/](\d{1,2})/.exec(t);
+    if (m) return m[1] + '-' + ('0' + m[2]).slice(-2) + '-' + ('0' + m[3]).slice(-2);
+    m = /(\d{1,2})[-\/](\d{1,2})[-\/](\d{4})/.exec(t); // 31/10/2026 — Hong Kong Excel shows day first
+    return m ? m[3] + '-' + ('0' + m[2]).slice(-2) + '-' + ('0' + m[1]).slice(-2) : null;
+  }
+  var TIER_RE = /^(.*?)\s*HK\$([\d,]+)\s*墊底費$/;
+  function parseTier(label) { var m = TIER_RE.exec(label || ''); return m ? { variant: m[1] || null, amount: parseInt(m[2].replace(/,/g, ''), 10) } : { variant: null, amount: null }; }
+
+  function vhisDetails(text) {
+    var rows = parseTSV(text, true), cell = function (r, c) { return r >= 0 && rows[r] ? rows[r][c] || '' : ''; };
+    var rowOf = function (label) { var want = clean(label); for (var r = 0; r < Math.min(rows.length, 120); r++) if (clean(cell(r, 0)) === want) return r; return -1; };
+    var rName = rowOf('自願醫保 (VHIS)'); if (rName < 0) rName = rowOf('自願醫保');
+    if (rName < 0 || rowOf('保單類型') < 0) return { error: 'This does not look like the VHIS "Product Details" sheet (no 自願醫保 / 保單類型 rows). Click the corner above row 1 in that sheet, copy, and paste again.' };
+    var R = {
+      name: rName, plan: rName + 1, status: rowOf('Product Card Status'), disc: rowOf('Is there discount?'), code: rowOf('優惠碼'), descr: rowOf('Description'),
+      end: rowOf('End Date'), link: rowOf('Referral Link'), notes: rowOf("PHIILIP'S NOTES"), ded: rowOf('墊底費'), first: rowOf('保單類型'),
+      std: rowOf('(not mandatory, both selected by default) Product Filter - 🏛️政府標準計劃'),
+      tags: [1, 2, 3, 4].map(function (i) { return rowOf('TAG ' + i); }), info: [1, 2, 3, 4, 5, 6].map(function (i) { return rowOf('MORE INFO ' + i); })
+    };
+    var width = Math.max.apply(null, rows.map(function (r) { return r.length; }));
+    var plans = [];
+    for (var c = 2; c < width; c++) { var n = clean(cell(R.plan, c)); if (n) plans.push({ col: c, letter: colLetter(c), insurer: clean(cell(R.name, c)), name: n, status: clean(cell(R.status, c)) || 'Enabled' }); }
+    return { rows: rows, R: R, plans: plans, cell: cell };
+  }
+  function colLetter(c) { var s = ''; c++; while (c > 0) { var m = (c - 1) % 26; s = String.fromCharCode(65 + m) + s; c = Math.floor((c - 1) / 26); } return s; }
+
+  // Premium-sheet columns for one plan: [{label, variant, amount, col}] — name carried forward across its columns
+  function vhisPremiumCols(rows, plan) {
+    var h = headerRow(rows, ['age', 'gender', 'smoking']); if (h < 0) return null;
+    var N = rows[h - 1] || [], H = rows[h], out = {}, cur = null;
+    for (var c = 3; c < H.length; c++) {
+      var nm = clean(N[c]); if (nm) cur = nm; if (!cur) continue;
+      if (rows.slice(h + 1).every(function (r) { return !r[c]; })) continue;
+      var raw = clean(H[c]), t = parseTier(raw);
+      (out[cur] = out[cur] || []).push({ label: raw, variant: t.variant, amount: t.amount, col: c });
+    }
+    var key = out[plan] ? plan : Object.keys(out).filter(function (k) { return plan.slice(-k.length) === k || k.slice(-plan.length) === plan; })[0];
+    return { h: h, tiers: key ? out[key] : [] };
+  }
+  function gsKey(g, s) { return gs(g, s); }
+
+  // Build script's split_by_area (Philip's Modification #6, Clara 2026-10-09): a plan priced for two
+  // coverage areas becomes one plan per area, named with the coverage row's own wording for that area.
+  function areaName(variant, covText) {
+    var parts = String(covText || '').split(/\s*(?:或|；|;)\s*/).map(function (x) { return x.trim(); }).filter(Boolean), best = variant, top = 0;
+    parts.forEach(function (part) { var n = 0; for (var i = 0; i < variant.length; i++) if (part.indexOf(variant[i]) >= 0) n++; if (n > top) { best = part; top = n; } });
+    return best;
+  }
+  function splitByArea(p) {
+    var areas = []; p.deductibleTiers.forEach(function (t) { if (t.variant && areas.indexOf(t.variant) < 0) areas.push(t.variant); });
+    if (areas.length < 2) return [p];
+    var cov = (p.coverage.filter(function (c) { return c.label === '保障地域範圍'; })[0] || {}).val || '';
+    return areas.map(function (area, k) {
+      var idx = []; p.deductibleTiers.forEach(function (t, i) { if (t.variant === area) idx.push(i); });
+      var name = areaName(area, cov), pick = function (tab) { var o = {}; Object.keys(tab).forEach(function (a) { o[a] = {}; Object.keys(tab[a]).forEach(function (g) { o[a][g] = idx.map(function (i) { return tab[a][g][i]; }); }); }); return o; };
+      var q = {}; Object.keys(p).forEach(function (key) { q[key] = p[key]; });
+      q.id = p.id + '-' + (/全球|環球/.test(name) ? 'global' : /亞洲/.test(name) ? 'asia' : k);
+      q.name = p.name + ' - ' + name;
+      q.deductibleTiers = idx.map(function (i) { var t = {}; Object.keys(p.deductibleTiers[i]).forEach(function (kk) { t[kk] = p.deductibleTiers[i][kk]; }); t.variant = null; return t; });
+      q.premiums = pick(p.premiums);
+      if (p.discount) q.discount = { label: p.discount.label, prices: pick(p.discount.prices) };
+      q.coverage = p.coverage.map(function (c) { if (c.label !== '保障地域範圍') return c; var o = {}; Object.keys(c).forEach(function (kk) { o[kk] = c[kk]; }); o.val = name; return o; });
+      return q;
+    });
+  }
+  // Build one plan's record. opts: { col, id, providerId, premium: text, discount: text }
+  function vhisBuildPlan(det, opts) {
+    var R = det.R, c = opts.col, cell = det.cell, problems = [], warnings = [];
+    var plan = clean(cell(R.plan, c)), status = clean(cell(R.status, c)) || 'Enabled';
+    if (status !== 'Enabled') warnings.push('The sheet says "' + status + '" for this plan.');
+    var tags = R.tags.filter(function (r) { return r >= 0; }).map(function (r) { return keepEmoji(cell(r, c)); }).filter(Boolean).map(function (t) { return t.replace(FAMILY, '🏠'); });
+    var infoRows = R.info.filter(function (r) { return r >= 0; }), lastCov = Math.min.apply(null, infoRows) - 2;
+    var width = Math.max.apply(null, det.rows.map(function (r) { return r.length; }));
+    var section = null, coverage = [];
+    for (var r = R.first; r <= lastCov; r++) {
+      var lab = clean(cell(r, 0)); if (!lab) continue;
+      var any = false; for (var k = 2; k < width; k++) if (clean(cell(r, k))) { any = true; break; }
+      if (!any) { section = lab.split('ℹ️')[0].trim(); continue; }
+      var val = clean(cell(r, c)); if (!val) continue;
+      var parts = lab.split('ℹ️'), note = parts.slice(1).join('ℹ️').split(/\s+/).filter(Boolean).join(' ');
+      coverage.push({ label: parts[0].trim(), note: note || null, val: val.replace(/\n/g, '<br>'), section: section, cmp: clean(cell(r, 1)) === 'Y' });
+    }
+    var moreInfo = infoRows.map(function (r) { return clean(cell(r, c)); }).filter(Boolean);
+    var notes = [], tax = false;
+    if (R.notes >= 0) for (var n = R.notes; n < R.notes + 8; n++) { var nv = clean(cell(n, c)); if (!nv) continue; if (/cannot claim tax/i.test(nv)) tax = true; else notes.push(nv); }
+    var docs = [], lastInfo = Math.max.apply(null, infoRows);
+    for (var d = lastInfo + 1; d < (R.notes >= 0 ? R.notes : 100); d++) { var dl = clean(cell(d, 0)); if (!dl || dl === 'Referral Link') continue; var du = clean(cell(d, c)); if (du && /^http/.test(du)) docs.push({ label: dl, url: du }); }
+
+    // premiums
+    var prem = opts.premium ? parseTSV(opts.premium) : null, disc = opts.discount ? parseTSV(opts.discount) : null;
+    var tiers = [], premiums = {}, dprices = {};
+    if (!prem) problems.push('Paste the "Premium" sheet so the tool has this plan\'s prices.');
+    else {
+      var pc = vhisPremiumCols(prem, plan);
+      if (!pc) problems.push('The "Premium" paste does not look like the VHIS Premium sheet.');
+      else if (!pc.tiers.length) problems.push('"' + plan + '" is not in the pasted Premium sheet.');
+      else {
+        tiers = pc.tiers.map(function (t) { return { label: t.label, variant: t.variant, amount: t.amount }; });
+        tiers.forEach(function (t) { if (t.amount == null) problems.push('Deductible header "' + t.label + '" does not read as "HK$<amount> 墊底費".'); });
+        var areas = []; tiers.forEach(function (t) { if (t.variant && areas.indexOf(t.variant) < 0) areas.push(t.variant); });
+
+        var dpc = disc ? vhisPremiumCols(disc, plan) : null;
+        var byKey = function (rowsX, h) { var o = {}; rowsX.slice(h + 1).forEach(function (r) { var a = intAge(r[0]), g = gs(r[1], r[2]); if (a != null && g) (o[a] = o[a] || {})[g] = r; }); return o; };
+        var P = byKey(prem, pc.h), D = dpc && dpc.tiers.length ? byKey(disc, dpc.h) : null;
+        for (var age = 0; age <= 80; age++) {
+          var a = String(age), per = {}, dper = {};
+          ['male-smoker', 'male-non-smoker', 'female-smoker', 'female-non-smoker'].forEach(function (g) {
+            var row = P[a] && P[a][g]; if (!row) return;
+            var vals = pc.tiers.map(function (t) { var v = num(row[t.col]); return v == null || isNaN(v) ? null : roundEven(v, 0); });
+            if (!vals.some(function (v) { return v != null; })) return;
+            per[g] = vals;
+            if (D) { var drow = D[a] && D[a][g]; dper[g] = dpc.tiers.map(function (t, i) { var dv = drow ? num(drow[t.col]) : null; return dv != null && !isNaN(dv) && vals[i] != null && roundEven(dv, 0) < vals[i] ? roundEven(dv, 0) : null; }); }
+          });
+          if (Object.keys(per).length) premiums[a] = per;
+          if (Object.keys(dper).some(function (g) { return dper[g].some(function (x) { return x != null; }); })) dprices[a] = dper;
+        }
+        var missing = 0; for (var aa = 0; aa <= 80; aa++) ['male-smoker', 'male-non-smoker', 'female-smoker', 'female-non-smoker'].forEach(function (g) { if (!premiums[aa] || !premiums[aa][g]) missing++; });
+        if (missing) warnings.push(missing + ' of 324 age/group rows have no premium in the sheet.');
+        // Product Details 墊底費 row relabels the tiers when the Premium headers were copied wrong (build script, Clara 2026-10-09)
+        var declared = clean(cell(R.ded, c));
+        if (declared && !areas.length) {
+          var decl = declared.split('/').map(function (x) { return parseInt(x.replace(/[^0-9]/g, '') || '0', 10); });
+          var have = tiers.map(function (t) { return t.amount; });
+          if (decl.join() !== have.join() && decl.length === have.length) {
+            tiers.forEach(function (t, i) { t.amount = decl[i]; t.label = 'HK$' + decl[i].toLocaleString('en-US') + ' 墊底費'; });
+            warnings.push('Deductible labels taken from Product Details "' + declared + '" (the Premium sheet headers said ' + have.map(function (x) { return 'HK$' + Number(x).toLocaleString('en-US'); }).join(' / ') + ').');
+          } else if (decl.join() !== have.join()) warnings.push('Deductibles disagree: Product Details "' + declared + '" vs Premium sheet ' + have.join(' / ') + '.');
+        }
+        if (disc && !D) warnings.push('"' + plan + '" is not in the pasted Discounted Premium sheet, so no first-year price.');
+      }
+    }
+    var url = clean(cell(R.link, c));
+    if (!url) problems.push('No Referral Link in the sheet. A plan without an apply link cannot be added.');
+    else if (!/^https:\/\//.test(url)) problems.push('The Referral Link is not a full https:// link.');
+    var hasDisc = clean(cell(R.disc, c)) === 'Y', code = clean(cell(R.code, c)), descr = clean(cell(R.descr, c));
+    if (hasDisc && !code && !descr) warnings.push('"Is there discount?" is Y but there is no promo code or description — the offer would be empty.');
+    var dkeys = Object.keys(dprices);
+    if (dkeys.length && !hasDisc) warnings.push('The Discounted Premium sheet has prices for this plan, but "Is there discount?" is not Y — they are not shown.');
+    var record = {
+      id: opts.id, providerId: opts.providerId, insurer: clean(cell(R.name, c)), name: plan,
+      planType: clean(cell(R.std, c)) === 'Y' ? '政府標準計劃' : '靈活計劃',
+      tags: tags, coverage: coverage, moreInfo: moreInfo, docs: docs, deductibleTiers: tiers, premiums: premiums,
+      internalNotes: notes, taxCaveat: tax,
+      offer: hasDisc ? { code: code, text: descr, end: R.end >= 0 ? endDate(cell(R.end, c)) : null } : null,
+      url: url, rank: null, discount: dkeys.length && hasDisc ? { label: '首年優惠價', prices: dprices } : null
+    };
+    var records = splitByArea(record);
+    if (records.length > 1) warnings.push('Priced for ' + records.length + ' areas, so it becomes ' + records.length + ' plans on the page: ' + records.map(function (r) { return r.name; }).join(' / ') + '.');
+    return { record: record, records: records, problems: problems, warnings: warnings };
+  }
+
+  var api = { vhisDetails: vhisDetails, vhisBuildPlan: vhisBuildPlan, cleanText: clean, roundEven: roundEven, num: num, parseTSV: parseTSV, detect: detect, matchName: matchName, importSheet: importSheet, norm: norm, dice: dice };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.PCTExcel = api;
 })(typeof window !== 'undefined' ? window : globalThis);

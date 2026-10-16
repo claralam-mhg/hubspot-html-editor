@@ -36,7 +36,7 @@
     res.errors = res.errors.concat(safe.errors); res.warnings = res.warnings.concat(safe.warnings);
     if (m.editor === 'products') {
       var tablesEdited = Object.keys(s.vedits || {}).length > 0; // premium table / FAQ live outside the product list
-      var c = E.check(s.original, out, Object.assign({}, cfg(), { allowOutside: s.mode === 'code' || s.fromCode || tablesEdited }));
+      var c = E.check(s.original, out, Object.assign({}, cfg(), { allowOutside: s.mode === 'code' || s.fromCode || tablesEdited, allowNewIds: s.added || [] }));
       res.errors = res.errors.concat(c.errors.filter(function (x) { return res.errors.indexOf(x) < 0; }));
       res.warnings = res.warnings.concat(c.warnings);
       if (s.mode !== 'code') res.errors = res.errors.concat(productPatternErrors(page, s));

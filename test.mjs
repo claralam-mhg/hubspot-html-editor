@@ -522,5 +522,52 @@ console.log('\nPaste the Excel sheet (real RP Product Details exports)');
   });
 }
 
+console.log('\nVHIS: add a plan from the Product Details sheet');
+{
+  const X = require('./excel.js'), XL = f => fs.readFileSync(path.join(here, 'fixtures/excel', f), 'utf8');
+  const vp = PAGES.find(p => p.key === 'vhis'), LV = fs.readFileSync(path.join(here, 'fixtures/vhis-live-2026-10-15.html'), 'utf8');
+  const M8 = M.liveModuleCode(LV, 'MODULE 08 —').code, M9 = M.liveModuleCode(LV, 'MODULE 09 —').code;
+  const live = E.toJS(E.parseValueAt(M8, M8.indexOf('var DATA = ') + 11)).products;
+  const det = X.vhisDetails(XL('vhis-product-details.tsv'));
+  const build = (name, id, prov) => X.vhisBuildPlan(det, { col: det.plans.find(p => p.name === name).col, id, providerId: prov, premium: XL('vhis-premium.tsv'), discount: XL('vhis-discounted.tsv') });
+  t('every live plan rebuilds from Phillip\'s sheets exactly as the build script made it (all fields, all premiums)', () => {
+    let n = 0;
+    for (const lp of live) {
+      const base = lp.id.replace(/-(asia|global)$/, ''), p = det.plans.find(x => lp.name === x.name || lp.name.indexOf(x.name + ' - ') === 0);
+      const r = build(p.name, base, lp.providerId).records.find(x => x.id === lp.id);
+      eq(JSON.stringify({ ...r, rank: lp.rank }), JSON.stringify(lp), lp.id); n++;
+    }
+    eq(n, 16);
+  });
+  t('a plan priced for two areas becomes two plans (Blue Cross 愛自己 → -asia / -global)', () => eq(build('藍十字 愛自己自願醫保計劃', 'bluecross-self', 'bluecross').records.map(r => r.id).join(), 'bluecross-self-asia,bluecross-self-global'));
+  t('no apply link → refused; Disabled in the sheet → warned', () => {
+    const avo = build('Avo ⾃願醫保(標準)計劃', 'avo-standard', 'avo'); assert(avo.problems.some(p => /Referral Link/.test(p)), 'link'); assert(avo.warnings.some(w => /Disabled/.test(w)), 'disabled');
+  });
+  t('remove a live plan, add it back from the sheet → same record; page checks pass; ranking puts it where asked', () => {
+    const cfg = vp.data, D = E.load(M8, cfg), without = D.records.filter(r => r.id !== 'fwd-family');
+    // module 08 without fwd-family, as if it were a new plan
+    const b = D.blocks[D.records.findIndex(r => r.id === 'fwd-family')];
+    let m8 = M8.slice(0, b.from) + M8.slice(b.to); m8 = m8.replace(',]', ']').replace(',,', ',');
+    E.load(m8, cfg);
+    const rec = build('FWD 醫家保醫療計劃', 'fwd-family', 'fwd').records[0];
+    const out = E.appendRecords(m8, cfg, [rec]);
+    const got = runModule(out).DATA.products.find(p => p.id === 'fwd-family');
+    eq(JSON.stringify(got), JSON.stringify({ ...live.find(p => p.id === 'fwd-family'), rank: null }));
+    const D2 = E.load(out, cfg), order = cfg.displayOrder(D2.records.map(r => r.data)).map(d => d.id).filter(id => id !== 'fwd-family');
+    order.splice(2, 0, 'fwd-family');
+    const o2 = E.build(D2, { order });
+    const shown = cfg.displayOrder(runModule(o2).DATA.products).map(p => p.id);
+    eq(shown.indexOf('fwd-family'), 2);
+    const c = E.check(m8, o2, { ...cfg, allowNewIds: ['fwd-family'] }); assert(c.ok, c.errors.join());
+    assert(!E.check(m8, o2, cfg).ok, 'without allowNewIds the new product must be flagged');
+    assert(E.changeList(m8, o2, cfg).some(x => x.field === 'New product'), 'change list shows the new plan');
+  });
+  t('module 09: a new plan\'s "viewed" count and a new provider logo are added in the module\'s own style', () => {
+    const o = M.applyVars(M9, [{ v: 'SOCIAL_PROOF', path: 'bluecross-premier-asia', value: 5 }, { v: 'LOGOS', path: 'newco', value: 'https://www.google.com/s2/favicons?domain=newco.hk&sz=128' }]);
+    eq(M.readVar(o, 'SOCIAL_PROOF').data['bluecross-premier-asia'], 5); eq(M.readVar(o, 'LOGOS').data.newco, 'https://www.google.com/s2/favicons?domain=newco.hk&sz=128');
+    assert(o.includes("'bluecross-premier-asia':5"), 'quoted like the other keys'); assert(M.safety(M9, o).ok, 'safety');
+  });
+}
+
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);
