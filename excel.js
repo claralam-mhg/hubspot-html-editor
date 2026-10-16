@@ -326,6 +326,7 @@
     var width = Math.max.apply(null, rows.map(function (r) { return r.length; }));
     var plans = [];
     for (var c = 2; c < width; c++) { var n = clean(cell(R.plan, c)); if (n) plans.push({ col: c, letter: colLetter(c), insurer: clean(cell(R.name, c)), name: n, status: clean(cell(R.status, c)) || 'Enabled' }); }
+    if (single) plans.forEach(function (p) { p.letter = 'your column'; }); // not the sheet's letter — only the column itself was pasted
     return { rows: rows, R: R, plans: plans, cell: cell, banners: single ? VHIS_TEMPLATE.banners : null, single: !!single };
   }
   function colLetter(c) { var s = ''; c++; while (c > 0) { var m = (c - 1) % 26; s = String.fromCharCode(65 + m) + s; c = Math.floor((c - 1) / 26); } return s; }
