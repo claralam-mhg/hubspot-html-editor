@@ -569,5 +569,26 @@ console.log('\nVHIS: add a plan from the Product Details sheet');
   });
 }
 
+console.log('\nVHIS add a plan: one column copied on its own');
+{
+  const X = require('./excel.js'), XL = f => fs.readFileSync(path.join(here, 'fixtures/excel', f), 'utf8');
+  const LV = fs.readFileSync(path.join(here, 'fixtures/vhis-live-2026-10-15.html'), 'utf8'), M8 = M.liveModuleCode(LV, 'MODULE 08 —').code;
+  const live = E.toJS(E.parseValueAt(M8, M8.indexOf('var DATA = ') + 11)).products;
+  t('Clara\'s copied column Q (Product Card Status → Referral Link, "31 Mar 2027") → both 愛自己 plans identical to live', () => {
+    const det = X.vhisDetails(XL('vhis-column-q-as-copied.txt')); assert(!det.error && det.single, det.error);
+    const b = X.vhisBuildPlan(det, { col: 2, id: 'bluecross-self', providerId: 'bluecross', premium: XL('vhis-premium.tsv'), discount: XL('vhis-discounted.tsv') });
+    b.records.forEach(r => { const lp = live.find(x => x.id === r.id); eq(JSON.stringify({ ...r, rank: lp.rank }), JSON.stringify(lp), r.id); });
+  });
+  for (const [what, cut] of [['6 rows missing', [20, 6]], ['one row missing in the middle', [30, 1]], ['one row missing near the links', [70, 1]]])
+    t(`a column with ${what} → asks for the whole sheet instead of guessing`, () => {
+      const lines = XL('vhis-column-q-as-copied.txt').replace(/\n+$/, '').split('\n'); lines.splice(cut[0], cut[1]);
+      assert(/could not line this up/.test(X.vhisDetails(lines.join('\n')).error || ''), 'should refuse');
+    });
+  t('one row too many (an extra blank line in the middle) → refused too', () => {
+    const lines = XL('vhis-column-q-as-copied.txt').replace(/\n+$/, '').split('\n'); lines.splice(30, 0, '');
+    assert(/could not line this up/.test(X.vhisDetails(lines.join('\n')).error || ''), 'should refuse');
+  });
+}
+
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

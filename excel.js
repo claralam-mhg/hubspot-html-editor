@@ -272,16 +272,51 @@
     if (!v) return null; var t = String(v), m = /(\d{4})[-\/](\d{1,2})[-\/](\d{1,2})/.exec(t);
     if (m) return m[1] + '-' + ('0' + m[2]).slice(-2) + '-' + ('0' + m[3]).slice(-2);
     m = /(\d{1,2})[-\/](\d{1,2})[-\/](\d{4})/.exec(t); // 31/10/2026 — Hong Kong Excel shows day first
-    return m ? m[3] + '-' + ('0' + m[2]).slice(-2) + '-' + ('0' + m[1]).slice(-2) : null;
+    if (m) return m[3] + '-' + ('0' + m[2]).slice(-2) + '-' + ('0' + m[1]).slice(-2);
+    m = /(\d{1,2})[\s-]+([A-Za-z]{3})[a-z]*[\s-,]+(\d{4})/.exec(t); // 31 Mar 2027
+    var mon = m && ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'].indexOf(m[2].toLowerCase());
+    return m && mon >= 0 ? m[3] + '-' + ('0' + (mon + 1)).slice(-2) + '-' + ('0' + m[1]).slice(-2) : null;
   }
   var TIER_RE = /^(.*?)\s*HK\$([\d,]+)\s*墊底費$/;
   function parseTier(label) { var m = TIER_RE.exec(label || ''); return m ? { variant: m[1] || null, amount: parseInt(m[2].replace(/,/g, ''), 10) } : { variant: null, amount: null }; }
 
+  // Layout of Phillip's Product Details sheet (12/10 file, columns A–B, rows 1 to Referral Link), so one plan's
+  // column pasted on its own can be lined up with its row labels. Banner rows = the section headings.
+  var VHIS_TEMPLATE = {"rows": [["", ""], ["", ""], ["Product Card Status", ""], ["自願醫保 (VHIS)", "COMPARE FUNCTION to compare"], ["", ""], ["(not mandatory, both selected by default) Product Filter - 🏛️政府標準計劃", ""], ["(not mandatory, both selected by default) Product Filter - 💡靈活計劃", ""], ["TAG 1", ""], ["TAG 2", ""], ["TAG 3", ""], ["TAG 4", ""], ["Is there discount?", ""], ["優惠碼", ""], ["Description", ""], ["End Date", ""], ["關於計劃", ""], ["保單類型", "Y"], ["🪙保費可扣減薪俸稅", ""], ["投保年齡", ""], ["續保年期", ""], ["可續保年齡", ""], ["繳費模式", ""], ["免驗身", ""], ["墊底費", "N"], ["指定房間類別", "Y"], ["保障地域範圍", "Y"], ["每保單年度保障限額", "Y"], ["終身保障限額", "Y"], ["保障範圍 - 基本保障       ℹ️賠償實報實銷，除另有標明，金額、日數或次數為每保單年度上限。個別服務或治療另須符合特定要求，詳細請參閱保險公司產品單張。", ""], ["病房及膳食", "Y"], ["雜項開支", "Y"], ["主診醫生巡房費", "Y"], ["專科醫生費", "Y"], ["深切治療", "Y"], ["外科醫生費", "Y"], ["麻醉科醫生費", "Y"], ["手術室費", "Y"], ["訂明診斷成像檢測\nℹ️檢測只包括電腦斷層掃描(\"CT\"掃描)、磁力共振掃描(\"MRI\"掃描)、正電子放射斷層掃描(\"PET\"掃描)、PET-CT組合及PET-MRI組合。", "Y"], ["訂明非手術癌症治療\nℹ️治療只包括放射性治療、化療、標靶治療、免疫治療及荷爾蒙治療。", "Y"], ["入院前或出院後 / 日間手術前後的門診護理\n\nℹ️有關次數及其他限制請參閱保險公司產品單張。", "Y"], ["精神科治療\nℹ️除保險公司另有標明，只適用於香港，詳細請參閱保險公司產品單張。", "Y"], ["保障範圍 - 額外保障       ℹ️賠償實報實銷，除另有標明，金額、日數或次數為每保單年度上限 。個別服務或治療事前必須先獲保險公司批准，詳細請參閱保險公司產品單張。", ""], ["住院陪床費", ""], ["出院後或日間手術後每日家中看護費", ""], ["意外急症門診治療", ""], ["門診腎臟透析", "Y"], ["康復治療 ", "Y"], ["善終及紓緩治療", "Y"], ["懷孕併發症 ℹ️除保險公司另有標明，一般等候期為12個月", "Y"], ["住院或治療後註冊中醫師提供之診症或針灸 ", ""], ["人工裝置", ""], ["因中風而提升家居設備", ""], ["額外醫療保障", ""], ["保障範圍 - 其他保障", ""], ["日間手術現金保障", ""], ["第二索償津貼\nℹ️若受保人曾經住院或接受日間手術，並且從其他保險公司就合資格費用獲得部分或全數賠償，受保人便可獲得額外現金津貼。", ""], ["完全及永久失去自理能力入息保障", ""], ["身故保障", "Y"], ["醫療疏忽保障", "Y"], ["意外身故保障", ""], ["", ""], ["MORE INFO 1", ""], ["MORE INFO 2", ""], ["MORE INFO 3", ""], ["MORE INFO 4", ""], ["MORE INFO 5", ""], ["MORE INFO 6", ""], ["", ""], ["產品小冊子", ""], ["保單條款及細則", ""], ["保障表 (包括手術表)", ""], ["保障表 (包括手術表) - HK$0墊底費", ""], ["保障表 (包括手術表) - HK$20,000墊底費", ""], ["保障表 (包括手術表) - HK$50,000墊底費", ""], ["保障表 (包括手術表) - HK$80,000墊底費", ""], ["保單條款及細則 (全球 HK$0墊底費)", ""], ["保單條款及細則 (全球 HK$20,000墊底費)", ""], ["保單條款及細則 (全球 HK$40,000墊底費)", ""], ["保單條款及細則 (全球 HK$80,000墊底費)", ""], ["保單條款及細則 (亞洲及澳紐 HK$0墊底費)", ""], ["保單條款及細則 (亞洲及澳紐 HK$20,000墊底費)", ""], ["保單條款及細則 (亞洲及澳紐 HK$40,000墊底費)", ""], ["保單條款及細則 (亞洲及澳紐 HK$80,000墊底費)", ""], ["產品風險及主要不保事項", ""], ["優惠受條款及細則", ""], ["", ""], ["Referral Link", ""]], "banners": [16, 29, 42, 54], "notesRow": null};
+  function vhisSingleColumn(text) {
+    var vals = parseTSV(text, true).map(function (r) { return r.length > 1 ? r[r.length - 1] : (r[0] || ''); });
+    while (vals.length && vals[vals.length - 1] === '') vals.pop();
+    var T = VHIS_TEMPLATE.rows, rowOf = function (l) { for (var i = 0; i < T.length; i++) if (clean(T[i][0]) === clean(l)) return i; return -1; };
+    var iType = rowOf('保單類型'), iDed = rowOf('墊底費'), iLink = rowOf('Referral Link'), iPlan = rowOf('自願醫保 (VHIS)') + 1;
+    // The copy must start at "Product Card Status" (Enabled / Disabled …). The start is fixed by that, never
+    // searched for: sliding the column to find a fit could hide a dropped row and shift every value below it.
+    var iStatus = rowOf('Product Card Status');
+    if (!/^(enabled|disabled)/i.test(clean(vals[0]) || '')) return null;
+    for (var start = iStatus; start <= iStatus; start++) {
+      var v = function (i) { return clean(vals[i - start]) || ''; };
+      // exact length when the column ends at a filled-in Referral Link; a dropped row would shift everything below it
+      // The column must end on the Referral Link with exactly the right number of rows: that pins the bottom as
+      // firmly as "Product Card Status" pins the top. (A plan without a link cannot be added anyway.)
+      if (vals.length !== T.length - start || !/^https?:\/\//.test(v(iLink))) continue;
+      if (!v(iPlan) || !/^自願醫保/.test(v(iType)) || !/HK\$/.test(v(iDed))) continue;
+      // every link in the column must sit on a document row (after the MORE INFO rows) or the Referral Link row
+      var iInfo = rowOf('MORE INFO 6'), linksOk = true;
+      for (var k = 0; k < vals.length; k++) if (/^https?:\/\//.test(clean(vals[k]) || '') && k + start <= iInfo) linksOk = false;
+      if (!linksOk) continue;
+      var rows = T.map(function (t, i) { return [t[0], t[1], i >= start ? (vals[i - start] || '') : '']; });
+      return { rows: rows, start: start };
+    }
+    return null;
+  }
   function vhisDetails(text) {
-    var rows = parseTSV(text, true), cell = function (r, c) { return r >= 0 && rows[r] ? rows[r][c] || '' : ''; };
+    var rows = parseTSV(text, true), single = null;
+    // a whole sheet has the row labels in column A (保單類型 as a label, with values beside it)
+    var looksLikeSheet = rows.some(function (r) { return clean(r[0]) === '保單類型' && r.length > 2; });
+    if (!looksLikeSheet) { single = vhisSingleColumn(text); if (single) rows = single.rows; }
+    var cell = function (r, c) { return r >= 0 && rows[r] ? rows[r][c] || '' : ''; };
     var rowOf = function (label) { var want = clean(label); for (var r = 0; r < Math.min(rows.length, 120); r++) if (clean(cell(r, 0)) === want) return r; return -1; };
     var rName = rowOf('自願醫保 (VHIS)'); if (rName < 0) rName = rowOf('自願醫保');
-    if (rName < 0 || rowOf('保單類型') < 0) return { error: 'This does not look like the VHIS "Product Details" sheet (no 自願醫保 / 保單類型 rows). Click the corner above row 1 in that sheet, copy, and paste again.' };
+    if (rName < 0 || rowOf('保單類型') < 0) return { error: 'The tool could not line this up with the Product Details sheet. Either copy the whole sheet (click the corner above row 1), or copy one plan\'s column starting exactly at "Product Card Status" (the Enabled / Disabled cell) down to the "Referral Link" cell, which must have the apply link. If Phillip has added or moved rows, or the link is still empty, copy the whole sheet.' };
     var R = {
       name: rName, plan: rName + 1, status: rowOf('Product Card Status'), disc: rowOf('Is there discount?'), code: rowOf('優惠碼'), descr: rowOf('Description'),
       end: rowOf('End Date'), link: rowOf('Referral Link'), notes: rowOf("PHIILIP'S NOTES"), ded: rowOf('墊底費'), first: rowOf('保單類型'),
@@ -291,7 +326,7 @@
     var width = Math.max.apply(null, rows.map(function (r) { return r.length; }));
     var plans = [];
     for (var c = 2; c < width; c++) { var n = clean(cell(R.plan, c)); if (n) plans.push({ col: c, letter: colLetter(c), insurer: clean(cell(R.name, c)), name: n, status: clean(cell(R.status, c)) || 'Enabled' }); }
-    return { rows: rows, R: R, plans: plans, cell: cell };
+    return { rows: rows, R: R, plans: plans, cell: cell, banners: single ? VHIS_TEMPLATE.banners : null, single: !!single };
   }
   function colLetter(c) { var s = ''; c++; while (c > 0) { var m = (c - 1) % 26; s = String.fromCharCode(65 + m) + s; c = Math.floor((c - 1) / 26); } return s; }
 
@@ -346,7 +381,7 @@
     for (var r = R.first; r <= lastCov; r++) {
       var lab = clean(cell(r, 0)); if (!lab) continue;
       var any = false; for (var k = 2; k < width; k++) if (clean(cell(r, k))) { any = true; break; }
-      if (!any) { section = lab.split('ℹ️')[0].trim(); continue; }
+      if (det.banners ? det.banners.indexOf(r + 1) >= 0 : !any) { section = lab.split('ℹ️')[0].trim(); continue; }
       var val = clean(cell(r, c)); if (!val) continue;
       var parts = lab.split('ℹ️'), note = parts.slice(1).join('ℹ️').split(/\s+/).filter(Boolean).join(' ');
       coverage.push({ label: parts[0].trim(), note: note || null, val: val.replace(/\n/g, '<br>'), section: section, cmp: clean(cell(r, 1)) === 'Y' });

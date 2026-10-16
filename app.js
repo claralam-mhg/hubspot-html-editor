@@ -210,9 +210,10 @@
   function renderAddPlan(m, s, v) {
     var a = s.add || (s.add = { step: 1 }), c = cfg(), onPage = s.doc.records.map(function (r) { return r.data.name; });
     var h = '<div class="card xl"><h2>Add a plan 新增計劃</h2><p class="hint">Everything a VHIS plan needs is built from Phillip\'s "VHIS RP Product Details" Excel, with the same rules as the page\'s build script. Nothing is added until every check below is green and you press <b>Add to the page</b>.</p>';
-    h += '<h3>1. Paste the "Product Details" sheet</h3><p class="hint">Click the corner above row 1 in that sheet, copy, paste below.</p><textarea class="code" style="min-height:70px" id="addDetails" placeholder="Paste the whole sheet here…">' + esc(a.detText || '') + '</textarea><div class="row" style="margin-top:6px"><button class="btn primary" id="addRead">Read the sheet</button></div>';
+    h += '<h3>1. Paste the plan from the "Product Details" sheet</h3><p class="hint">Either copy <b>just the plan\'s column</b>, from "Product Card Status" down to "Referral Link", or copy the whole sheet (click the corner above row 1). Paste below.</p><textarea class="code" style="min-height:70px" id="addDetails" placeholder="Paste the whole sheet here…">' + esc(a.detText || '') + '</textarea><div class="row" style="margin-top:6px"><button class="btn primary" id="addRead">Read the sheet</button></div>';
     if (a.err) h += '<div class="msg err">' + esc(a.err) + '</div>';
     if (a.det) {
+      if (a.det.single) h += '<div class="msg ok">Read one plan\'s column and lined it up with the Product Details rows.</div>';
       h += '<h3>2. Pick the plan</h3><div class="tablewrap"><table class="changes"><thead><tr><th></th><th>Column</th><th>Provider</th><th>Plan</th><th>Status in the sheet</th></tr></thead><tbody>';
       a.det.plans.forEach(function (p) {
         var there = onPage.some(function (n) { return n === p.name || n.indexOf(p.name + ' - ') === 0; });
