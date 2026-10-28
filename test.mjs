@@ -631,7 +631,7 @@ console.log('\nD11 CC campaign: hosted d11-game-deck.js (CARDS)');
 {
   const M = require('./modules.js'), R = require('./review.js');
   const page = PAGES.find(p => p.key === 'd11'), m = page.modules[0], c = page.data;
-  const JS = fs.readFileSync(path.join(here, 'fixtures/d11-game-deck-2026-10-27.js'), 'utf8');
+  const JS = fs.readFileSync(path.join(here, 'fixtures/d11-game-deck-2026-10-28.js'), 'utf8');
   const cards = src => { const d = E.load(src, c); return new Function(src.slice(src.indexOf('var CARDS'), d.arr.end) + ';return CARDS;')(); };
   const state = (fields, order) => { const doc = E.load(JS, c); return { mode: 'form', doc, order: order || doc.records.map(r => r.id), fields: fields || {}, original: JS, vedits: {} }; };
   const doc = E.load(JS, c), first = doc.records[0].id, second = doc.records[1].id;
@@ -642,10 +642,10 @@ console.log('\nD11 CC campaign: hosted d11-game-deck.js (CARDS)');
   t('unchanged file: no review changes (copy stays off)', () => { const r = R.review(page, m, state()); eq(r.changes.length, 0); });
   t('reward, gift list, CTA and end date edits → only those values change, file still runs', () => {
     const gifts = 'HK$2,500 現金回贈 | HK$2,500\nDyson 風筒 "HD16" | HK$3,980';
-    const r = R.review(page, m, state({ [first]: { rewardAmount: 'HK$2,500', rewardName: '現金回贈', gifts, cta: '即刻申請', offerEnds: '2026/11/30' } }));
-    assert(r.res.ok, r.res.errors.join('; ')); eq(r.changes.length, 5);
+    const r = R.review(page, m, state({ [first]: { gifts, cta: '即刻申請', offerEnds: '2026/11/30' } }));
+    assert(r.res.ok, r.res.errors.join('; ')); eq(r.changes.length, 3);
     const after = cards(r.out)[0];
-    eq(after.rewardAmount, 'HK$2,500'); eq(after.gifts, gifts); eq(after.cta, '即刻申請'); eq(after.offerEnds, '2026/11/30');
+    eq(after.gifts, gifts); assert(!('rewardAmount' in after), 'MONEYHERO獨家 comes from the first gift, no separate field'); eq(after.cta, '即刻申請'); eq(after.offerEnds, '2026/11/30');
     eq(JSON.stringify(cards(r.out).slice(1)), JSON.stringify(cards(JS).slice(1)), 'other cards untouched');
     new Function(r.out);
     const ed = E.load(r.out, c); eq(r.out.slice(0, ed.arr.start) + r.out.slice(ed.arr.end), JS.slice(0, doc.arr.start) + JS.slice(doc.arr.end), 'outside CARDS');
@@ -663,7 +663,7 @@ console.log('\nD11 CC campaign: hosted d11-game-deck.js (CARDS)');
     assert(/apply must be a full https/.test(all) && /"cta" is empty/.test(all) && /YYYY\/MM\/DD/.test(all), all);
   });
   t('an offer end date in the past is warned about', () => {
-    const k = E.check(JS, JS, Object.assign({}, c, { today: '2026-11-01' })); assert(k.warnings.some(w => /offer expired on 2026-10-26/.test(w)), k.warnings.join('; '));
+    const k = E.check(JS, JS, Object.assign({}, c, { today: '2026-11-02' })); assert(k.warnings.some(w => /offer expired on 2026-10-30/.test(w)), k.warnings.join('; '));
   });
   t('code edited directly so the file would not run → blocked', () => {
     const bad = JS.replace("'use strict';", "'use strict'; var x = ;");
