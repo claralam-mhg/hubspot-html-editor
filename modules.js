@@ -170,6 +170,7 @@
   function safety(before, after, opts) {
     opts = opts || {};
     var errors = [], warnings = [], m, re, k = 0;
+    if (opts.plainJs) { try { new Function(after); } catch (e) { errors.push('The file would not run: ' + e.message + '. Uploading it would blank the whole campaign page.'); } }
     re = /<script([^>]*)>([\s\S]*?)<\/script>/gi;
     while ((m = re.exec(after))) {
       k++;

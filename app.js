@@ -47,12 +47,13 @@
     if (s.loaded && m.editor !== 'code') h += '<div class="seg"><button class="' + (s.mode === 'form' ? 'on' : '') + '" data-mode="form">Form</button><button class="' + (s.mode === 'code' ? 'on' : '') + '" data-mode="code">Edit code directly</button></div>';
     h += '</div></div>';
     if (!s.loaded) { if (S.jump && S.jump.idx === S.modIdx) h += '<div class="msg ok" style="margin:-8px 0 16px">Load this module and you will land on <b>' + esc(S.jump.label) + '</b>.</div>'; h += renderLive(m) + renderPaste(m, s); $('right').innerHTML = h; return; }
-    if (s.source) h += '<div class="msg ' + (s.source.kind === 'live' ? 'ok' : 'ok') + '" style="margin:-8px 0 16px">' + (s.source.kind === 'live' ? 'Editing the live page version from ' + hhmm(s.source.at) + '. Its code has no indentation. That is how HubSpot serves it, and it works the same.' : 'Editing the code you pasted from HubSpot.') + ' <button class="btn sm" id="reload">Start again</button></div>';
+    if (s.source) h += '<div class="msg ' + (s.source.kind === 'live' ? 'ok' : 'ok') + '" style="margin:-8px 0 16px">' + (m.hosted ? (s.source.kind === 'live' ? 'Editing the live file, read at ' + hhmm(s.source.at) + '.' : 'Editing the file you chose.') : s.source.kind === 'live' ? 'Editing the live page version from ' + hhmm(s.source.at) + '. Its code has no indentation. That is how HubSpot serves it, and it works the same.' : 'Editing the code you pasted from HubSpot.') + ' <button class="btn sm" id="reload">Start again</button></div>';
     if (s.flash) { h += '<div class="msg ok" style="margin:-8px 0 16px">' + esc(s.flash) + '</div>'; s.flash = null; }
     if (s.mode === 'code') h += renderCode(m, s);
     else if (m.editor === 'products') h += renderProductsModule(m, s);
     else if (m.editor === 'content' || m.editor === 'banner') h += renderContent(m, s);
     else if (m.editor === 'scripts') h += renderScripts(m, s);
+    if (m.hosted) h += renderModuleBox(m, s);
     h += renderReview(m, s);
     $('right').innerHTML = h;
     if (m.editor === 'products' && s.mode === 'form' && s.vtab === 'products') bindRank();
@@ -61,6 +62,7 @@
   /* ---------- live-page copy (written every ~15 min by the GitHub job into live/<page>.json) ---------- */
   function fetchLive(page) {
     if (S.live[page.key]) return;
+    if (page.hosted) { S.live[page.key] = { status: 'none' }; return; } // hosted file: loaded straight from the site (renderHosted)
     S.live[page.key] = { status: 'loading' };
     fetch('live/' + page.key + '.json', { cache: 'no-store' })
       .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
@@ -73,7 +75,40 @@
     return min < 1 ? 'just now' : min < 60 ? min + ' min ago' : Math.round(min / 60) + ' h ago';
   }
   function hhmm(iso) { var d = new Date(iso); return ('0' + d.getHours()).slice(-2) + ':' + ('0' + d.getMinutes()).slice(-2); }
+  /* ---------- hosted .js file (D11): read straight from moneyhero.com.hk (the file allows any origin) ---------- */
+  function hostedName(m) { return m.hosted.url.split('/').pop(); }
+  function renderHosted(m) {
+    var s = st(), h = '<div class="card"><h2>Load the live file</h2><p>Reads <b>' + esc(hostedName(m)) + '</b> as it is on moneyhero.com.hk right now.</p>';
+    h += '<p class="muted">If someone replaced the file in HubSpot in the last few minutes, the site may still serve the old copy for a short while. Then use the file from HubSpot Files below.</p>';
+    if (s.hostedErr) h += '<div class="msg warn">' + esc(s.hostedErr) + '</div>';
+    return h + '<div class="row"><button class="btn primary" id="loadHosted">Load live version</button></div></div>';
+  }
+  function loadHosted(m, s) {
+    s.hostedErr = '';
+    fetch(m.hosted.url + '?nc=' + Date.now(), { cache: 'no-store' })
+      .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.text(); })
+      .then(function (text) { load(s, m, text, false); if (s.loaded) s.source = { kind: 'live', at: new Date().toISOString() }; all(); })
+      .catch(function (e) { s.hostedErr = 'Could not read the live file (' + e.message + '). Download it from HubSpot Files and choose it below.'; all(); });
+  }
+  // the page's custom-HTML module, with the script link pointed at the new file (?v= = first 8 of its SHA-256)
+  function moduleOut(m, html, v) {
+    var re = new RegExp('(' + m.hosted.url.replace(/[.*+?^${}()|[\]\\\/]/g, '\\$&') + ')(\\?v=[^"\']*)?(["\'])', 'g');
+    var n = (html.match(re) || []).length;
+    if (n !== 1) throw new Error(n ? 'The module links ' + hostedName(m) + ' ' + n + ' times. It should be once.' : 'This module has no <script src="…' + hostedName(m) + '"> line. Check you copied the D11 custom HTML module.');
+    return html.replace(re, '$1?v=' + v + '$3');
+  }
+  function renderModuleBox(m, s) {
+    var h = '<div class="card"><h2>HubSpot module</h2><p class="muted">In the page editor of <b>' + esc(S.page.hubspotPage) + '</b>, open the custom HTML module whose code includes <code>' + esc(hostedName(m)) + '</code>. Select all, copy and paste it here. The tool gives it back with the link pointing to your new file, so visitors get the new version instead of a cached one. Everything else in the module stays as it is.</p>';
+    h += '<textarea class="code" id="modPaste" spellcheck="false" placeholder="Paste the whole module here…">' + esc(s.modHtml || '') + '</textarea>';
+    var err = ''; if (s.modHtml) try { moduleOut(m, s.modHtml, '00000000'); } catch (e) { err = e.message; }
+    if (err) h += '<div class="msg err">' + esc(err) + '</div>';
+    return h + '</div>';
+  }
+  function sha8(text) {
+    return crypto.subtle.digest('SHA-256', new TextEncoder().encode(text)).then(function (b) { return [].slice.call(new Uint8Array(b)).map(function (x) { return ('0' + x.toString(16)).slice(-2); }).join('').slice(0, 8); });
+  }
   function renderLive(m) {
+    if (m.hosted) return renderHosted(m);
     var L = S.live[S.page.key];
     if (!L || L.status === 'none') return '';
     if (L.status === 'loading') return '<div class="card"><p class="muted">Checking for a copy of the live page…</p></div>';
@@ -90,6 +125,14 @@
   }
 
   function renderPaste(m, s) {
+    if (m.hosted) {
+      var hp = '<div class="card"><h2>Or use the file from HubSpot</h2><ol class="steps muted"><li>In HubSpot, go to <b>Files</b> › <b>' + esc(m.hosted.folder) + '</b> and download <b>' + esc(hostedName(m)) + '</b>.</li><li>Choose it here, or open it in a text editor, select all, copy and paste its code in the box.</li></ol>';
+      hp += '<div class="row"><input type="file" id="pickFile" accept=".js,text/javascript"></div>';
+      hp += '<textarea class="code" id="paste" spellcheck="false" placeholder="…or paste the whole file here" style="margin-top:8px">' + esc(s.draft || '') + '</textarea>';
+      hp += '<div class="row" style="margin-top:8px"><button class="btn" id="loadBtn">Read this code</button></div>';
+      if (s.err) hp += '<div class="msg err">' + esc(s.err) + '</div>';
+      return hp + '</div>';
+    }
     var liveAvailable = !!liveEntry(m);
     var h = '<div class="card"><h2>' + (liveAvailable ? 'Or paste it from HubSpot' : 'Paste the module from HubSpot') + '</h2>';
     h += '<ol class="steps muted"><li>In HubSpot, open <b>' + esc(S.page.hubspotPage) + '</b> in the page editor.</li><li>Find the module whose code starts with <code>' + esc(m.find) + '</code> and open its HTML.</li><li>Select all (Cmd+A), copy (Cmd+C), paste below.</li></ol>';
@@ -102,6 +145,7 @@
   function load(s, m, text, skipFp) {
     s.err = ''; s.fpMismatch = false; s.draft = text;
     if (!text.trim()) { s.err = 'The box is empty. Paste the module code from HubSpot first.'; return; }
+    if (m.hosted && text.indexOf(m.fingerprint) < 0) { s.err = 'This file has no card data block (' + m.fingerprint + '). It is either not ' + hostedName(m) + ', or an older version made before the editor could change it. Ask Clara for the current build.'; return; }
     if (!skipFp && m.fingerprint && text.indexOf(m.fingerprint) < 0) { s.err = 'This does not look like the ' + m.file + ' module. Its code should start with ' + m.find + '. Check you opened the right module in HubSpot.'; s.fpMismatch = true; return; }
     var self = M.safety(text, text);
     if (!self.ok) { s.err = 'The code you pasted already has a problem: ' + self.errors.join(' ') + ' Fix it with "Edit code directly" after loading, or restore the last working version in HubSpot.'; }
@@ -575,7 +619,8 @@
     h += '</tbody></table></div>';
     if (R.out) { var d = E.lineDiff(s.original, R.out); h += '<details style="margin-top:12px"><summary class="muted" style="cursor:pointer">Show code changes (' + d.length + ' lines)</summary><div class="diff">' + d.slice(0, 600).map(function (o) { return '<div class="' + (o.t === '+' ? 'add' : 'del') + '">' + o.t + ' ' + esc(o.s.length > 600 ? o.s.slice(0, 600) + ' … (' + o.s.length.toLocaleString() + ' characters on this line)' : o.s) + '</div>'; }).join('') + '</div></details>'; }
     var others = S.page.modules.map(function (x, i) { return i; }).filter(function (i) { return i !== S.modIdx && hasChanges(i); });
-    h += '<h3>Paste it back into HubSpot</h3><ol class="steps"><li>Press <b>Copy new code</b> below.</li><li>In HubSpot, open the module whose code starts with <code>' + esc(m.find) + '</code>, select all of its code and paste over it. Paste only into this module.</li><li>Press <b>Preview</b>. Check every row in the table above, on desktop and on phone.</li><li>If it all looks right, <b>Publish</b>. If not, close without publishing. Nothing changes live until you publish.</li><li>Post the change summary in the request thread.</li></ol>';
+    if (m.hosted) h += '<h3>Put it live</h3><ol class="steps"><li>Press <b>Download ' + esc(hostedName(m)) + '</b> below. (Or press <b>Copy new code</b> and paste it over the whole file in a text editor, saved as ' + esc(hostedName(m)) + '.)</li><li>In HubSpot, go to <b>Files</b> › <b>' + esc(m.hosted.folder) + '</b>, open <b>' + esc(hostedName(m)) + '</b> and use <b>Replace</b> with the new file. Keep the same file name.</li><li>Press <b>Copy module HTML</b>. In the page editor of <b>' + esc(S.page.hubspotPage) + '</b>, open the same custom HTML module, select all of its code and paste over it. Do this after the file is replaced: the new <code>?v=</code> number points to the new file.</li><li>Press <b>Preview</b>. Check every row in the table above, on desktop and on phone, and open a 獎賞詳情 pop-up.</li><li>If it all looks right, <b>Publish</b>. Post the change summary in the request thread.</li></ol>';
+    else h += '<h3>Paste it back into HubSpot</h3><ol class="steps"><li>Press <b>Copy new code</b> below.</li><li>In HubSpot, open the module whose code starts with <code>' + esc(m.find) + '</code>, select all of its code and paste over it. Paste only into this module.</li><li>Press <b>Preview</b>. Check every row in the table above, on desktop and on phone.</li><li>If it all looks right, <b>Publish</b>. If not, close without publishing. Nothing changes live until you publish.</li><li>Post the change summary in the request thread.</li></ol>';
     if (others.length) h += '<div class="msg warn">You also changed module' + (others.length > 1 ? 's ' : ' ') + others.map(function (i) { return (i + 1) + ' (' + S.page.modules[i].file + ')'; }).join(', ') + '. Paste those too before you publish.</div>';
     renderCopybar(m, s, R);
     return h + '</div>';
@@ -583,12 +628,23 @@
   function renderCopybar(m, s, R) {
     var bar = $('copybar'); bar.hidden = false;
     var n = R.changes.length, ok = n && R.res.ok;
+    var modOk = false; if (m.hosted && s.modHtml) try { moduleOut(m, s.modHtml, '00000000'); modOk = true; } catch (e) {}
     var status = !R.res.ok ? 'Fix ' + R.res.errors.length + ' problem' + (R.res.errors.length > 1 ? 's' : '') + ' before copying' : !n ? 'No changes yet' : R.res.ok ? n + ' change' + (n > 1 ? 's' : '') + ' ready' + (R.res.warnings.length ? ' — read the ' + R.res.warnings.length + ' warning' + (R.res.warnings.length > 1 ? 's' : '') + ' first' : '') : 'Fix ' + R.res.errors.length + ' problem' + (R.res.errors.length > 1 ? 's' : '') + ' before copying';
-    var html = '<span class="status">' + esc(status) + '</span><button class="btn" id="copySummary"' + (ok ? '' : ' disabled') + '>Copy change summary</button><button class="btn primary" id="copyCode"' + (ok ? '' : ' disabled') + '>' + (s.copied ? 'Copied — now paste into HubSpot' : 'Copy new code') + '</button>';
+    var html = '<span class="status">' + esc(status) + '</span><button class="btn" id="copySummary"' + (ok ? '' : ' disabled') + '>Copy change summary</button>' + (m.hosted
+      ? '<button class="btn" id="copyCode"' + (ok ? '' : ' disabled') + '>Copy new code</button><button class="btn primary" id="downloadFile"' + (ok ? '' : ' disabled') + '>' + (s.copied ? 'Downloaded' : 'Download ' + esc(hostedName(m))) + '</button><button class="btn" id="copyModule"' + (ok && modOk ? '' : ' disabled') + ' title="' + (modOk ? '' : 'Paste the HubSpot module above first') + '">Copy module HTML</button>'
+      : '<button class="btn primary" id="copyCode"' + (ok ? '' : ' disabled') + '>' + (s.copied ? 'Copied — now paste into HubSpot' : 'Copy new code') + '</button>');
     // Only rebuild when something visible changed. Leaving a field re-renders the page; if the buttons were
     // rebuilt every time, a click on Copy made straight after typing would land on a removed button and be lost.
     if (bar.dataset.h !== html) { bar.innerHTML = html; bar.dataset.h = html; }
-    $('copyCode').onclick = function () { copy(R.out, function () { s.copied = true; renderCopybar(m, s, R); }); };
+    if (m.hosted) {
+      $('downloadFile').onclick = function () {
+        var a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([R.out], { type: 'text/javascript' })); a.download = hostedName(m);
+        document.body.appendChild(a); a.click(); a.remove(); setTimeout(function () { URL.revokeObjectURL(a.href); }, 1000);
+        s.copied = true; renderCopybar(m, s, R);
+      };
+      $('copyCode').onclick = function () { copy(R.out, function () { $('copyCode').textContent = 'Code copied'; }); };
+      $('copyModule').onclick = function () { sha8(R.out).then(function (v) { copy(moduleOut(m, s.modHtml, v), function () { $('copyModule').textContent = 'Module copied (?v=' + v + ')'; }); }); };
+    } else $('copyCode').onclick = function () { copy(R.out, function () { s.copied = true; renderCopybar(m, s, R); }); };
     $('copySummary').onclick = function () {
       var txt = S.page.label + ' — ' + m.file + ' module updated\n' + R.changes.map(function (c) { return '• ' + c.product + ' — ' + c.field + ':\n  ' + String(c.before).replace(/\n/g, '\n  ') + '\n  → ' + String(c.after).replace(/\n/g, '\n  '); }).join('\n');
       copy(txt, function () { $('copySummary').textContent = 'Summary copied'; });
@@ -669,6 +725,7 @@
       return all();
     }
     if (t.id === 'loadBtn' || t.id === 'loadAnyway') { load(s, m, $('paste').value, t.id === 'loadAnyway'); if (s.loaded) s.source = { kind: 'paste' }; return all(); }
+    if (t.id === 'loadHosted') { t.disabled = true; t.textContent = 'Loading…'; loadHosted(m, s); return; }
     if (t.id === 'loadLive') { var le = liveEntry(m); load(s, m, le.code, false); if (s.loaded) s.source = { kind: 'live', at: S.live[S.page.key].data.fetchedAt }; return all(); }
     if (t.id === 'reload') { if (hasChanges(S.modIdx) && !confirm('Discard your changes to this module?')) return; S.mods[S.page.key + ':' + S.modIdx] = null; delete S.mods[S.page.key + ':' + S.modIdx]; return all(); }
     if (t.dataset.mode) {
@@ -710,6 +767,7 @@
   document.addEventListener('input', function (e) {
     var t = e.target; if (S.modIdx == null) return; var s = st(), m = mod();
     if (t.id === 'q') { s.q = t.value; var pos = t.selectionStart; renderRight(); var q = $('q'); q.focus(); q.setSelectionRange(pos, pos); return; }
+    if (t.id === 'modPaste') { s.modHtml = t.value; var mb = t.closest('.card'), me = mb.querySelector('.msg.err'); if (me) me.remove(); try { if (t.value) moduleOut(m, t.value, '00000000'); } catch (er) { mb.insertAdjacentHTML('beforeend', '<div class="msg err">' + esc(er.message) + '</div>'); } return soft(); }
     if (t.id === 'codeBox') { s.code = t.value; s.copied = false; return soft(); }
     if (s.add && ({ addId: 'id', addProvId: 'providerId', addLogo: 'logo', addRank: 'rank', addSocial: 'social', addPrem: 'prem', addDisc: 'disc', addDetails: 'detText' })[t.id]) { s.add[({ addId: 'id', addProvId: 'providerId', addLogo: 'logo', addRank: 'rank', addSocial: 'social', addPrem: 'prem', addDisc: 'disc', addDetails: 'detText' })[t.id]] = t.value; return; }
     if (t.dataset.f != null) { s.edits[t.dataset.f] = t.value; s.copied = false; t.closest('.field').classList.toggle('changed', t.value !== s.fields[+t.dataset.f].value); return soft(); }
@@ -763,6 +821,7 @@
     if (t.dataset.ptag != null && t.tagName === 'SELECT') { var pc = cur(s, t.dataset.pid, 'tags').map(function (x) { return Object.assign({}, x); }); pc[+t.dataset.ptag].c = t.value; setP(s, t.dataset.pid, 'tags', pc); return soft(); }
     if (t.dataset.ppath === 'badge') return all();
     if (t.id === 'allowHooks') { s.allowHookRemoval = t.checked; return soft(); }
+    if (t.id === 'pickFile' && t.files[0]) { var fm = mod(); t.files[0].text().then(function (text) { load(s, fm, text, false); if (s.loaded) s.source = { kind: 'paste' }; all(); }); return; }
     if (t.dataset.na) {
       var data = M.readVar(s.base, s.vtab).data, o = get(data, t.dataset.na);
       setV(s, s.vtab, t.dataset.na, t.checked ? 'NA' : (Array.isArray(o) ? o : [0, 0])); return renderRight();

@@ -627,5 +627,51 @@ console.log('\nVHIS add a plan: one column copied on its own');
   });
 }
 
+console.log('\nD11 CC campaign: hosted d11-game-deck.js (CARDS)');
+{
+  const M = require('./modules.js'), R = require('./review.js');
+  const page = PAGES.find(p => p.key === 'd11'), m = page.modules[0], c = page.data;
+  const JS = fs.readFileSync(path.join(here, 'fixtures/d11-game-deck-2026-10-27.js'), 'utf8');
+  const cards = src => { const d = E.load(src, c); return new Function(src.slice(src.indexOf('var CARDS'), d.arr.end) + ';return CARDS;')(); };
+  const state = (fields, order) => { const doc = E.load(JS, c); return { mode: 'form', doc, order: order || doc.records.map(r => r.id), fields: fields || {}, original: JS, vedits: {} }; };
+  const doc = E.load(JS, c), first = doc.records[0].id, second = doc.records[1].id;
+  t('parser reads the same 13 cards the browser sees', () => { eq(doc.records.length, 13); eq(JSON.stringify(doc.records.map(r => r.data)), JSON.stringify(cards(JS))); });
+  t('unchanged file: byte-identical, checks pass, whole file parses as plain JS', () => {
+    eq(E.build(doc, {}), JS); const k = E.check(JS, JS, c); assert(k.ok, k.errors.join('; ')); assert(M.safety(JS, JS, { plainJs: true }).ok, 'safety');
+  });
+  t('unchanged file: no review changes (copy stays off)', () => { const r = R.review(page, m, state()); eq(r.changes.length, 0); });
+  t('reward, gift list, CTA and end date edits → only those values change, file still runs', () => {
+    const gifts = 'HK$2,500 現金回贈 | HK$2,500\nDyson 風筒 "HD16" | HK$3,980';
+    const r = R.review(page, m, state({ [first]: { rewardAmount: 'HK$2,500', rewardName: '現金回贈', gifts, cta: '即刻申請', offerEnds: '2026/11/30' } }));
+    assert(r.res.ok, r.res.errors.join('; ')); eq(r.changes.length, 5);
+    const after = cards(r.out)[0];
+    eq(after.rewardAmount, 'HK$2,500'); eq(after.gifts, gifts); eq(after.cta, '即刻申請'); eq(after.offerEnds, '2026/11/30');
+    eq(JSON.stringify(cards(r.out).slice(1)), JSON.stringify(cards(JS).slice(1)), 'other cards untouched');
+    new Function(r.out);
+    const ed = E.load(r.out, c); eq(r.out.slice(0, ed.arr.start) + r.out.slice(ed.arr.end), JS.slice(0, doc.arr.start) + JS.slice(doc.arr.end), 'outside CARDS');
+  });
+  t('reorder + hide a card → order changes, hidden card stays in the file', () => {
+    const order = doc.records.map(r => r.id); [order[0], order[1]] = [order[1], order[0]];
+    const r = R.review(page, m, Object.assign(state({ [second]: { enabled: false } }), { order }));
+    assert(r.res.ok, r.res.errors.join('; ')); const after = cards(r.out);
+    eq(after[0].id, second); eq(after[0].enabled, false); eq(after.length, 13);
+    assert(r.changes.some(x => x.field === 'Order on the page'), 'ranking listed');
+  });
+  t('bad values are blocked: http link, empty CTA, wrong date format', () => {
+    const r = R.review(page, m, state({ [first]: { apply: 'http://www.moneyhero.com.hk/zh/apply/x', cta: '', offerEnds: '30/11/2026' } }));
+    assert(!r.res.ok, 'should block'); const all = r.res.errors.join(' | ');
+    assert(/apply must be a full https/.test(all) && /"cta" is empty/.test(all) && /YYYY\/MM\/DD/.test(all), all);
+  });
+  t('an offer end date in the past is warned about', () => {
+    const k = E.check(JS, JS, Object.assign({}, c, { today: '2026-11-01' })); assert(k.warnings.some(w => /offer expired on 2026-10-26/.test(w)), k.warnings.join('; '));
+  });
+  t('code edited directly so the file would not run → blocked', () => {
+    const bad = JS.replace("'use strict';", "'use strict'; var x = ;");
+    const r = R.review(page, m, Object.assign(state(), { mode: 'code', code: bad }));
+    assert(!r.res.ok && r.res.errors.some(e => /would not run/.test(e)), r.res.errors.join('; '));
+  });
+  t('the snapshot job skips the hosted page', () => assert(page.hosted && /!p\.hosted/.test(fs.readFileSync(path.join(here, 'scripts/snapshot.mjs'), 'utf8')), 'snapshot filter'));
+}
+
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

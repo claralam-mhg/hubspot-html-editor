@@ -331,6 +331,60 @@
         urlFields: ['url'],
         expiryFields: ['offer.end']
       }
+    },
+    {
+      /* D11 CC campaign (雙11手速王爭霸戰, 2026-11-04 → 11-30). Not a HubSpot module: the card list lives in
+         the hosted d11-game-deck.js (var CARDS), which the page draws the cards and 獎賞詳情 pop-ups from.
+         PCT loads the live file, edits, downloads the new file, replaces it in HubSpot Files and bumps ?v=
+         in the page's custom-HTML module (Clara, 2026-10-27). */
+      key: 'd11', label: 'D11 CC 雙11', status: 'live',
+      hosted: true,
+      liveUrl: 'https://www.moneyhero.com.hk/hubfs/assets_moneyhero/campaign-game/d11-game-deck.js',
+      hubspotPage: '雙11手速王爭霸戰 campaign page',
+      shortcuts: [
+        { label: 'Rewards & CTA', file: 'd11-game-deck.js', tab: 'products' }
+      ],
+      modules: [
+        { file: 'd11-game-deck.js', editor: 'products', fingerprint: 'D11 CARD DATA', find: '<script src="https://www.moneyhero.com.hk/hubfs/assets_moneyhero/campaign-game/d11-game-deck.js',
+          hosted: { url: 'https://www.moneyhero.com.hk/hubfs/assets_moneyhero/campaign-game/d11-game-deck.js', folder: 'assets_moneyhero/campaign-game' },
+          what: 'Eligible cards: order, show/hide, MoneyHero rewards, gift list, offer end date, apply links and button text',
+          note: 'Card features (卡片特色) and 信用卡詳細資料 rows → "Edit code directly". The ITM tag is added to apply links automatically.' }
+      ],
+      overriddenIds: {},
+      data: {
+        moduleLabel: 'D11 card data',
+        arrayVar: 'CARDS', quote: '"', plainJs: true,
+        productLabel: function (d) { return d.name || d.id; },
+        productSub: function (d) { return d.provider + ' · ' + d.kind + ' · ' + d.rewardAmount + ' ' + d.rewardName; },
+        logo: function (d) { return d.img; },
+        // Page order = CARDS order among cards that are switched on.
+        displayOrder: function (list) { return list.filter(function (d) { return d.enabled !== false; }); },
+        defaults: { enabled: true },
+        fields: [
+          { path: 'enabled', label: 'Show on the page', group: 'Card', type: 'toggle', hint: 'Off = the card stays in the file but is hidden, and the filter counts update.' },
+          { path: 'name', label: '信用卡名稱', group: 'Card', type: 'text' },
+          { path: 'provider', label: '銀行 (also the bank filter)', group: 'Card', type: 'text' },
+          { path: 'kind', label: '類別 (also the type filter, e.g. 現金回贈)', group: 'Card', type: 'text' },
+          { path: 'img', label: '卡面圖片 Card image', group: 'Card', type: 'url' },
+          { path: 'rewardAmount', label: 'MoneyHero獨家 金額 (big number on the card)', group: 'MoneyHero reward', type: 'text', hint: 'e.g. HK$2,300' },
+          { path: 'rewardName', label: 'MoneyHero獨家 獎賞名稱', group: 'MoneyHero reward', type: 'text', hint: 'e.g. 現金回贈 (經轉數快)' },
+          { path: 'rewardValue', label: '獎賞＋迎新總價值 高達', group: 'MoneyHero reward', type: 'text', hint: 'e.g. HK$7,818' },
+          { path: 'gifts', label: '獎賞選擇 (pop-up list)', group: 'MoneyHero reward', type: 'textarea', hint: 'One gift per line: name | value. e.g. HK$2,500 Apple Store 禮品卡 | HK$2,500' },
+          { path: 'offerEnds', label: '優惠期至 (YYYY/MM/DD)', group: 'MoneyHero reward', type: 'text', pattern: '^(\\d{4}/\\d{2}/\\d{2})?$', patternMsg: 'Use YYYY/MM/DD, e.g. 2026/11/30', hint: 'The tool warns when this date has passed. Leave empty to hide the line.' },
+          { path: 'benefitLabel', label: '禮遇標題 (e.g. 現金回贈)', group: 'Card figures', type: 'text' },
+          { path: 'benefitValue', label: '禮遇 (e.g. 高達2%)', group: 'Card figures', type: 'text' },
+          { path: 'income', label: '年薪要求', group: 'Card figures', type: 'text' },
+          { path: 'fee', label: '年費', group: 'Card figures', type: 'text' },
+          { path: 'network', label: '結算機構 (e.g. 萬事達卡)', group: 'Card figures', type: 'text' },
+          { path: 'desc', label: '簡介 (pop-up)', group: 'Card figures', type: 'textarea' },
+          { path: 'cta', label: 'CTA 按鈕文字', group: 'CTA', type: 'text', hint: 'Default 立即申請' },
+          { path: 'apply', label: '申請連結 Apply link', group: 'CTA', type: 'url', hint: 'MoneyHero apply link. Do not add itm_ tags: the page adds them.' },
+          { path: 'pdp', label: '查看產品頁 link', group: 'CTA', type: 'url' }
+        ],
+        required: ['id', 'name', 'provider', 'kind', 'img', 'rewardAmount', 'rewardName', 'rewardValue', 'benefitLabel', 'benefitValue', 'income', 'fee', 'cta', 'apply', 'pdp'],
+        urlFields: ['img', 'apply', 'pdp'],
+        expiryFields: ['offerEnds']
+      }
     }
   ];
 

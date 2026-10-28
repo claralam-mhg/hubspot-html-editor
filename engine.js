@@ -276,8 +276,9 @@
   function check(beforeHtml, afterHtml, cfg) {
     var errors = [], warnings = [];
     // 4a. Every <script> must parse. This is the white-screen guard.
-    var scripts = []; var re = /<script[^>]*>([\s\S]*?)<\/script>/gi, m;
-    while ((m = re.exec(afterHtml))) scripts.push(m[1]);
+    // plainJs = a hosted .js file (D11 campaign), not a HubSpot module: the whole file is the script.
+    var scripts = cfg.plainJs ? [afterHtml] : []; var re = /<script[^>]*>([\s\S]*?)<\/script>/gi, m;
+    while (!cfg.plainJs && (m = re.exec(afterHtml))) scripts.push(m[1]);
     if (!scripts.length) errors.push('No <script> block found in the new code.');
     scripts.forEach(function (s, n) {
       try { new Function(s); } catch (e) { errors.push('Script block ' + (n + 1) + ' would not run: ' + e.message + '. Pasting this would blank the product list.'); }
@@ -319,7 +320,8 @@
       (cfg.expiryFields || []).forEach(function (p) {
         var v = getPath(d, p); var s = v && typeof v === 'object' ? (v.zh || '') : (v || '');
         var dt = parseZhDate(s);
-        if (dt && dt < today) warnings.push(label + ': offer expired on ' + dt.toISOString().slice(0, 10) + ' but is still on the page ("' + s + '").');
+        // local date, not toISOString(): in HKT that is UTC and read one day early
+        if (dt && dt < today) warnings.push(label + ': offer expired on ' + dt.getFullYear() + '-' + ('0' + (dt.getMonth() + 1)).slice(-2) + '-' + ('0' + dt.getDate()).slice(-2) + ' but is still on the page ("' + s + '").');
       });
       (cfg.numberFields || []).forEach(function (nf) {
         var v = getPath(d, nf.path);
@@ -369,7 +371,7 @@
 
   function getPath(o, p) { return String(p).split('.').reduce(function (x, k) { return x == null ? x : x[k]; }, o); }
   function parseZhDate(s) {
-    var m = /(\d{4})\s*年\s*(\d{1,2})\s*月\s*(\d{1,2})\s*日/.exec(s) || /(\d{4})-(\d{1,2})-(\d{1,2})/.exec(s);
+    var m = /(\d{4})\s*年\s*(\d{1,2})\s*月\s*(\d{1,2})\s*日/.exec(s) || /(\d{4})[-/](\d{1,2})[-/](\d{1,2})/.exec(s);
     return m ? new Date(+m[1], +m[2] - 1, +m[3]) : null;
   }
   function unbalancedTags(s) {

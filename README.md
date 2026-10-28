@@ -48,3 +48,5 @@ GitHub pauses scheduled jobs in a repo with no commits for 60 days. If the live 
 ## Pages covered
 
 Life Insurance (繁中 + EN), Critical Illness, Overseas Student Insurance, VHIS. VHIS product data (module 08) is edited here, not from the Excel (2026-10-15).
+
+**D11 CC 雙11 campaign** (2026-10-27) is a hosted file, not a module: the eligible cards live in `var CARDS` inside `hubfs/assets_moneyhero/campaign-game/d11-game-deck.js`. PCT loads the live file (or chooses one downloaded from HubSpot Files), edits rewards / gift list / end date / CTA / apply link / order / show-hide, then **Download**s the new file, **Replace**s it in HubSpot Files, pastes the page's custom HTML module into the editor and pastes back **Copy module HTML** (the same module with the new `?v=` on the script link). The snapshot job skips this page. Rebuilding the campaign (`campaigns/mh_cc_d11_campaign/build.mjs`) regenerates CARDS from `src-deck/cards.json`, so re-capture `cards.json` from the live file before a rebuild or PCT's edits are lost.

@@ -15,7 +15,7 @@ const out = process.argv[2] || 'site';
 const fromFile = Object.fromEntries(process.argv.slice(3).filter(a => a.includes('=')).map(a => a.split('=')));
 fs.mkdirSync(path.join(out, 'live'), { recursive: true });
 
-for (const page of PAGES.filter(p => p.status === 'live' && p.liveUrl)) {
+for (const page of PAGES.filter(p => p.status === 'live' && p.liveUrl && !p.hosted)) {
   const result = { page: page.key, url: page.liveUrl, fetchedAt: new Date().toISOString(), modules: {} };
   try {
     let html;
