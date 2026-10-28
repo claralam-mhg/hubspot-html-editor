@@ -97,14 +97,15 @@
     if (n !== 1) throw new Error(n ? 'The module links ' + name + ' ' + n + ' times. It should be once.' : 'This module has no <script src="…' + name + '"> line.');
     return html.replace(re, '$1?v=' + v + '$3');
   }
-  // module that links a hosted file (D11 custom HTML module): offer to point it at the file edited in this session
+  // module that links a hosted file (D11 custom HTML module): point it at the file that is live NOW. Reads the live file
+  // (works after a reload too) and, if cards were edited in this session, refuses until the live file IS that edited file.
   function renderLinkCard(m, s) {
     var hi = m.linksHosted, hm = S.page.modules[hi], h = '<div class="card"><h2>Point it to the new ' + esc(hostedName(hm)) + '</h2>';
-    if (!hasChanges(hi)) return h + '<p class="muted">No card changes yet in this session. Edit the cards in module ' + (hi + 1) + ' (' + esc(hm.file) + ') first and replace the file in HubSpot Files. Other changes to this module (e.g. the T&amp;C link) can be made in the code below.</p></div>';
     var err = ''; try { moduleOut(hm.hosted.url, s.code, '00000000'); } catch (e) { err = e.message; }
     if (err) return h + '<div class="msg err">' + esc(err) + ' Check you pasted the D11 custom HTML module.</div></div>';
-    if (s.linked) return h + '<div class="msg ok">Done: the module now links ?v=' + esc(s.linked) + ', your new file. Check below, then copy.</div></div>';
-    return h + '<p>You changed the cards in module ' + (hi + 1) + '. Press the button so this module loads your new file instead of a cached old one. Do this only after the file is replaced in HubSpot Files.</p><div class="row"><button class="btn primary" id="applyV">Point to the new file</button></div></div>';
+    if (s.linkErr) h += '<div class="msg err">' + esc(s.linkErr) + '</div>';
+    if (s.linked) return h + '<div class="msg ok">Done: the module now links ?v=' + esc(s.linked) + ', the file live on moneyhero.com.hk' + (hasChanges(hi) ? ' (your edited file)' : '') + '. Check below, then copy.</div></div>';
+    return h + '<p>After you replace ' + esc(hostedName(hm)) + ' in HubSpot Files, press the button. The tool reads the file that is live now and points this module to it, so visitors get it instead of a cached old copy.' + (hasChanges(hi) ? ' It also checks the live file is the one you edited in module ' + (hi + 1) + '.' : '') + '</p><div class="row"><button class="btn primary" id="applyV">Point to the new file</button></div></div>';
   }
   function sha8(text) {
     return crypto.subtle.digest('SHA-256', new TextEncoder().encode(text)).then(function (b) { return [].slice.call(new Uint8Array(b)).map(function (x) { return ('0' + x.toString(16)).slice(-2); }).join('').slice(0, 8); });
@@ -725,7 +726,16 @@
       return all();
     }
     if (t.id === 'loadBtn' || t.id === 'loadAnyway') { load(s, m, $('paste').value, t.id === 'loadAnyway'); if (s.loaded) s.source = { kind: 'paste' }; return all(); }
-    if (t.id === 'applyV') { var hm = S.page.modules[m.linksHosted]; sha8(output(hm, st(m.linksHosted))).then(function (v) { s.code = moduleOut(hm.hosted.url, s.code, v); s.linked = v; s.copied = false; all(); }); return; }
+    if (t.id === 'applyV') {
+      var hm = S.page.modules[m.linksHosted], edited = hasChanges(m.linksHosted); t.disabled = true; t.textContent = 'Reading the live file…'; s.linkErr = '';
+      Promise.all([fetch(hm.hosted.url + '?nc=' + Date.now(), { cache: 'no-store' }).then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.text(); }).then(sha8), edited ? sha8(output(hm, st(m.linksHosted))) : null])
+        .then(function (v) {
+          if (v[1] && v[0] !== v[1]) { s.linkErr = 'The live ' + hostedName(hm) + ' is not the file you edited yet (live ?v=' + v[0] + ', yours ?v=' + v[1] + '). Check the Replace in HubSpot Files worked, wait a minute and press again.'; return all(); }
+          s.code = moduleOut(hm.hosted.url, s.code, v[0]); s.linked = v[0]; s.copied = false; all();
+        })
+        .catch(function (e2) { s.linkErr = 'Could not read the live file (' + e2.message + '). Try again in a minute.'; all(); });
+      return;
+    }
     if (t.id === 'loadHosted') { t.disabled = true; t.textContent = 'Loading…'; loadHosted(m, s); return; }
     if (t.id === 'loadLive') { var le = liveEntry(m); load(s, m, le.code, false); if (s.loaded) s.source = { kind: 'live', at: S.live[S.page.key].data.fetchedAt }; return all(); }
     if (t.id === 'reload') { if (hasChanges(S.modIdx) && !confirm('Discard your changes to this module?')) return; S.mods[S.page.key + ':' + S.modIdx] = null; delete S.mods[S.page.key + ':' + S.modIdx]; return all(); }
