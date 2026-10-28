@@ -339,7 +339,7 @@
          in the page's custom-HTML module (Clara, 2026-10-27). */
       key: 'd11', label: 'D11 CC 雙11', status: 'live',
       hosted: true,
-      liveUrl: 'https://www.moneyhero.com.hk/hubfs/assets_moneyhero/campaign-game/d11-game-deck.js',
+      liveUrl: 'https://www.moneyhero.com.hk/zh/campaign/moneyhero-cc-double-11-campaign', // the campaign page; the file is modules[0].hosted.url
       hubspotPage: '雙11手速王爭霸戰 campaign page',
       shortcuts: [
         { label: 'Rewards & CTA', file: 'd11-game-deck.js', tab: 'products' }
