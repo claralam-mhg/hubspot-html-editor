@@ -670,6 +670,13 @@ console.log('\nD11 CC campaign: hosted d11-game-deck.js (CARDS)');
     const r = R.review(page, m, Object.assign(state(), { mode: 'code', code: bad }));
     assert(!r.res.ok && r.res.errors.some(e => /would not run/.test(e)), r.res.errors.join('; '));
   });
+  t('custom HTML module: listed as module 2, a new ?v= passes the HTML checks (not the JS-file check)', () => {
+    const m2 = page.modules[1], MOD = fs.readFileSync(path.join(here, 'fixtures/d11-module-2026-10-28.html'), 'utf8');
+    eq(m2.linksHosted, 0); assert(MOD.includes(m2.fingerprint), 'fingerprint');
+    const out = MOD.replace(/d11-game-deck\.js\?v=\w+/, 'd11-game-deck.js?v=6606d50a');
+    const r = R.review(page, m2, { mode: 'code', code: out, original: MOD });
+    assert(r.res.ok, r.res.errors.join('; ')); eq(r.changes.length, 1);
+  });
   t('the snapshot job skips the hosted page', () => assert(page.hosted && /!p\.hosted/.test(fs.readFileSync(path.join(here, 'scripts/snapshot.mjs'), 'utf8')), 'snapshot filter'));
 }
 

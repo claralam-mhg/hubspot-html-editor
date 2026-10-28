@@ -32,7 +32,7 @@
     var out, res = { errors: [], warnings: [] }, changes = [];
     try { out = output(page, m, s); } catch (e) { return { out: null, res: { ok: false, errors: [e.message], warnings: [] }, changes: [] }; }
     if (out === s.original) return { out: out, res: { ok: true, errors: [], warnings: [] }, changes: [] };
-    var safe = M.safety(s.original, out, { allowHookRemoval: s.allowHookRemoval, expectStructure: s.structural && s.mode !== 'code', plainJs: page.data && page.data.plainJs });
+    var safe = M.safety(s.original, out, { allowHookRemoval: s.allowHookRemoval, expectStructure: s.structural && s.mode !== 'code', plainJs: !!m.hosted });
     res.errors = res.errors.concat(safe.errors); res.warnings = res.warnings.concat(safe.warnings);
     if (m.editor === 'products') {
       var tablesEdited = Object.keys(s.vedits || {}).length > 0; // premium table / FAQ live outside the product list

@@ -348,7 +348,10 @@
         { file: 'd11-game-deck.js', editor: 'products', fingerprint: 'D11 CARD DATA', find: '<script src="https://www.moneyhero.com.hk/hubfs/assets_moneyhero/campaign-game/d11-game-deck.js',
           hosted: { url: 'https://www.moneyhero.com.hk/hubfs/assets_moneyhero/campaign-game/d11-game-deck.js', folder: 'assets_moneyhero/campaign-game' },
           what: 'Eligible cards: order, show/hide, MoneyHero rewards, gift list, offer end date, apply links and button text',
-          note: 'Card features (卡片特色) and 信用卡詳細資料 rows → "Edit code directly". The ITM tag is added to apply links automatically.' }
+          note: 'Card features (卡片特色) and 信用卡詳細資料 rows → "Edit code directly". The ITM tag is added to apply links automatically.' },
+        // the page's custom-HTML module: links the CSS/JS files (?v=) and holds the form.io, T&C and reward-form URLs
+        { file: 'custom HTML module', editor: 'code', fingerprint: 'id="mh-d11-game"', find: '<!-- MoneyHero HK · 雙11手速王爭霸戰', linksHosted: 0,
+          what: 'The HTML module on the campaign page. It links d11-game-deck.js and holds the form.io, T&C and reward-form links. After replacing the JS file, paste this module here: the tool points it at your new file.' }
       ],
       overriddenIds: {},
       data: {
