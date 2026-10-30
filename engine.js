@@ -216,6 +216,7 @@
       var text = html.slice(b.from, b.to);
       var edits = [];
       var ed = effective[rec.id] || {};
+      var filled = {}; // null parents (e.g. expiry:null) that become objects, keyed by position
       Object.keys(ed).forEach(function (path) {
         var n = nodeAt(rec.node, path);
         if (!n) {
@@ -226,12 +227,23 @@
             edits.push({ start: rec.node.start + 1 - b.from, end: rec.node.start + 1 - b.from, text: '\n' + path + ':' + lit(ed[path]) + ',' });
             return;
           }
+          // a parent that is null today ("expiry:null") → write it as an object holding the new value
+          var parts = path.split('.'), k = parts.length - 1, holder = null;
+          while (k > 0 && !(holder = nodeAt(rec.node, parts.slice(0, k).join('.')))) k--;
+          if (holder && holder.type === 'literal' && holder.value === null) {
+            if (ed[path] === '' || ed[path] == null) return; // null already shows nothing
+            var f = filled[holder.start] || (filled[holder.start] = { node: holder, value: {} }), o = f.value;
+            parts.slice(k, -1).forEach(function (p) { o = o[p] || (o[p] = {}); });
+            o[parts[parts.length - 1]] = ed[path];
+            return;
+          }
           throw new Error(rec.id + ': field "' + path + '" not found in this module');
         }
         var before = toJS(n);
         if (JSON.stringify(before) === JSON.stringify(ed[path])) return; // unchanged → leave bytes alone
         edits.push({ start: n.start - b.from, end: n.end - b.from, text: lit(ed[path], n.quote || cfg.quote) });
       });
+      Object.keys(filled).forEach(function (s) { var f = filled[s]; edits.push({ start: f.node.start - b.from, end: f.node.end - b.from, text: lit(f.value, cfg.quote) }); });
       edits.sort(function (a, c) { return c.start - a.start; });
       edits.forEach(function (e) { text = text.slice(0, e.start) + e.text + text.slice(e.end); });
       // Normalise the separator comma: present on all but the last item.

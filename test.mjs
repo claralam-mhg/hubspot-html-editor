@@ -330,6 +330,14 @@ console.log('\nCI on/off switch');
     assert(runModule(o).P.some(p => p.id === off), 'not shown'); eq(E.lineDiff(PD, o).length, 2);
   });
   t('switching on a product that is already on changes nothing', () => eq(E.build(D, { fields: { [on]: { enabled: true } } }), PD));
+  // Blue WeCare 1 had expiry:null — typing a date failed with 'field "exclusive.expiry.zh" not found' (2026-10-30)
+  const noExp = D.records.find(r => r.data.exclusive && r.data.exclusive.expiry === null).id;
+  t('offer date on a product with expiry:null → expiry becomes {zh:…}, page shows it', () => {
+    const o = E.build(D, { fields: { [noExp]: { 'exclusive.expiry.zh': '限時至2026年11月30日' } } });
+    eq(runModule(o).P.find(p => p.id === noExp).exclusive.expiry.zh, '限時至2026年11月30日');
+    eq(E.lineDiff(PD, o).length, 2, 'one line swapped'); assert(E.check(PD, o, pc).ok, E.check(PD, o, pc).errors.join());
+  });
+  t('leaving the date empty on expiry:null changes nothing', () => eq(E.build(D, { fields: { [noExp]: { 'exclusive.expiry.zh': '' } } }), PD));
 }
 
 console.log('\nOSI numbers, badges, empty values');
