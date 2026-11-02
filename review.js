@@ -42,7 +42,7 @@
       if (s.mode !== 'code') res.errors = res.errors.concat(productPatternErrors(page, s));
       try { changes = E.changeList(s.original, out, cfg()); } catch (e) {}
       if (m.vars) { changes = changes.concat(varChanges(s.original, out, m)); if (s.mode !== 'code') rateWarnings(s.original, out, m).forEach(function (w) { res.warnings.push(w); }); }
-      if (m.vars) { var tb = tierBadges(page, m, s.original, out); changes = changes.concat(tb.changes); res.warnings = res.warnings.concat(tb.warnings); }
+      if (m.vars) { var tb = tierBadges(page, m, s.original, out, s.today); changes = changes.concat(tb.changes); res.warnings = res.warnings.concat(tb.warnings); }
     } else if ((m.editor === 'content' || m.editor === 'banner') && s.mode !== 'code') {
       res.errors = res.errors.concat(M.htmlFieldErrors(s.fields, s.edits));
       changes = contentChanges(page, s.original, out, m);
@@ -104,7 +104,7 @@
      promo above full now give visibly wrong badges. Only changed product/age/profile rows are
      checked, so old data never floods the review. */
   var BADGE_PREVIEW = { age: '30', combo: 'male-non-smoker' }; // the page's default profile
-  function tierBadges(page, m, original, out) {
+  function tierBadges(page, m, original, out, today) {   // today: YYYY-MM-DD the tests pin; else the real date
     var res = { changes: [], warnings: [] };
     var v = (m.vars || []).filter(function (x) { return x.kind === 'productRates'; })[0];
     if (!v) return res;
@@ -115,7 +115,7 @@
       var p = r.data, o = byId[r.id], tiers = get(p, v.tiersPath) || [];
       if (tiers.length < 2) return;
       var rates = get(p, v.path) || {}, disc = get(p, v.discPath);
-      var ended = p.offer && p.offer.end && Date.now() > Date.parse(p.offer.end + 'T23:59:59+08:00');
+      var ended = p.offer && p.offer.end && (today ? Date.parse(today + 'T12:00:00+08:00') : Date.now()) > Date.parse(p.offer.end + 'T23:59:59+08:00');
       var row = function (d, path, age, k) { var t = get(d, path); return t && t[age] ? t[age][k] : null; };
       var changed = function (age, k) { return !o || JSON.stringify(row(p, v.path, age, k)) !== JSON.stringify(row(o, v.path, age, k)) || JSON.stringify(row(p, v.discPath, age, k)) !== JSON.stringify(row(o, v.discPath, age, k)); };
       var badges = function (d, age, k) {
