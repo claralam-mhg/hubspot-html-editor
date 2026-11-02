@@ -371,6 +371,7 @@
           { path: 'img', label: '卡面圖片 Card image', group: 'Card', type: 'url' },
           { path: 'rewardValue', label: '獎賞＋迎新總價值 高達', group: 'MoneyHero reward', type: 'text', hint: 'e.g. HK$7,818' },
           { path: 'gifts', label: '獎賞選擇 — first line = MONEYHERO獨家 on the card', group: 'MoneyHero reward', type: 'textarea', hint: 'One gift per line: name | value, e.g. HK$2,500 Apple Store 禮品卡 | HK$2,500. The FIRST line is the MONEYHERO獨家 reward: its amount (HK$2,500) is the big number on the card, the rest (Apple Store 禮品卡) the line under it. Put a space after the amount.' },
+          { path: 'promo', label: '推廣碼 (promo code)', group: 'MoneyHero reward', type: 'text', pattern: '^[A-Za-z0-9_-]*$', patternMsg: 'Letters and numbers only, e.g. HKRMH2', hint: 'Only the code, e.g. HKRMH2. Shows as 需使用推廣碼「HKRMH2」 under the reward total on the card and in the pop-up heading — it covers every gift, so do not add it to a gift line. Leave empty when the offer has no code.' },
           { path: 'offerEnds', label: '優惠期至 (YYYY/MM/DD)', group: 'MoneyHero reward', type: 'text', pattern: '^(\\d{4}/\\d{2}/\\d{2})?$', patternMsg: 'Use YYYY/MM/DD, e.g. 2026/11/30', hint: 'The tool warns when this date has passed. Leave empty to hide the line.' },
           { path: 'benefitLabel', label: '禮遇標題 (e.g. 現金回贈)', group: 'Card figures', type: 'text' },
           { path: 'benefitValue', label: '禮遇 (e.g. 高達2%)', group: 'Card figures', type: 'text' },

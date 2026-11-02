@@ -658,6 +658,16 @@ console.log('\nD11 CC campaign: hosted d11-game-deck.js (CARDS)');
     new Function(r.out);
     const ed = E.load(r.out, c); eq(r.out.slice(0, ed.arr.start) + r.out.slice(ed.arr.end), JS.slice(0, doc.arr.start) + JS.slice(doc.arr.end), 'outside CARDS');
   });
+  t('promo code: set, then cleared; a full sentence instead of the code is blocked', () => {
+    // since 2026-11-02 every card carries "promo" (empty when the offer has none) — the editor edits fields, it does not add them
+    const JSP = JS.replace(/"rewardValue":/g, '"promo":"","rewardValue":');
+    const st = (fields, src) => { const doc = E.load(src, c); return { mode: 'form', doc, order: doc.records.map(r => r.id), fields, original: src, vedits: {} }; };
+    const r = R.review(page, m, st({ [first]: { promo: 'HKRMH2' } }, JSP));
+    assert(r.res.ok, r.res.errors.join('; ')); eq(r.changes.length, 1); eq(cards(r.out)[0].promo, 'HKRMH2'); eq(cards(r.out)[0].gifts, cards(JS)[0].gifts, 'gift lines untouched');
+    new Function(r.out);
+    const r2 = R.review(page, m, st({ [first]: { promo: '' } }, r.out)); assert(r2.res.ok, r2.res.errors.join('; ')); eq(cards(r2.out)[0].promo, '');
+    const r3 = R.review(page, m, st({ [first]: { promo: '需使用推廣碼「HKRMH2」' } }, JSP)); assert(!r3.res.ok, 'full sentence should be blocked');
+  });
   t('reorder + hide a card → order changes, hidden card stays in the file', () => {
     const order = doc.records.map(r => r.id); [order[0], order[1]] = [order[1], order[0]];
     const r = R.review(page, m, Object.assign(state({ [second]: { enabled: false } }), { order }));
