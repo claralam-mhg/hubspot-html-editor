@@ -1,0 +1,30 @@
+{
+ "key": "4074a085",
+ "prepared": "2026-11-02T13:12:05.587Z",
+ "js": "4074a085",
+ "css": null,
+ "changes": [
+  {
+   "name": "渣打國泰Mastercard",
+   "ch": [
+    "HK$900 Trip.com電子禮券 價值 — → **HK$900**"
+   ]
+  },
+  {
+   "name": "渣打國泰Mastercard - 優先理財",
+   "ch": [
+    "HK$900 Trip.com電子禮券 價值 — → **HK$900**"
+   ]
+  },
+  {
+   "name": "渣打國泰Mastercard - 優先私人理財",
+   "ch": [
+    "HK$900 Trip.com電子禮券 價值 — → **HK$900**"
+   ]
+  }
+ ],
+ "notes": [],
+ "warnings": [
+  "Ends 11/05 18:00: CITI CoreCard R1 (Flash) — HK$2,300 現金回贈."
+ ]
+}
