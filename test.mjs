@@ -369,7 +369,7 @@ console.log('\nCI premium table formats');
 {
   const page = PAGES.find(p => p.key === 'ci'), pdm = page.modules.find(m => m.editor === 'products');
   const PD = M.liveModuleCode(fs.readFileSync(path.join(here, 'fixtures/ci-live-2026-10-15.html'), 'utf8'), pdm.fingerprint).code, D = E.load(PD, page.data);
-  const st = ve => ({ mode: 'form', original: PD, doc: D, order: D.records.map(r => r.id), fields: {}, base: PD, vedits: Object.fromEntries(ve.map(e => ['PREMIUM_RATES|' + e.path, { v: 'PREMIUM_RATES', ...e }])) });
+  const st = ve => ({ mode: 'form', original: PD, doc: D, order: D.records.map(r => r.id), fields: {}, base: PD, today: '2026-10-15', vedits: Object.fromEntries(ve.map(e => ['PREMIUM_RATES|' + e.path, { v: 'PREMIUM_RATES', ...e }])) });
   t('a ranking change alone raises no premium warnings (old data is not re-checked)', () => {
     const r = R.review(page, pdm, { ...st([]), order: D.records.map(r => r.id).reverse() }); eq(r.res.warnings.length, 0, r.res.warnings.slice(0, 3).join(' | '));
   });
@@ -447,7 +447,7 @@ console.log('\nVHIS premiums');
     assert(/Premium 30 · male-non-smoker/.test(cl[0].field), cl[0].field);
   });
   // Philip, 2026-10-16: badges compare the prices the tiles show. FWD 尊衛您's real 16/10 numbers.
-  const st = f => ({ mode: 'form', original: PD, doc: D, order: D.records.map(r => r.id), fields: f, base: PD, vedits: {} });
+  const st = f => ({ mode: 'form', original: PD, doc: D, order: D.records.map(r => r.id), fields: f, base: PD, vedits: {}, today: '2026-10-15' });
   const fwd = (full, promo) => st({ [id]: { 'premiums.30.male-non-smoker': full, 'discount.prices.30.male-non-smoker': promo } });
   const FULL = [14265, 6700, 5756, 4380, 3441, 2774], PROMO = [10699, 3908, 3358, 2555, 2007, 1618];
   const badgeRow = r => r.changes.find(c => /badges/.test(c.field));

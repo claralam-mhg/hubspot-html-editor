@@ -28,7 +28,7 @@
     return s.code;
   }
   function review(page, m, s) {
-    var cfg = function () { return page.data; };
+    var cfg = function () { return s.today ? Object.assign({}, page.data, { today: s.today }) : page.data; }; // s.today: tests pin the date
     var out, res = { errors: [], warnings: [] }, changes = [];
     try { out = output(page, m, s); } catch (e) { return { out: null, res: { ok: false, errors: [e.message], warnings: [] }, changes: [] }; }
     if (out === s.original) return { out: out, res: { ok: true, errors: [], warnings: [] }, changes: [] };
