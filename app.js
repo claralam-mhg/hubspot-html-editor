@@ -37,12 +37,43 @@
   }
 
   /* ================= right column ================= */
+  /* ---------- D11: the update the daily product-page check prepared (campaigns/mh_cc_d11_campaign/tools/daily-sync.mjs) ----------
+     d11-sync/ is published next to this page. Shown until the live files on moneyhero.com.hk match it. */
+  function checkUpdate(page) {
+    if (page.key !== 'd11' || S.upd) return;
+    S.upd = { status: 'loading' };
+    var js = page.modules.filter(function (x) { return x.hosted; })[0].hosted.url, css = js.replace(/\.js$/, '.css');
+    var live = function (u) { return fetch(u + '?nc=' + Date.now(), { cache: 'no-store' }).then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.text(); }).then(sha8); };
+    fetch('d11-sync/latest.json?nc=' + Date.now(), { cache: 'no-store' })
+      .then(function (r) { if (!r.ok) throw new Error('none'); return r.json(); })
+      .then(function (d) { return Promise.all([d.js ? live(js) : null, d.css ? live(css) : null]).then(function (v) { S.upd = { status: (d.js && v[0] !== d.js) || (d.css && v[1] !== d.css) ? 'ready' : 'live', data: d }; }); })
+      .catch(function () { S.upd = { status: 'none' }; })
+      .then(function () { renderRight(); });
+  }
+  function renderUpdate() {
+    var U = S.upd, d = U && U.data, plain = function (x) { return esc(String(x).replace(/\*\*/g, '')); };
+    if (S.page.key !== 'd11' || !U || U.status === 'none' || U.status === 'loading') return '';
+    if (U.status === 'live') return '<div class="msg ok" style="margin:0 0 16px">The live D11 file matches the latest offer update (prepared ' + hhmm(d.prepared) + ', ' + ago(d.prepared) + '). Nothing to upload.</div>';
+    var h = '<div class="card" style="border:2px solid var(--fill-primary)"><h2>Offer update ready</h2><p class="muted">Prepared ' + hhmm(d.prepared) + ' (' + ago(d.prepared) + ') by the daily check of the MoneyHero product pages. Upload it as it is — the rewards, end dates and 申請 links come straight from the product pages.</p>';
+    h += '<ul>' + d.changes.map(function (c) { return '<li><b>' + esc(c.name) + '</b>: ' + c.ch.map(plain).join(' · ') + '</li>'; }).join('') + '</ul>';
+    (d.notes || []).concat(d.warnings || []).forEach(function (n) { h += '<div class="msg warn">' + plain(n) + ' Ask Clara if unsure.</div>'; });
+    h += '<h3>Put it live</h3><ol class="steps">';
+    h += '<li>Download ' + (d.css ? 'both files' : 'the file') + ': <a class="btn primary sm" href="d11-sync/d11-game-deck.js" download="d11-game-deck.js">Download d11-game-deck.js</a>' + (d.css ? ' <a class="btn primary sm" href="d11-sync/d11-game-deck.css" download="d11-game-deck.css">Download d11-game-deck.css</a>' : '') + '</li>';
+    h += '<li>In HubSpot, go to <b>Files</b> › <b>assets_moneyhero/campaign-game</b>, open ' + (d.css ? 'each file' : '<b>d11-game-deck.js</b>') + ' and use <b>Replace</b> with the download. Keep the same file name.</li>';
+    h += d.css
+      ? '<li>The page style changed too, so replace the whole D11 custom HTML module: <button class="btn sm" id="copyUpdModule">Copy module code</button>, open the module in the HubSpot page editor, select all and paste over it.</li>'
+      : '<li>Open module <b>2 (custom HTML module)</b> on the left, paste it from HubSpot, press <b>Point to the new file</b>, copy the new code and paste it back over the module in HubSpot.</li>';
+    h += '<li><b>Preview</b>: open a 獎賞詳情 pop-up and press one 立即申請 to check it opens the application form. Then <b>Publish</b>.</li></ol>';
+    return h + '<div class="row"><button class="btn sm" id="recheckUpd">I uploaded it — check again</button></div></div>';
+  }
+
   function renderRight() {
+    checkUpdate(S.page);
     if (S.modIdx == null) {
-      $('right').innerHTML = '<div class="card empty"><h2>What do you want to change?</h2><p>Pick the module on the left that holds it. Not sure? Read the descriptions after you click.</p><ol><li>Paste the module\'s current code from HubSpot</li><li>Make the change in the form</li><li>Check the summary, copy the new code, paste it back into the same module</li></ol></div>';
+      $('right').innerHTML = renderUpdate() + '<div class="card empty"><h2>What do you want to change?</h2><p>Pick the module on the left that holds it. Not sure? Read the descriptions after you click.</p><ol><li>Paste the module\'s current code from HubSpot</li><li>Make the change in the form</li><li>Check the summary, copy the new code, paste it back into the same module</li></ol></div>';
       return;
     }
-    var m = mod(), s = st(), h = '';
+    var m = mod(), s = st(), h = renderUpdate();
     h += '<div class="card"><div class="row" style="justify-content:space-between;align-items:flex-start"><div><h2>' + esc(m.file) + '</h2><div class="muted">' + esc(m.what || '') + '</div></div>';
     if (s.loaded && m.editor !== 'code') h += '<div class="seg"><button class="' + (s.mode === 'form' ? 'on' : '') + '" data-mode="form">Form</button><button class="' + (s.mode === 'code' ? 'on' : '') + '" data-mode="code">Edit code directly</button></div>';
     h += '</div></div>';
@@ -736,6 +767,8 @@
         .catch(function (e2) { s.linkErr = 'Could not read the live file (' + e2.message + '). Try again in a minute.'; all(); });
       return;
     }
+    if (t.id === 'recheckUpd') { S.upd = null; return renderRight(); }
+    if (t.id === 'copyUpdModule') { fetch('d11-sync/hubspot-module.html?nc=' + Date.now(), { cache: 'no-store' }).then(function (r) { return r.text(); }).then(function (txt) { copy(txt, function () { t.textContent = 'Module code copied'; }); }); return; }
     if (t.id === 'loadHosted') { t.disabled = true; t.textContent = 'Loading…'; loadHosted(m, s); return; }
     if (t.id === 'loadLive') { var le = liveEntry(m); load(s, m, le.code, false); if (s.loaded) s.source = { kind: 'live', at: S.live[S.page.key].data.fetchedAt }; return all(); }
     if (t.id === 'reload') { if (hasChanges(S.modIdx) && !confirm('Discard your changes to this module?')) return; S.mods[S.page.key + ':' + S.modIdx] = null; delete S.mods[S.page.key + ':' + S.modIdx]; return all(); }

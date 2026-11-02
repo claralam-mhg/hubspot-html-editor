@@ -38,6 +38,8 @@ jobs:
         run: |
           mkdir -p site
           cp dist/index.html site/index.html
+          # D11 offer update prepared by the daily product-page check (campaigns/mh_cc_d11_campaign/tools/daily-sync.mjs)
+          if [ -d d11-sync ]; then cp -r d11-sync site/d11-sync; fi
           node scripts/snapshot.mjs site
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3

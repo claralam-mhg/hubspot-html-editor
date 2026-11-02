@@ -50,3 +50,12 @@ GitHub pauses scheduled jobs in a repo with no commits for 60 days. If the live 
 Life Insurance (繁中 + EN), Critical Illness, Overseas Student Insurance, VHIS. VHIS product data (module 08) is edited here, not from the Excel (2026-10-15).
 
 **D11 CC 雙11 campaign** (2026-10-27) is a hosted file, not a module: the eligible cards live in `var CARDS` inside `hubfs/assets_moneyhero/campaign-game/d11-game-deck.js`. PCT loads the live file (or chooses one downloaded from HubSpot Files), edits rewards / gift list / end date / CTA / apply link / order / show-hide, then **Download**s the new file, **Replace**s it in HubSpot Files, opens module 2 (**custom HTML module**), pastes the page's module from HubSpot, presses **Point to the new file** (sets the new `?v=` on the script link, nothing else) and pastes the new code back. Module 2 can also be edited on its own, e.g. to add the T&C link. The snapshot job skips this page. Rebuilding the campaign (`campaigns/mh_cc_d11_campaign/build.mjs`) regenerates CARDS from `src-deck/cards.json`, so re-capture `cards.json` from the live file before a rebuild or PCT's edits are lost.
+
+## D11: daily offer update for PCT
+
+Each morning at 09:30 `campaigns/mh_cc_d11_campaign/tools/daily-sync.mjs` (on Clara's Mac) checks the 13 cards against the
+MoneyHero product pages: gifts, offer end date, 獎賞＋迎新總價值, 推廣碼 and the 申請 link. When the live
+`d11-game-deck.js` is behind, it writes the new file, the module code and a change summary to `d11-sync/` here and pushes;
+the deploy copies `d11-sync/` next to the editor. The D11 tab then shows **Offer update ready** with the summary, a
+download button and the upload steps, until the live files on moneyhero.com.hk match it.
+
