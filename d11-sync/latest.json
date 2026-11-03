@@ -4,7 +4,9 @@
  "js": "e90fb6b8",
  "css": null,
  "changes": [],
- "notes": [],
+ "notes": [
+  "No offer changes: the 我已閱讀並同意活動條款及細則 link in the game now opens the full T&C PDF (was: jumps to the T&C section). Upload it as usual."
+ ],
  "warnings": [
   "Ends 11/05 18:00: CITI CoreCard R1 (Flash) — HK$2,300 現金回贈.",
   "Starts 11/05 18:00: CITI CoreCard (Flash) — HK$2,500 Apple Store 禮品卡. The page follows when the product pages change.",
