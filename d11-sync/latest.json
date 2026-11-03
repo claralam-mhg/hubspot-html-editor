@@ -1,40 +1,10 @@
 {
- "key": "58c84b43",
- "prepared": "2026-11-03T09:20:50.498Z",
- "js": "58c84b43",
+ "key": "e90fb6b8",
+ "prepared": "2026-11-03T09:32:58.735Z",
+ "js": "e90fb6b8",
  "css": null,
- "changes": [
-  {
-   "name": "Citi Cash Back 信用卡",
-   "ch": [
-    "優惠期至 2026/11/12 → **2026/11/05**"
-   ]
-  },
-  {
-   "name": "Citi Rewards 信用卡",
-   "ch": [
-    "優惠期至 2026/11/12 → **2026/11/05**"
-   ]
-  },
-  {
-   "name": "Citi Rewards 銀聯信用卡",
-   "ch": [
-    "優惠期至 2026/11/12 → **2026/11/05**"
-   ]
-  },
-  {
-   "name": "Citi PremierMiles 信用卡",
-   "ch": [
-    "優惠期至 2026/11/12 → **2026/11/05**"
-   ]
-  }
- ],
- "notes": [
-  "Citi Cash Back 信用卡: the product page now says 2026/11/05, on or after the override's 2026/11/05 — the page wins. Remove the override from src-deck/sync-config.json.",
-  "Citi Rewards 信用卡: the product page now says 2026/11/05, on or after the override's 2026/11/05 — the page wins. Remove the override from src-deck/sync-config.json.",
-  "Citi Rewards 銀聯信用卡: the product page now says 2026/11/05, on or after the override's 2026/11/05 — the page wins. Remove the override from src-deck/sync-config.json.",
-  "Citi PremierMiles 信用卡: the product page now says 2026/11/05, on or after the override's 2026/11/05 — the page wins. Remove the override from src-deck/sync-config.json."
- ],
+ "changes": [],
+ "notes": [],
  "warnings": [
   "Ends 11/05 18:00: CITI CoreCard R1 (Flash) — HK$2,300 現金回贈.",
   "Starts 11/05 18:00: CITI CoreCard (Flash) — HK$2,500 Apple Store 禮品卡. The page follows when the product pages change.",
