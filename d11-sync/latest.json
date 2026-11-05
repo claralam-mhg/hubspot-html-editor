@@ -1,11 +1,106 @@
 {
- "key": "e90fb6b8",
- "prepared": "2026-11-03T09:32:58.735Z",
- "js": "e90fb6b8",
+ "key": "d050000e",
+ "prepared": "2026-11-05T01:31:15.998Z",
+ "js": "d050000e",
  "css": null,
- "changes": [],
+ "changes": [
+  {
+   "name": "Citi Cash Back 信用卡",
+   "ch": [
+    "獨家 line: HK$2,300 現金回贈 (經轉數快) → **額外贏 Switch 2／HK$500 惠康券**",
+    "added: 額外贏 Switch 2／HK$500 惠康券"
+   ]
+  },
+  {
+   "name": "Citi Rewards 信用卡",
+   "ch": [
+    "獨家 line: HK$2,300 現金回贈 (經轉數快) → **額外贏 Switch 2／HK$500 惠康券**",
+    "added: 額外贏 Switch 2／HK$500 惠康券"
+   ]
+  },
+  {
+   "name": "Citi Rewards 銀聯信用卡",
+   "ch": [
+    "獨家 line: HK$2,300 現金回贈 (經轉數快) → **額外贏 Switch 2／HK$500 惠康券**",
+    "added: 額外贏 Switch 2／HK$500 惠康券"
+   ]
+  },
+  {
+   "name": "Citi PremierMiles 信用卡",
+   "ch": [
+    "獨家 line: 25,000 Max Miles 飛行里數 → **額外贏 Switch 2／HK$500 惠康券**",
+    "added: 額外贏 Switch 2／HK$500 惠康券"
+   ]
+  },
+  {
+   "name": "渣打國泰Mastercard",
+   "ch": [
+    "獨家 line: HK$900 Apple Store禮品卡 → **額外贏 Switch 2／HK$500 惠康券**",
+    "added: 額外贏 Switch 2／HK$500 惠康券"
+   ]
+  },
+  {
+   "name": "渣打國泰Mastercard - 優先理財",
+   "ch": [
+    "獨家 line: HK$900 Apple Store禮品卡 → **額外贏 Switch 2／HK$500 惠康券**",
+    "added: 額外贏 Switch 2／HK$500 惠康券"
+   ]
+  },
+  {
+   "name": "渣打國泰Mastercard - 優先私人理財",
+   "ch": [
+    "獨家 line: HK$900 Apple Store禮品卡 → **額外贏 Switch 2／HK$500 惠康券**",
+    "added: 額外贏 Switch 2／HK$500 惠康券"
+   ]
+  },
+  {
+   "name": "渣打Simply Cash Visa卡",
+   "ch": [
+    "獨家 line: HK$800 Apple Store 禮品卡 → **額外贏 Switch 2／HK$500 惠康券**",
+    "added: 額外贏 Switch 2／HK$500 惠康券"
+   ]
+  },
+  {
+   "name": "DBS Eminent Visa Platinum Card",
+   "ch": [
+    "獨家 line: HK$800 Apple Store 禮品卡 → **額外贏 Switch 2／HK$500 惠康券**",
+    "added: 額外贏 Switch 2／HK$500 惠康券"
+   ]
+  },
+  {
+   "name": "DBS Eminent Visa Signature Card",
+   "ch": [
+    "added: 額外贏 Switch 2／HK$500 惠康券"
+   ]
+  },
+  {
+   "name": "DBS Black World Mastercard®",
+   "ch": [
+    "獨家 line: HK$1,700 惠康購物現金券 → **額外贏 Switch 2／HK$500 惠康券**",
+    "added: 額外贏 Switch 2／HK$500 惠康券"
+   ]
+  },
+  {
+   "name": "Mox 信用卡 (CashBack)",
+   "ch": [
+    "推廣碼 MOXFLASHMH2 removed",
+    "獨家 line: HK$500 現金回贈 (經轉數快) (由MoneyHero送出) +HK$1,800現金獎賞 (由 Mox 送出) + 1% 基本簽賬CashBack MoneyHero獨家迎新優惠（需使用指定邀請碼「MOXPHONEMH」） 或 ^HK$500 現金回贈 (經轉數快) (由MoneyHero送出) + HK$1,000現金獎賞 (由 Mox 送出) MoneyHero獨家迎新優惠（需使用指定邀請碼「MOXFLASHMH2」） → **額外贏 Switch 2／HK$500 惠康券**",
+    "added: 額外贏 Switch 2／HK$500 惠康券 · HK$500 現金回贈 (經轉數快) (由MoneyHero送出) +HK$1,800現金獎賞 (由 Mox 送出) + 1% 基本簽賬CashBack · ^HK$500 現金回贈 (經轉數快) (由MoneyHero送出) + HK$1,000現金獎賞 (由 Mox 送出)",
+    "removed: HK$500 現金回贈 (經轉數快) (由MoneyHero送出) +HK$1,800現金獎賞 (由 Mox 送出) + 1% 基本簽賬CashBack MoneyHero獨家迎新優惠（需使用指定邀請碼「MOXPHONEMH」） 或 ^HK$500 現金回贈 (經轉數快) (由MoneyHero送出) + HK$1,000現金獎賞 (由 Mox 送出) MoneyHero獨家迎新優惠（需使用指定邀請碼「MOXFLASHMH2」）"
+   ]
+  },
+  {
+   "name": "Mox 信用卡 （「亞洲萬里通」）",
+   "ch": [
+    "推廣碼 MOXFLASHMH2 removed",
+    "獨家 line: HK$500 現金回贈 (經轉數快) (由MoneyHero送出) +HK$1,800現金獎賞 (由 Mox 送出) + 1% 基本簽賬CashBack MoneyHero獨家迎新優惠（需使用指定邀請碼「MOXPHONEMH」） 或 ^HK$500 現金回贈 (經轉數快) (由MoneyHero送出) + HK$1,000現金獎賞 (由 Mox 送出) MoneyHero獨家迎新優惠（需使用指定邀請碼「MOXFLASHMH2」） → **額外贏 Switch 2／HK$500 惠康券**",
+    "added: 額外贏 Switch 2／HK$500 惠康券 · HK$500 現金回贈 (經轉數快) (由MoneyHero送出) +HK$1,800現金獎賞 (由 Mox 送出) + 1% 基本簽賬CashBack · ^HK$500 現金回贈 (經轉數快) (由MoneyHero送出) + HK$1,000現金獎賞 (由 Mox 送出)",
+    "removed: HK$500 現金回贈 (經轉數快) (由MoneyHero送出) +HK$1,800現金獎賞 (由 Mox 送出) + 1% 基本簽賬CashBack MoneyHero獨家迎新優惠（需使用指定邀請碼「MOXPHONEMH」） 或 ^HK$500 現金回贈 (經轉數快) (由MoneyHero送出) + HK$1,000現金獎賞 (由 Mox 送出) MoneyHero獨家迎新優惠（需使用指定邀請碼「MOXFLASHMH2」）"
+   ]
+  }
+ ],
  "notes": [
-  "No offer changes: the 我已閱讀並同意活動條款及細則 link in the game now opens the full T&C PDF (was: jumps to the T&C section). Upload it as usual."
+  "滙豐Red信用卡: not found on the live listing — left as is."
  ],
  "warnings": [
   "Ends 11/05 18:00: CITI CoreCard R1 (Flash) — HK$2,300 現金回贈.",
