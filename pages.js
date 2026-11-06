@@ -105,15 +105,23 @@
   /* ===== Overseas Student Insurance (繁中 only) ===== */
   var OSI_FIELDS = [
     { path: 'name', label: '計劃名稱', group: 'Product', type: 'text' },
+    { path: 'iss', label: '保險公司代碼 Insurer code', group: 'Product', type: 'text', hint: 'Must be a code in the 保險公司名單 Insurers tab (e.g. starr, axa). It sets the insurer name and logo on the card.' },
     { path: 'badge', label: '角標 Badge', group: 'Product', type: 'text-null', hint: 'Leave empty for no badge. Products with a badge always show above products without one.' },
+    { path: 'badgeIcon', label: '角標 emoji Badge emoji', group: 'Product', type: 'text-null', hint: 'Leave empty for the default (🔥, or 🧮 for 性價比首選).' },
     { path: 'price', label: '原價 Original price (HK$ / year)', group: 'Price & offer', type: 'number' },
     { path: 'disc', label: '折後價 Discounted price (HK$ / year)', group: 'Price & offer', type: 'number-null', hint: 'Leave empty if there is no discount.' },
     { path: 'promo', label: '優惠碼 Promo code', group: 'Price & offer', type: 'text-null', pattern: '^[A-Za-z0-9_-]*$', patternMsg: PROMO_CODE.patternMsg, hint: 'Leave empty if there is no code.' },
-    { path: 'age', label: '投保年齡', group: 'Coverage', type: 'text' },
-    { path: 'med', label: '醫療保障 Medical (HK$)', group: 'Coverage', type: 'number' },
-    { path: 'acc', label: '意外保障 Accident (HK$)', group: 'Coverage', type: 'number' },
-    { path: 'tui', label: '學費保障 Tuition (HK$)', group: 'Coverage', type: 'number' },
-    { path: 'edu', label: '教育保障 Education (HK$)', group: 'Coverage', type: 'number' },
+    // labels match the card (scripts.html) so PCT can find the row they are told about
+    { path: 'dest', label: '目的地 Destination (filter)', group: 'Coverage', type: 'select', options: [
+      { value: 'global', label: '全球（美加除外）' }, { value: 'usca', label: '美國‧加拿大' }, { value: 'asia', label: '亞洲' }] },
+    { path: 'destLabel', label: '目的地顯示文字 Destination text on card', group: 'Coverage', type: 'text-null', hint: 'Leave empty to show the destination above. Fill in only when the card should say something else, e.g. 全球 for a plan that includes the US and Canada.' },
+    { path: 'dur', label: '保障期 Period', group: 'Coverage', type: 'select', options: [
+      { value: '6m', label: '半年' }, { value: '1y', label: '一年' }, { value: '2y', label: '兩年' }] },
+    { path: 'age', label: '受保年齡 Eligible age', group: 'Coverage', type: 'text' },
+    { path: 'med', label: '醫療費用保障 Medical (HK$)', group: 'Coverage', type: 'number', hint: '0 shows as 不適用.' },
+    { path: 'acc', label: '人身意外保障 Accident (HK$)', group: 'Coverage', type: 'number', hint: '0 shows as 不適用.' },
+    { path: 'tui', label: '學費損失保障 Tuition loss / study interruption (HK$)', group: 'Coverage', type: 'number', hint: '0 shows as 不適用. Check the amount for each plan in the provider leaflet: plans of one product often differ.' },
+    { path: 'edu', label: '教育基金 Education fund (HK$)', group: 'Coverage', type: 'number', hint: '0 shows as 不適用.' },
     { path: 'url', label: '投保連結 Apply link', group: 'Links', type: 'url' },
     { path: 'leaflet', label: '產品小冊子 Leaflet PDF', group: 'Links', type: 'url' },
     { path: 'policy', label: '保單條款 Policy PDF', group: 'Links', type: 'url' }
@@ -242,9 +250,11 @@
             { v: '@premiums', title: 'Premiums 保費', kind: 'productColumns',
               excel: { expect: ['osi'], how: 'Open the OSI Excel (one row per plan: 保險計劃, Badge, Link, … 保費, Discounted Price). Click the corner above row 1 to select the whole sheet, copy, and paste below. Badges, links, ages and coverage amounts are updated too.' },
               cols: [{ p: 'price', label: '原價 Original (HK$/yr)' }, { p: 'disc', label: '折後價 Discounted (HK$/yr)', nullable: true }] },
-            { v: 'FAQS', title: 'FAQ 常見問題', kind: 'list', fields: [{ p: 'q', label: '問題 Question' }, { p: 'a', label: '答案 Answer', long: true }] }
+            { v: 'FAQS', title: 'FAQ 常見問題', kind: 'list', fields: [{ p: 'q', label: '問題 Question' }, { p: 'a', label: '答案 Answer', long: true }] },
+            { v: 'ISSUERS', title: '保險公司名單 Insurers', kind: 'map', hint: 'Insurer name shown on every card of that insurer. To add a new insurer, use "Edit code directly" and add it here and in Insurer logos.' },
+            { v: 'ISSUER_ICON', title: 'Insurer logos', kind: 'map', hint: 'One https:// logo link per insurer, shown on every card of that insurer.' }
           ],
-          note: 'Issuer names and anything not in the form → "Edit code directly".' },
+          note: 'Adding a new insurer or a new plan → "Edit code directly". The plan id is locked: tracking uses it.' },
         { file: 'scripts', editor: 'code', fingerprint: 'Component: Scripts', find: '<!-- Component: Scripts — All JavaScript', what: 'Page behaviour. Code only. This page has no separate page-text table: change text in the module where it appears.' }
       ],
       overriddenIds: {},
@@ -258,6 +268,8 @@
         // Default view: products with a badge first, otherwise P order (stable sort in scripts).
         displayOrder: function (list) { return list.filter(function (d) { return d.badge; }).concat(list.filter(function (d) { return !d.badge; })); },
         fields: OSI_FIELDS,
+        // most plans leave these out; absent = the card's default, so filling one in adds it to that plan
+        defaults: { destLabel: null, badgeIcon: null },
         required: ['id', 'iss', 'name', 'url', 'dest', 'dur'],
         urlFields: ['url', 'leaflet', 'policy'],
         numberFields: [{ path: 'price' }, { path: 'disc', nullable: true }, { path: 'med' }, { path: 'acc' }, { path: 'tui' }, { path: 'edu' }],

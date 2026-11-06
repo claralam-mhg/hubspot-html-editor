@@ -1,0 +1,695 @@
+<!-- ══════════════════════════════════════════════════════════════════════
+     產品資料 PRODUCT DATA　—　PCT 團隊編輯呢個檔案就得
+     ══════════════════════════════════════════════════════════════════════
+
+     呢個係「海外升學保險」比較頁嘅資料中心。改價錢、折扣、優惠碼、
+     角標、投保連結，全部喺呢度改，改完頁面即刻更新。
+
+     ┌─ 點改 ─────────────────────────────────────────────────────────┐
+     │ 1. 喺下面搵到你要改嘅計劃（每個計劃有自己一格，格頂寫住計劃名）。│
+     │ 2. 淨係改冒號「:」後面嘅值，唔好郁前面嘅名（"price" 等）。        │
+     │ 3. 每行結尾嘅逗號「,」要保留，唔好刪。                            │
+     │ 4. 喺 HubSpot 儲存 → 預覽 → 冇問題先發佈。                        │
+     └────────────────────────────────────────────────────────────────┘
+
+     ┌─ 三條黃金規則（唔跟會整壞成版）──────────────────────────────┐
+     │ ● 數字：直接寫，唔好加 $ 或逗號。   啱：3900     錯："3,900"、$3900 │
+     │ ● 文字：一定要用雙引號包住。        啱："MH10"   錯：MH10          │
+     │ ● 冇嘢填：數字欄填 null；文字欄填 ""（一對空引號）。              │
+     └────────────────────────────────────────────────────────────────┘
+
+     ⚠ 唔好改 scripts.html —— 嗰個係程式檔，改咗會靜靜雞整壞成版。
+     ⚠ 每格頂部標住「★ 常改欄位」以下 5 行，就係 PCT 日常會改嘅嘢。
+-->
+
+<script>
+/* ═══════════ 保險公司名單 & Logo（好少改，加新公司先改）═══════════
+   加新保險公司要做兩件事：喺 ISSUERS 加「代碼:中文名」，
+   再喺 ISSUER_ICON 加返同一個代碼嘅 logo 連結。 */
+var ISSUERS={
+ "axa":"AXA 安盛",
+ "generali":"Generali 忠意",
+ "boc":"BOC 中銀保險",
+ "zurich":"Zurich 蘇黎世",
+ "dahsing":"Dah Sing 大新保險",
+ "starr":"Starr",
+ "bolttech":"bolttech 保特",
+ "bluecross":"Blue Cross 藍十字",
+ "msig":"MSIG"
+};
+var ISSUER_ICON={
+ "axa":"https://www.axa.com.hk/favicon.ico",
+ "generali":"https://mhgprod.blob.core.windows.net/moneyhero/strapi-uploads/generali_logo_9028e858f2.svg",
+ "boc":"https://mhgprod.blob.core.windows.net/moneyhero/strapi-uploads/t_channels4_profile_fcdadb0562.jpg",
+ "zurich":"https://mhgprod.blob.core.windows.net/moneyhero/strapi-uploads/blt1b7f1ba7ebe2a18f_e75e008b18.svg",
+ "dahsing":"https://www.google.com/s2/favicons?domain=dahsinginsurance.com&sz=128",
+ "starr":"https://www.google.com/s2/favicons?domain=starrinsurance.com.hk&sz=128",
+ "bolttech":"https://www.google.com/s2/favicons?domain=bolttechinsurance.hk&sz=128",
+ "bluecross":"https://www.bluecross.com.hk/images/media/share_home_logo.jpg",
+ "msig":"https://mhgprod.blob.core.windows.net/moneyhero/strapi-uploads/blt3b06bbafe3b93257_7bf6c6eb29.svg"
+};
+function insurerIcon(iss){return ISSUER_ICON[iss]||''}
+
+/* ═══════════════════════ 計劃資料（共 29 個計劃）═══════════════════════ */
+var P=[
+  /* ═══════════════════════════════════════════════════════════════
+     AXA 安盛「卓越」海外升學樂（全球，美加除外）
+     ═══════════════════════════════════════════════════════════════ */
+  {
+    /* ★ 常改欄位（PCT 日常主要改呢 5 行）──────────────────────── */
+    "price": 3900,      // 每年原價 HK$（淨數字，唔好加 $ 或逗號）
+    "disc":  null,      // 折扣價 HK$（有折扣先填數字；冇折扣 → null）
+    "promo": null,      // 優惠碼（冇 → null；有 → 加引號，例 "MH10ASAP"）
+    "badge": "人氣之選",    // 角標（冇 → 空引號 ""；例 "人氣之選"）
+    "url":   "https://www.axa.com.hk/aio/api/product/overseas-student-protection/channel=b2b2c-aggregator%26lang=zh%26agentNumber=AGMH",
+    /* ── 以下較少改動 ────────────────────────────────────────── */
+    "id":   "axa-global",  // 系統編號｜切勿修改
+    "iss":  "axa",  // 保險公司代碼（對應上面名單）
+    "name": "AXA 安盛「卓越」海外升學樂（全球，美加除外）",
+    "dest": "global",  // 目的地：global 全球 / usca 美加 / asia 亞洲
+    "dur":  "1y",  // 保障期：1y 一年 / 2y 兩年 / 6m 半年
+    "age":  "10至35歲",  // 受保年齡
+    "med": 2000000, "acc": 1000000, "tui": 200000, "edu": 300000,  // 保障額：醫療/意外/學費/教育基金
+    "leaflet": "https://hk-axa-web-2024.cdn.prismic.io/hk-axa-web-2024/aRbw1LpReVYa4d5d_AXA_SmartStudentOverseasDirectA5_Nov25C-002-.pdf",  // 產品單張 PDF
+    "policy":  "https://hk-axa-web-2024.cdn.prismic.io/hk-axa-web-2024/aRbwyrpReVYa4d5Z_H789SMU-SmartStudentOverseas-Policy-Bilingual--SMU1125-P-H789-.pdf"   // 保單條款 PDF
+  },
+  /* ═══════════════════════════════════════════════════════════════
+     忠意全年海外留學保障（美國或加拿大）
+     ═══════════════════════════════════════════════════════════════ */
+  {
+    /* ★ 常改欄位（PCT 日常主要改呢 5 行）──────────────────────── */
+    "price": 4320,      // 每年原價 HK$（淨數字，唔好加 $ 或逗號）
+    "disc":  3888,      // 折扣價 HK$（有折扣先填數字；冇折扣 → null）
+    "promo": "MH10ASAP", // 優惠碼（冇 → null；有 → 加引號，例 "MH10ASAP"）
+    "badge": "性價比首選",   // 角標（冇 → 空引號 ""；例 "人氣之選"）
+    "url":   "https://bravo.generali.com.hk/ASAP1?lang=zh&promotionCode=MH10ASAP",
+    /* ── 以下較少改動 ────────────────────────────────────────── */
+    "id":   "generali-usca",  // 系統編號｜切勿修改
+    "iss":  "generali",  // 保險公司代碼（對應上面名單）
+    "name": "忠意全年海外留學保障（美國或加拿大）",
+    "dest": "usca",  // 目的地：global 全球 / usca 美加 / asia 亞洲
+    "dur":  "1y",  // 保障期：1y 一年 / 2y 兩年 / 6m 半年
+    "age":  "12至30歲",  // 受保年齡
+    "med": 1500000, "acc": 500000, "tui": 90000, "edu": 300000,  // 保障額：醫療/意外/學費/教育基金
+    "leaflet": "https://repository.generali.com.hk/bravo/short/p/share_files/Product_leaflet/Product_leaflet_ASAP.pdf",  // 產品單張 PDF
+    "policy":  "https://repository.generali.com.hk/bravo/short/p/share_files/Product_Provision/Product_Provision_Annual_Study_Abroad_Protector_Policy.pdf"   // 保單條款 PDF
+  },
+  /* ═══════════════════════════════════════════════════════════════
+     藍十字 智醒海外升學保智尊計劃（一年）
+     ═══════════════════════════════════════════════════════════════ */
+  {
+    /* ★ 常改欄位（PCT 日常主要改呢 5 行）──────────────────────── */
+    "price": 6080,      // 每年原價 HK$（淨數字，唔好加 $ 或逗號）
+    "disc":  5168,      // 折扣價 HK$（有折扣先填數字；冇折扣 → null）
+    "promo": "moneyhero", // 優惠碼（冇 → null；有 → 加引號，例 "MH10ASAP"）
+    "badge": "人氣之選",    // 角標｜要保持排第 3 位就唔可以清空
+    "url":   "https://www.bluecross.com.hk/ch/Overseas-StudySafe/Application?promoCode=moneyhero&utm_source=MoneyHero&utm_medium=listing&utm_campaign=GI2H26",
+    /* ── 以下較少改動 ────────────────────────────────────────── */
+    "id":   "bluecross-prestige-1y",  // 系統編號｜切勿修改
+    "iss":  "bluecross",  // 保險公司代碼（對應上面名單）
+    "name": "藍十字 智醒海外升學保智尊計劃（一年）",
+    "dest": "global",  // 目的地：global 全球 / usca 美加 / asia 亞洲
+    "dur":  "1y",  // 保障期：1y 一年 / 2y 兩年 / 6m 半年
+    "age":  "7至35歲",  // 受保年齡
+    "med": 1200000, "acc": 1200000, "tui": 80000, "edu": 300000,  // 保障額：醫療/意外/學費/教育基金
+    "leaflet": "https://ap.bluecross.com.hk/shared/leaflets/Overseas_StudySafe_Insurance_Leaflet.pdf?q=Friday,%20June%2026,%20202612:36:02%20PM",  // 產品單張 PDF
+    "policy":  "https://ap.bluecross.com.hk/shared/tncs/Overseas_StudySafe_Insurance_TnC.pdf?q=Friday,%20June%2026,%20202612:37:08%20PM"   // 保單條款 PDF
+  },
+  /* ═══════════════════════════════════════════════════════════════
+     中銀「學宜無憂」留學保險優越計劃（一年）
+     ═══════════════════════════════════════════════════════════════ */
+  {
+    /* ★ 常改欄位（PCT 日常主要改呢 5 行）──────────────────────── */
+    "price": 6200,      // 每年原價 HK$（淨數字，唔好加 $ 或逗號）
+    "disc":  5890,      // 折扣價 HK$（有折扣先填數字；冇折扣 → null）
+    "promo": "MONEYH",  // 優惠碼（冇 → null；有 → 加引號，例 "MH10ASAP"）
+    "badge": "人氣之選",    // 角標（冇 → 空引號 ""；例 "人氣之選"）
+    "url":   "https://www.bocgins.com/ws/gostudy/index.html#/?channelCode=MONEY&promoCode=MONEYH",
+    /* ── 以下較少改動 ────────────────────────────────────────── */
+    "id":   "boc-superior-1y",  // 系統編號｜切勿修改
+    "iss":  "boc",  // 保險公司代碼（對應上面名單）
+    "name": "中銀「學宜無憂」留學保險優越計劃（一年）",
+    "dest": "global",  // 目的地：global 全球 / usca 美加 / asia 亞洲
+    "dur":  "1y",  // 保障期：1y 一年 / 2y 兩年 / 6m 半年
+    "age":  "12至40歲",  // 受保年齡
+    "med": 1500000, "acc": 1200000, "tui": 150000, "edu": 200000,  // 保障額：醫療/意外/學費/教育基金
+    "leaflet": "https://www.bocgins.com/FileStatic//Product_Leaflet/_Direct_and_agency//GoStudyStudentInsuranceLeafletTC.pdf",  // 產品單張 PDF
+    "policy":  "https://www.bocgins.com/FileStatic//Policy/_Policy/_Travel_and_Leisure//GoStudyStudentInsurancePlanPolicyTC.pdf"   // 保單條款 PDF
+  },
+  /* ═══════════════════════════════════════════════════════════════
+     MSIG 海外升學保險醫全計劃（一年）
+     ═══════════════════════════════════════════════════════════════ */
+  {
+    /* ★ 常改欄位（PCT 日常主要改呢 5 行）──────────────────────── */
+    "price": 5030,      // 每年原價 HK$（淨數字，唔好加 $ 或逗號）
+    "disc":  3476,      // 折扣價 HK$（有折扣先填數字；冇折扣 → null）
+    "promo": "MHOST300", // 優惠碼（冇 → null；有 → 加引號，例 "MH10ASAP"）
+    "badge": "HK$300 Promo Code: MHOST300",  // 角標｜要保持排第 4 位就唔可以清空
+    "badgeIcon": "🏷️",   // 角標 emoji（唔填 → 預設 🔥）
+    "url":   "https://insure.msig.hk/Channels/zh/travel-insurance?company=mhgl&tab=tab3&promocode=MHOST300&utm_medium=webpage&utm_source=moneyhero-ost&utm_content=ost",
+    /* ── 以下較少改動 ────────────────────────────────────────── */
+    "id":   "msig-medical-1y",  // 系統編號｜切勿修改
+    "iss":  "msig",  // 保險公司代碼（對應上面名單）
+    "name": "MSIG 海外升學保險醫全計劃（一年）",
+    "dest": "global",  // 目的地：global 全球 / usca 美加 / asia 亞洲
+    "destLabel": "全球",  // 卡片徽章顯示文字（覆蓋預設；此計劃包括美加）
+    "dur":  "1y",  // 保障期：1y 一年 / 2y 兩年 / 6m 半年
+    "age":  "6至50歲",  // 受保年齡
+    "med": 2000000, "acc": 1000000, "tui": 50000, "edu": 300000,  // 保障額：醫療/意外/學費/教育基金
+    "leaflet": "https://www.moneyhero.com.hk/hubfs/assets_moneyhero/H1002_Overseas%20Study%20Insurance_Brochure_Nov%202025_0_0.pdf",  // 產品單張 PDF
+    "policy":  "https://www.moneyhero.com.hk/hubfs/assets_moneyhero/OSTCG02_protected%20policy%20wording.pdf"   // 保單條款 PDF
+  },
+  /* ═══════════════════════════════════════════════════════════════
+     蘇黎世「智學保+」海外留學保險計劃 — 專上計劃（一年）
+     ═══════════════════════════════════════════════════════════════ */
+  {
+    /* ★ 常改欄位（PCT 日常主要改呢 5 行）──────────────────────── */
+    "price": 5950,      // 每年原價 HK$（淨數字，唔好加 $ 或逗號）
+    "disc":  null,      // 折扣價 HK$（有折扣先填數字；冇折扣 → null）
+    "promo": null,      // 優惠碼（冇 → null；有 → 加引號，例 "MH10ASAP"）
+    "badge": "人氣之選",    // 角標（冇 → 空引號 ""；例 "人氣之選"）
+    "url":   "https://gi.zurich.com.hk/page/public/zh/hk/process/enterPublic/TravelPlusProcess?productId=TravelPlus&data=hh8sjeWWHJCQbuzzUCflNAyGp1zohPXVlMznrk-Fjez2t6z0r-UTu-_C-IVHTMv85D-hJiCEEAb_AvUwgqqzdvNpoo1pETE83xzw6-1lsrrLMz2guHjJ6s2LD8gk6Xsy38_FCHXYDHMGahSrqxDN4sVWUM877bRDlpqcO7GQxAR5-umCXkxH42yNw56qN6kW_ElOrKsgmp6L-O8zJ8TorJYzVbcK8EVtcIdI70ZGDCuKBki5ZJe4ClT4C3RJcdmM5OzZ65MrppnuWCHWkL2kYA&initProcessAction=Step1CreateQuoteTravelPlus",
+    /* ── 以下較少改動 ────────────────────────────────────────── */
+    "id":   "zurich-tertiary-1y",  // 系統編號｜切勿修改
+    "iss":  "zurich",  // 保險公司代碼（對應上面名單）
+    "name": "蘇黎世「智學保+」海外留學保險計劃 — 專上計劃（一年）",
+    "dest": "global",  // 目的地：global 全球 / usca 美加 / asia 亞洲
+    "dur":  "1y",  // 保障期：1y 一年 / 2y 兩年 / 6m 半年
+    "age":  "7至70歲",  // 受保年齡
+    "med": 1500000, "acc": 1000000, "tui": 200000, "edu": 100000,  // 保障額：醫療/意外/學費/教育基金
+    "leaflet": "https://edge.sitecorecloud.io/zurichinsurf8c0-zwpshared-prod-d824/media/project/zurich-headless/hongkong/docs/individuals/travel-insurance/studysmartplus-insurance-plan/product-brochure-2022oct-tc.pdf",  // 產品單張 PDF
+    "policy":  "https://info.zurich.com.hk/policy/TVA-002-10-2022.pdf"   // 保單條款 PDF
+  },
+  /* ═══════════════════════════════════════════════════════════════
+     AXA 安盛「卓越」海外升學樂（美國或加拿大）
+     ═══════════════════════════════════════════════════════════════ */
+  {
+    /* ★ 常改欄位（PCT 日常主要改呢 5 行）──────────────────────── */
+    "price": 4900,      // 每年原價 HK$（淨數字，唔好加 $ 或逗號）
+    "disc":  null,      // 折扣價 HK$（有折扣先填數字；冇折扣 → null）
+    "promo": null,      // 優惠碼（冇 → null；有 → 加引號，例 "MH10ASAP"）
+    "badge": "人氣之選",    // 角標（冇 → 空引號 ""；例 "人氣之選"）
+    "url":   "https://www.axa.com.hk/aio/api/product/overseas-student-protection/channel=b2b2c-aggregator%26lang=zh%26agentNumber=AGMH",
+    /* ── 以下較少改動 ────────────────────────────────────────── */
+    "id":   "axa-usca",  // 系統編號｜切勿修改
+    "iss":  "axa",  // 保險公司代碼（對應上面名單）
+    "name": "AXA 安盛「卓越」海外升學樂（美國或加拿大）",
+    "dest": "usca",  // 目的地：global 全球 / usca 美加 / asia 亞洲
+    "dur":  "1y",  // 保障期：1y 一年 / 2y 兩年 / 6m 半年
+    "age":  "10至35歲",  // 受保年齡
+    "med": 2000000, "acc": 1000000, "tui": 200000, "edu": 300000,  // 保障額：醫療/意外/學費/教育基金
+    "leaflet": "https://hk-axa-web-2024.cdn.prismic.io/hk-axa-web-2024/aRbw1LpReVYa4d5d_AXA_SmartStudentOverseasDirectA5_Nov25C-002-.pdf",  // 產品單張 PDF
+    "policy":  "https://hk-axa-web-2024.cdn.prismic.io/hk-axa-web-2024/aRbwyrpReVYa4d5Z_H789SMU-SmartStudentOverseas-Policy-Bilingual--SMU1125-P-H789-.pdf"   // 保單條款 PDF
+  },
+  /* ═══════════════════════════════════════════════════════════════
+     大新學優遊海外留學保障計劃（全球）（一年）
+     ═══════════════════════════════════════════════════════════════ */
+  {
+    /* ★ 常改欄位（PCT 日常主要改呢 5 行）──────────────────────── */
+    "price": 4600,      // 每年原價 HK$（淨數字，唔好加 $ 或逗號）
+    "disc":  3680,      // 折扣價 HK$（有折扣先填數字；冇折扣 → null）
+    "promo": "MH26Q3OS", // 優惠碼（冇 → null；有 → 加引號，例 "MH10ASAP"）
+    "badge": "人氣之選",    // 角標（冇 → 空引號 ""；例 "人氣之選"）
+    "url":   "https://www.dahsinginsurance.com/?PromoCode=MoneyHero_OS",
+    /* ── 以下較少改動 ────────────────────────────────────────── */
+    "id":   "dahsing-global-1y",  // 系統編號｜切勿修改
+    "iss":  "dahsing",  // 保險公司代碼（對應上面名單）
+    "name": "大新學優遊海外留學保障計劃（全球）（一年）",
+    "dest": "global",  // 目的地：global 全球 / usca 美加 / asia 亞洲
+    "destLabel": "全球",  // 卡片徽章顯示文字（覆蓋預設；淨係呢個計劃有）
+    "dur":  "1y",  // 保障期：1y 一年 / 2y 兩年 / 6m 半年
+    "age":  "10至55歲",  // 受保年齡
+    "med": 2000000, "acc": 1500000, "tui": 180000, "edu": 300000,  // 保障額：醫療/意外/學費/教育基金
+    "leaflet": "https://www.dahsinginsurance.com/b2c/api/fileCenter/file/QGK5GUBL/QGK5GUBL.pdf",  // 產品單張 PDF
+    "policy":  "https://www.dahsinginsurance.com/b2c/api/fileCenter/file/16ICIDQE/16ICIDQE.pdf"   // 保單條款 PDF
+  },
+  /* ═══════════════════════════════════════════════════════════════
+     忠意全年海外留學保障（全球，美加除外）
+     ═══════════════════════════════════════════════════════════════ */
+  {
+    /* ★ 常改欄位（PCT 日常主要改呢 5 行）──────────────────────── */
+    "price": 3528,      // 每年原價 HK$（淨數字，唔好加 $ 或逗號）
+    "disc":  3175,      // 折扣價 HK$（有折扣先填數字；冇折扣 → null）
+    "promo": "MH10ASAP", // 優惠碼（冇 → null；有 → 加引號，例 "MH10ASAP"）
+    "badge": "",        // 角標（冇 → 空引號 ""；例 "人氣之選"）
+    "url":   "https://bravo.generali.com.hk/ASAP1?lang=zh&promotionCode=MH10ASAP",
+    /* ── 以下較少改動 ────────────────────────────────────────── */
+    "id":   "generali-global",  // 系統編號｜切勿修改
+    "iss":  "generali",  // 保險公司代碼（對應上面名單）
+    "name": "忠意全年海外留學保障（全球，美加除外）",
+    "dest": "global",  // 目的地：global 全球 / usca 美加 / asia 亞洲
+    "dur":  "1y",  // 保障期：1y 一年 / 2y 兩年 / 6m 半年
+    "age":  "12至30歲",  // 受保年齡
+    "med": 1500000, "acc": 500000, "tui": 90000, "edu": 300000,  // 保障額：醫療/意外/學費/教育基金
+    "leaflet": "https://repository.generali.com.hk/bravo/short/p/share_files/Product_leaflet/Product_leaflet_ASAP.pdf",  // 產品單張 PDF
+    "policy":  "https://repository.generali.com.hk/bravo/short/p/share_files/Product_Provision/Product_Provision_Annual_Study_Abroad_Protector_Policy.pdf"   // 保單條款 PDF
+  },
+  /* ═══════════════════════════════════════════════════════════════
+     中銀「學宜無憂」留學保險優越計劃（半年）
+     ═══════════════════════════════════════════════════════════════ */
+  {
+    /* ★ 常改欄位（PCT 日常主要改呢 5 行）──────────────────────── */
+    "price": 3100,      // 每年原價 HK$（淨數字，唔好加 $ 或逗號）
+    "disc":  2945,      // 折扣價 HK$（有折扣先填數字；冇折扣 → null）
+    "promo": "MONEYH",  // 優惠碼（冇 → null；有 → 加引號，例 "MH10ASAP"）
+    "badge": "",        // 角標（冇 → 空引號 ""；例 "人氣之選"）
+    "url":   "https://www.bocgins.com/ws/gostudy/index.html#/?channelCode=MONEY&promoCode=MONEYH",
+    /* ── 以下較少改動 ────────────────────────────────────────── */
+    "id":   "boc-superior-6m",  // 系統編號｜切勿修改
+    "iss":  "boc",  // 保險公司代碼（對應上面名單）
+    "name": "中銀「學宜無憂」留學保險優越計劃（半年）",
+    "dest": "global",  // 目的地：global 全球 / usca 美加 / asia 亞洲
+    "dur":  "6m",  // 保障期：1y 一年 / 2y 兩年 / 6m 半年
+    "age":  "12至40歲",  // 受保年齡
+    "med": 1500000, "acc": 1200000, "tui": 150000, "edu": 200000,  // 保障額：醫療/意外/學費/教育基金
+    "leaflet": "https://www.bocgins.com/FileStatic//Product_Leaflet/_Direct_and_agency//GoStudyStudentInsuranceLeafletTC.pdf",  // 產品單張 PDF
+    "policy":  "https://www.bocgins.com/FileStatic//Policy/_Policy/_Travel_and_Leisure//GoStudyStudentInsurancePlanPolicyTC.pdf"   // 保單條款 PDF
+  },
+  /* ═══════════════════════════════════════════════════════════════
+     蘇黎世「智學保+」海外留學保險計劃 — 專上計劃（兩年）
+     ═══════════════════════════════════════════════════════════════ */
+  {
+    /* ★ 常改欄位（PCT 日常主要改呢 5 行）──────────────────────── */
+    "price": 10000,     // 每年原價 HK$（淨數字，唔好加 $ 或逗號）
+    "disc":  null,      // 折扣價 HK$（有折扣先填數字；冇折扣 → null）
+    "promo": null,      // 優惠碼（冇 → null；有 → 加引號，例 "MH10ASAP"）
+    "badge": "",        // 角標（冇 → 空引號 ""；例 "人氣之選"）
+    "url":   "https://gi.zurich.com.hk/page/public/zh/hk/process/enterPublic/TravelPlusProcess?productId=TravelPlus&data=hh8sjeWWHJCQbuzzUCflNAyGp1zohPXVlMznrk-Fjez2t6z0r-UTu-_C-IVHTMv85D-hJiCEEAb_AvUwgqqzdvNpoo1pETE83xzw6-1lsrrLMz2guHjJ6s2LD8gk6Xsy38_FCHXYDHMGahSrqxDN4sVWUM877bRDlpqcO7GQxAR5-umCXkxH42yNw56qN6kW_ElOrKsgmp6L-O8zJ8TorJYzVbcK8EVtcIdI70ZGDCuKBki5ZJe4ClT4C3RJcdmM5OzZ65MrppnuWCHWkL2kYA&initProcessAction=Step1CreateQuoteTravelPlus",
+    /* ── 以下較少改動 ────────────────────────────────────────── */
+    "id":   "zurich-tertiary-2y",  // 系統編號｜切勿修改
+    "iss":  "zurich",  // 保險公司代碼（對應上面名單）
+    "name": "蘇黎世「智學保+」海外留學保險計劃 — 專上計劃（兩年）",
+    "dest": "global",  // 目的地：global 全球 / usca 美加 / asia 亞洲
+    "dur":  "2y",  // 保障期：1y 一年 / 2y 兩年 / 6m 半年
+    "age":  "7至70歲",  // 受保年齡
+    "med": 1500000, "acc": 1000000, "tui": 200000, "edu": 100000,  // 保障額：醫療/意外/學費/教育基金
+    "leaflet": "https://edge.sitecorecloud.io/zurichinsurf8c0-zwpshared-prod-d824/media/project/zurich-headless/hongkong/docs/individuals/travel-insurance/studysmartplus-insurance-plan/product-brochure-2022oct-tc.pdf",  // 產品單張 PDF
+    "policy":  "https://info.zurich.com.hk/policy/TVA-002-10-2022.pdf"   // 保單條款 PDF
+  },
+  /* ═══════════════════════════════════════════════════════════════
+     中銀「學宜無憂」留學保險基本計劃（一年）
+     ═══════════════════════════════════════════════════════════════ */
+  {
+    /* ★ 常改欄位（PCT 日常主要改呢 5 行）──────────────────────── */
+    "price": 3200,      // 每年原價 HK$（淨數字，唔好加 $ 或逗號）
+    "disc":  3040,      // 折扣價 HK$（有折扣先填數字；冇折扣 → null）
+    "promo": "MONEYH",  // 優惠碼（冇 → null；有 → 加引號，例 "MH10ASAP"）
+    "badge": "",        // 角標（冇 → 空引號 ""；例 "人氣之選"）
+    "url":   "https://www.bocgins.com/ws/gostudy/index.html#/?channelCode=MONEY&promoCode=MONEYH",
+    /* ── 以下較少改動 ────────────────────────────────────────── */
+    "id":   "boc-basic-1y",  // 系統編號｜切勿修改
+    "iss":  "boc",  // 保險公司代碼（對應上面名單）
+    "name": "中銀「學宜無憂」留學保險基本計劃（一年）",
+    "dest": "global",  // 目的地：global 全球 / usca 美加 / asia 亞洲
+    "dur":  "1y",  // 保障期：1y 一年 / 2y 兩年 / 6m 半年
+    "age":  "12至40歲",  // 受保年齡
+    "med": 0, "acc": 600000, "tui": 120000, "edu": 150000,  // 保障額：醫療/意外/學費/教育基金
+    "leaflet": "https://www.bocgins.com/FileStatic//Product_Leaflet/_Direct_and_agency//GoStudyStudentInsuranceLeafletTC.pdf",  // 產品單張 PDF
+    "policy":  "https://www.bocgins.com/FileStatic//Policy/_Policy/_Travel_and_Leisure//GoStudyStudentInsurancePlanPolicyTC.pdf"   // 保單條款 PDF
+  },
+  /* ═══════════════════════════════════════════════════════════════
+     Starr「智樂遊」海外留學生保險 — 榮譽計劃
+     ═══════════════════════════════════════════════════════════════ */
+  {
+    /* ★ 常改欄位（PCT 日常主要改呢 5 行）──────────────────────── */
+    "price": 2200,      // 每年原價 HK$（淨數字，唔好加 $ 或逗號）
+    "disc":  1980,      // 折扣價 HK$（有折扣先填數字；冇折扣 → null）
+    "promo": "MHSM10",  // 優惠碼（冇 → null；有 → 加引號，例 "MH10ASAP"）
+    "badge": "",        // 角標（冇 → 空引號 ""；例 "人氣之選"）
+    "url":   "https://moneyherob2c.starrinsurance.com.hk/hk_starr_insurance/insurance_detail/127654?_curcid=16349&PromotionCode=MHSM10",
+    /* ── 以下較少改動 ────────────────────────────────────────── */
+    "id":   "starr-honor",  // 系統編號｜切勿修改
+    "iss":  "starr",  // 保險公司代碼（對應上面名單）
+    "name": "Starr「智樂遊」海外留學生保險 — 榮譽計劃",
+    "dest": "global",  // 目的地：global 全球 / usca 美加 / asia 亞洲
+    "dur":  "1y",  // 保障期：1y 一年 / 2y 兩年 / 6m 半年
+    "age":  "8至32歲",  // 受保年齡
+    "med": 1000000, "acc": 300000, "tui": 0, "edu": 0,  // 保障額：醫療/意外/學費/教育基金
+    "leaflet": "https://www.starrinsurance.com.hk/static/products/pdf/starr_zly_202401.pdf",  // 產品單張 PDF
+    "policy":  "https://www.starrinsurance.com.hk/static/products/pdf/starr_zly_202401.pdf"   // 保單條款 PDF
+  },
+  /* ═══════════════════════════════════════════════════════════════
+     大新學優遊海外留學保障計劃（全球 — 非美加區域）（一年）
+     ═══════════════════════════════════════════════════════════════ */
+  {
+    /* ★ 常改欄位（PCT 日常主要改呢 5 行）──────────────────────── */
+    "price": 3700,      // 每年原價 HK$（淨數字，唔好加 $ 或逗號）
+    "disc":  2960,      // 折扣價 HK$（有折扣先填數字；冇折扣 → null）
+    "promo": "MH26Q3OS", // 優惠碼（冇 → null；有 → 加引號，例 "MH10ASAP"）
+    "badge": "",        // 角標（冇 → 空引號 ""；例 "人氣之選"）
+    "url":   "https://www.dahsinginsurance.com/?PromoCode=MoneyHero_OS",
+    /* ── 以下較少改動 ────────────────────────────────────────── */
+    "id":   "dahsing-nonusca-1y",  // 系統編號｜切勿修改
+    "iss":  "dahsing",  // 保險公司代碼（對應上面名單）
+    "name": "大新學優遊海外留學保障計劃（全球 — 非美加區域）（一年）",
+    "dest": "global",  // 目的地：global 全球 / usca 美加 / asia 亞洲
+    "dur":  "1y",  // 保障期：1y 一年 / 2y 兩年 / 6m 半年
+    "age":  "10至55歲",  // 受保年齡
+    "med": 2000000, "acc": 1500000, "tui": 180000, "edu": 300000,  // 保障額：醫療/意外/學費/教育基金
+    "leaflet": "https://www.dahsinginsurance.com/b2c/api/fileCenter/file/QGK5GUBL/QGK5GUBL.pdf",  // 產品單張 PDF
+    "policy":  "https://www.dahsinginsurance.com/b2c/api/fileCenter/file/16ICIDQE/16ICIDQE.pdf"   // 保單條款 PDF
+  },
+  /* ═══════════════════════════════════════════════════════════════
+     保特海外留學保險 B（亞洲）
+     ═══════════════════════════════════════════════════════════════ */
+  {
+    /* ★ 常改欄位（PCT 日常主要改呢 5 行）──────────────────────── */
+    "price": 3503,      // 每年原價 HK$（淨數字，唔好加 $ 或逗號）
+    "disc":  3153,      // 折扣價 HK$（有折扣先填數字；冇折扣 → null）
+    "promo": "MH10OSC", // 優惠碼（冇 → null；有 → 加引號，例 "MH10ASAP"）
+    "badge": "",        // 角標（冇 → 空引號 ""；例 "人氣之選"）
+    "url":   "https://ecommerce.bolttechinsurance.hk/zh-hk/overseas-student-insurance?utm_source=moneyhero&pc=MH10OSC",
+    /* ── 以下較少改動 ────────────────────────────────────────── */
+    "id":   "bolttech-b-asia",  // 系統編號｜切勿修改
+    "iss":  "bolttech",  // 保險公司代碼（對應上面名單）
+    "name": "保特海外留學保險 B（亞洲）",
+    "dest": "asia",  // 目的地：global 全球 / usca 美加 / asia 亞洲
+    "dur":  "1y",  // 保障期：1y 一年 / 2y 兩年 / 6m 半年
+    "age":  "未有列明",  // 受保年齡
+    "med": 1000000, "acc": 1000000, "tui": 0, "edu": 200000,  // 保障額：醫療/意外/學費/教育基金
+    "leaflet": "https://bolttechinsurance.hk/brochure/OverseasStudyCare.pdf",  // 產品單張 PDF
+    "policy":  "https://bolttechinsurance.hk/policyprovisions/OverseasStudyCareInsurance/POSP.2023.08.pdf"   // 保單條款 PDF
+  },
+  /* ═══════════════════════════════════════════════════════════════
+     大新學優遊海外留學保障計劃（全球 — 非美加區域）（兩年）
+     ═══════════════════════════════════════════════════════════════ */
+  {
+    /* ★ 常改欄位（PCT 日常主要改呢 5 行）──────────────────────── */
+    "price": 7200,      // 每年原價 HK$（淨數字，唔好加 $ 或逗號）
+    "disc":  5760,      // 折扣價 HK$（有折扣先填數字；冇折扣 → null）
+    "promo": "MH26Q3OS", // 優惠碼（冇 → null；有 → 加引號，例 "MH10ASAP"）
+    "badge": "",        // 角標（冇 → 空引號 ""；例 "人氣之選"）
+    "url":   "https://www.dahsinginsurance.com/?PromoCode=MoneyHero_OS",
+    /* ── 以下較少改動 ────────────────────────────────────────── */
+    "id":   "dahsing-nonusca-1y-b",  // 系統編號｜切勿修改
+    "iss":  "dahsing",  // 保險公司代碼（對應上面名單）
+    "name": "大新學優遊海外留學保障計劃（全球 — 非美加區域）（兩年）",
+    "dest": "global",  // 目的地：global 全球 / usca 美加 / asia 亞洲
+    "dur":  "2y",  // 保障期：1y 一年 / 2y 兩年 / 6m 半年
+    "age":  "10至55歲",  // 受保年齡
+    "med": 2000000, "acc": 1500000, "tui": 180000, "edu": 300000,  // 保障額：醫療/意外/學費/教育基金
+    "leaflet": "https://www.dahsinginsurance.com/b2c/api/fileCenter/file/QGK5GUBL/QGK5GUBL.pdf",  // 產品單張 PDF
+    "policy":  "https://www.dahsinginsurance.com/b2c/api/fileCenter/file/16ICIDQE/16ICIDQE.pdf"   // 保單條款 PDF
+  },
+  /* ═══════════════════════════════════════════════════════════════
+     大新學優遊海外留學保障計劃（全球）（兩年）
+     ═══════════════════════════════════════════════════════════════ */
+  {
+    /* ★ 常改欄位（PCT 日常主要改呢 5 行）──────────────────────── */
+    "price": 9200,      // 每年原價 HK$（淨數字，唔好加 $ 或逗號）
+    "disc":  7360,      // 折扣價 HK$（有折扣先填數字；冇折扣 → null）
+    "promo": "MH26Q3OS", // 優惠碼（冇 → null；有 → 加引號，例 "MH10ASAP"）
+    "badge": "",        // 角標（冇 → 空引號 ""；例 "人氣之選"）
+    "url":   "https://www.dahsinginsurance.com/?PromoCode=MoneyHero_OS",
+    /* ── 以下較少改動 ────────────────────────────────────────── */
+    "id":   "dahsing-global-2y",  // 系統編號｜切勿修改
+    "iss":  "dahsing",  // 保險公司代碼（對應上面名單）
+    "name": "大新學優遊海外留學保障計劃（全球）（兩年）",
+    "dest": "global",  // 目的地：global 全球 / usca 美加 / asia 亞洲
+    "destLabel": "全球",  // 卡片徽章顯示文字（覆蓋預設；淨係呢個計劃有）
+    "dur":  "2y",  // 保障期：1y 一年 / 2y 兩年 / 6m 半年
+    "age":  "10至55歲",  // 受保年齡
+    "med": 2000000, "acc": 1500000, "tui": 180000, "edu": 300000,  // 保障額：醫療/意外/學費/教育基金
+    "leaflet": "https://www.dahsinginsurance.com/b2c/api/fileCenter/file/QGK5GUBL/QGK5GUBL.pdf",  // 產品單張 PDF
+    "policy":  "https://www.dahsinginsurance.com/b2c/api/fileCenter/file/16ICIDQE/16ICIDQE.pdf"   // 保單條款 PDF
+  },
+  /* ═══════════════════════════════════════════════════════════════
+     保特海外留學保險 A（全球）
+     ═══════════════════════════════════════════════════════════════ */
+  {
+    /* ★ 常改欄位（PCT 日常主要改呢 5 行）──────────────────────── */
+    "price": 8008,      // 每年原價 HK$（淨數字，唔好加 $ 或逗號）
+    "disc":  7207,      // 折扣價 HK$（有折扣先填數字；冇折扣 → null）
+    "promo": "MH10OSC", // 優惠碼（冇 → null；有 → 加引號，例 "MH10ASAP"）
+    "badge": "",        // 角標（冇 → 空引號 ""；例 "人氣之選"）
+    "url":   "https://ecommerce.bolttechinsurance.hk/zh-hk/overseas-student-insurance?utm_source=moneyhero&pc=MH10OSC",
+    /* ── 以下較少改動 ────────────────────────────────────────── */
+    "id":   "bolttech-a-global",  // 系統編號｜切勿修改
+    "iss":  "bolttech",  // 保險公司代碼（對應上面名單）
+    "name": "保特海外留學保險 A（全球）",
+    "dest": "global",  // 目的地：global 全球 / usca 美加 / asia 亞洲
+    "dur":  "1y",  // 保障期：1y 一年 / 2y 兩年 / 6m 半年
+    "age":  "未有列明",  // 受保年齡
+    "med": 1000000, "acc": 1000000, "tui": 30000, "edu": 350000,  // 保障額：醫療/意外/學費/教育基金
+    "leaflet": "https://bolttechinsurance.hk/brochure/OverseasStudyCare.pdf",  // 產品單張 PDF
+    "policy":  "https://bolttechinsurance.hk/policyprovisions/OverseasStudyCareInsurance/POSP.2023.08.pdf"   // 保單條款 PDF
+  },
+  /* ═══════════════════════════════════════════════════════════════
+     中銀「學宜無憂」留學保險基本計劃（半年）
+     ═══════════════════════════════════════════════════════════════ */
+  {
+    /* ★ 常改欄位（PCT 日常主要改呢 5 行）──────────────────────── */
+    "price": 1600,      // 每年原價 HK$（淨數字，唔好加 $ 或逗號）
+    "disc":  1520,      // 折扣價 HK$（有折扣先填數字；冇折扣 → null）
+    "promo": "MONEYH",  // 優惠碼（冇 → null；有 → 加引號，例 "MH10ASAP"）
+    "badge": "",        // 角標（冇 → 空引號 ""；例 "人氣之選"）
+    "url":   "https://www.bocgins.com/ws/gostudy/index.html#/?channelCode=MONEY&promoCode=MONEYH",
+    /* ── 以下較少改動 ────────────────────────────────────────── */
+    "id":   "boc-basic-6m",  // 系統編號｜切勿修改
+    "iss":  "boc",  // 保險公司代碼（對應上面名單）
+    "name": "中銀「學宜無憂」留學保險基本計劃（半年）",
+    "dest": "global",  // 目的地：global 全球 / usca 美加 / asia 亞洲
+    "dur":  "6m",  // 保障期：1y 一年 / 2y 兩年 / 6m 半年
+    "age":  "12至40歲",  // 受保年齡
+    "med": 0, "acc": 600000, "tui": 120000, "edu": 150000,  // 保障額：醫療/意外/學費/教育基金
+    "leaflet": "https://www.bocgins.com/FileStatic//Product_Leaflet/_Direct_and_agency//GoStudyStudentInsuranceLeafletTC.pdf",  // 產品單張 PDF
+    "policy":  "https://www.bocgins.com/FileStatic//Policy/_Policy/_Travel_and_Leisure//GoStudyStudentInsurancePlanPolicyTC.pdf"   // 保單條款 PDF
+  },
+  /* ═══════════════════════════════════════════════════════════════
+     保特海外留學保險 B（全球）
+     ═══════════════════════════════════════════════════════════════ */
+  {
+    /* ★ 常改欄位（PCT 日常主要改呢 5 行）──────────────────────── */
+    "price": 5005,      // 每年原價 HK$（淨數字，唔好加 $ 或逗號）
+    "disc":  4504,      // 折扣價 HK$（有折扣先填數字；冇折扣 → null）
+    "promo": "MH10OSC", // 優惠碼（冇 → null；有 → 加引號，例 "MH10ASAP"）
+    "badge": "",        // 角標（冇 → 空引號 ""；例 "人氣之選"）
+    "url":   "https://ecommerce.bolttechinsurance.hk/zh-hk/overseas-student-insurance?utm_source=moneyhero&pc=MH10OSC",
+    /* ── 以下較少改動 ────────────────────────────────────────── */
+    "id":   "bolttech-b-global",  // 系統編號｜切勿修改
+    "iss":  "bolttech",  // 保險公司代碼（對應上面名單）
+    "name": "保特海外留學保險 B（全球）",
+    "dest": "global",  // 目的地：global 全球 / usca 美加 / asia 亞洲
+    "dur":  "1y",  // 保障期：1y 一年 / 2y 兩年 / 6m 半年
+    "age":  "未有列明",  // 受保年齡
+    "med": 500000, "acc": 500000, "tui": 0, "edu": 200000,  // 保障額：醫療/意外/學費/教育基金
+    "leaflet": "https://bolttechinsurance.hk/brochure/OverseasStudyCare.pdf",  // 產品單張 PDF
+    "policy":  "https://bolttechinsurance.hk/policyprovisions/OverseasStudyCareInsurance/POSP.2023.08.pdf"   // 保單條款 PDF
+  },
+  /* ═══════════════════════════════════════════════════════════════
+     保特海外留學保險 A（亞洲）
+     ═══════════════════════════════════════════════════════════════ */
+  {
+    /* ★ 常改欄位（PCT 日常主要改呢 5 行）──────────────────────── */
+    "price": 5505,      // 每年原價 HK$（淨數字，唔好加 $ 或逗號）
+    "disc":  4955,      // 折扣價 HK$（有折扣先填數字；冇折扣 → null）
+    "promo": "MH10OSC", // 優惠碼（冇 → null；有 → 加引號，例 "MH10ASAP"）
+    "badge": "",        // 角標（冇 → 空引號 ""；例 "人氣之選"）
+    "url":   "https://ecommerce.bolttechinsurance.hk/zh-hk/overseas-student-insurance?utm_source=moneyhero&pc=MH10OSC",
+    /* ── 以下較少改動 ────────────────────────────────────────── */
+    "id":   "bolttech-a-asia",  // 系統編號｜切勿修改
+    "iss":  "bolttech",  // 保險公司代碼（對應上面名單）
+    "name": "保特海外留學保險 A（亞洲）",
+    "dest": "asia",  // 目的地：global 全球 / usca 美加 / asia 亞洲
+    "dur":  "1y",  // 保障期：1y 一年 / 2y 兩年 / 6m 半年
+    "age":  "未有列明",  // 受保年齡
+    "med": 500000, "acc": 500000, "tui": 30000, "edu": 350000,  // 保障額：醫療/意外/學費/教育基金
+    "leaflet": "https://bolttechinsurance.hk/brochure/OverseasStudyCare.pdf",  // 產品單張 PDF
+    "policy":  "https://bolttechinsurance.hk/policyprovisions/OverseasStudyCareInsurance/POSP.2023.08.pdf"   // 保單條款 PDF
+  },
+  /* ═══════════════════════════════════════════════════════════════
+     蘇黎世「智學保+」海外留學保險計劃 — 短期課程計劃（半年）
+     ═══════════════════════════════════════════════════════════════ */
+  {
+    /* ★ 常改欄位（PCT 日常主要改呢 5 行）──────────────────────── */
+    "price": 3800,      // 每年原價 HK$（淨數字，唔好加 $ 或逗號）
+    "disc":  null,      // 折扣價 HK$（有折扣先填數字；冇折扣 → null）
+    "promo": null,      // 優惠碼（冇 → null；有 → 加引號，例 "MH10ASAP"）
+    "badge": "",        // 角標（冇 → 空引號 ""；例 "人氣之選"）
+    "url":   "https://gi.zurich.com.hk/page/public/zh/hk/process/enterPublic/TravelPlusProcess?productId=TravelPlus&data=hh8sjeWWHJCQbuzzUCflNAyGp1zohPXVlMznrk-Fjez2t6z0r-UTu-_C-IVHTMv85D-hJiCEEAb_AvUwgqqzdvNpoo1pETE83xzw6-1lsrrLMz2guHjJ6s2LD8gk6Xsy38_FCHXYDHMGahSrqxDN4sVWUM877bRDlpqcO7GQxAR5-umCXkxH42yNw56qN6kW_ElOrKsgmp6L-O8zJ8TorJYzVbcK8EVtcIdI70ZGDCuKBki5ZJe4ClT4C3RJcdmM5OzZ65MrppnuWCHWkL2kYA&initProcessAction=Step1CreateQuoteTravelPlus",
+    /* ── 以下較少改動 ────────────────────────────────────────── */
+    "id":   "zurich-short-6m",  // 系統編號｜切勿修改
+    "iss":  "zurich",  // 保險公司代碼（對應上面名單）
+    "name": "蘇黎世「智學保+」海外留學保險計劃 — 短期課程計劃（半年）",
+    "dest": "global",  // 目的地：global 全球 / usca 美加 / asia 亞洲
+    "dur":  "6m",  // 保障期：1y 一年 / 2y 兩年 / 6m 半年
+    "age":  "7至70歲",  // 受保年齡
+    "med": 1000000, "acc": 1000000, "tui": 0, "edu": 50000,  // 保障額：醫療/意外/學費/教育基金
+    "leaflet": "https://edge.sitecorecloud.io/zurichinsurf8c0-zwpshared-prod-d824/media/project/zurich-headless/hongkong/docs/individuals/travel-insurance/studysmartplus-insurance-plan/product-brochure-2022oct-tc.pdf",  // 產品單張 PDF
+    "policy":  "https://info.zurich.com.hk/policy/TVA-002-10-2022.pdf"   // 保單條款 PDF
+  },
+  /* ═══════════════════════════════════════════════════════════════
+     蘇黎世「智學保+」海外留學保險計劃 — 基本計劃（一年）
+     ═══════════════════════════════════════════════════════════════ */
+  {
+    /* ★ 常改欄位（PCT 日常主要改呢 5 行）──────────────────────── */
+    "price": 2750,      // 每年原價 HK$（淨數字，唔好加 $ 或逗號）
+    "disc":  null,      // 折扣價 HK$（有折扣先填數字；冇折扣 → null）
+    "promo": null,      // 優惠碼（冇 → null；有 → 加引號，例 "MH10ASAP"）
+    "badge": "",        // 角標（冇 → 空引號 ""；例 "人氣之選"）
+    "url":   "https://gi.zurich.com.hk/page/public/zh/hk/process/enterPublic/TravelPlusProcess?productId=TravelPlus&data=hh8sjeWWHJCQbuzzUCflNAyGp1zohPXVlMznrk-Fjez2t6z0r-UTu-_C-IVHTMv85D-hJiCEEAb_AvUwgqqzdvNpoo1pETE83xzw6-1lsrrLMz2guHjJ6s2LD8gk6Xsy38_FCHXYDHMGahSrqxDN4sVWUM877bRDlpqcO7GQxAR5-umCXkxH42yNw56qN6kW_ElOrKsgmp6L-O8zJ8TorJYzVbcK8EVtcIdI70ZGDCuKBki5ZJe4ClT4C3RJcdmM5OzZ65MrppnuWCHWkL2kYA&initProcessAction=Step1CreateQuoteTravelPlus",
+    /* ── 以下較少改動 ────────────────────────────────────────── */
+    "id":   "zurich-basic-1y",  // 系統編號｜切勿修改
+    "iss":  "zurich",  // 保險公司代碼（對應上面名單）
+    "name": "蘇黎世「智學保+」海外留學保險計劃 — 基本計劃（一年）",
+    "dest": "global",  // 目的地：global 全球 / usca 美加 / asia 亞洲
+    "dur":  "1y",  // 保障期：1y 一年 / 2y 兩年 / 6m 半年
+    "age":  "7至70歲",  // 受保年齡
+    "med": 0, "acc": 500000, "tui": 100000, "edu": 50000,  // 保障額：醫療/意外/學費/教育基金
+    "leaflet": "https://edge.sitecorecloud.io/zurichinsurf8c0-zwpshared-prod-d824/media/project/zurich-headless/hongkong/docs/individuals/travel-insurance/studysmartplus-insurance-plan/product-brochure-2022oct-tc.pdf",  // 產品單張 PDF
+    "policy":  "https://info.zurich.com.hk/policy/TVA-002-10-2022.pdf"   // 保單條款 PDF
+  },
+  /* ═══════════════════════════════════════════════════════════════
+     Starr「智樂遊」海外留學生保險 — 優秀計劃
+     ═══════════════════════════════════════════════════════════════ */
+  {
+    /* ★ 常改欄位（PCT 日常主要改呢 5 行）──────────────────────── */
+    "price": 5000,      // 每年原價 HK$（淨數字，唔好加 $ 或逗號）
+    "disc":  4500,      // 折扣價 HK$（有折扣先填數字；冇折扣 → null）
+    "promo": "MHSM10",  // 優惠碼（冇 → null；有 → 加引號，例 "MH10ASAP"）
+    "badge": "",        // 角標（冇 → 空引號 ""；例 "人氣之選"）
+    "url":   "https://moneyherob2c.starrinsurance.com.hk/hk_starr_insurance/insurance_detail/127654?_curcid=16349&PromotionCode=MHSM10",
+    /* ── 以下較少改動 ────────────────────────────────────────── */
+    "id":   "starr-excellent",  // 系統編號｜切勿修改
+    "iss":  "starr",  // 保險公司代碼（對應上面名單）
+    "name": "Starr「智樂遊」海外留學生保險 — 優秀計劃",
+    "dest": "global",  // 目的地：global 全球 / usca 美加 / asia 亞洲
+    "dur":  "1y",  // 保障期：1y 一年 / 2y 兩年 / 6m 半年
+    "age":  "8至32歲",  // 受保年齡
+    "med": 2000000, "acc": 750000, "tui": 100000, "edu": 0,  // 保障額：醫療/意外/學費/教育基金
+    "leaflet": "https://www.starrinsurance.com.hk/static/products/pdf/starr_zly_202401.pdf",  // 產品單張 PDF
+    "policy":  "https://www.starrinsurance.com.hk/static/products/pdf/starr_zly_202401.pdf"   // 保單條款 PDF
+  },
+  /* ═══════════════════════════════════════════════════════════════
+     Starr「智樂遊」海外留學生保險 — 卓越計劃
+     ═══════════════════════════════════════════════════════════════ */
+  {
+    /* ★ 常改欄位（PCT 日常主要改呢 5 行）──────────────────────── */
+    "price": 3000,      // 每年原價 HK$（淨數字，唔好加 $ 或逗號）
+    "disc":  2700,      // 折扣價 HK$（有折扣先填數字；冇折扣 → null）
+    "promo": "MHSM10",  // 優惠碼（冇 → null；有 → 加引號，例 "MH10ASAP"）
+    "badge": "",        // 角標（冇 → 空引號 ""；例 "人氣之選"）
+    "url":   "https://moneyherob2c.starrinsurance.com.hk/hk_starr_insurance/insurance_detail/127654?_curcid=16349&PromotionCode=MHSM10",
+    /* ── 以下較少改動 ────────────────────────────────────────── */
+    "id":   "starr-superior",  // 系統編號｜切勿修改
+    "iss":  "starr",  // 保險公司代碼（對應上面名單）
+    "name": "Starr「智樂遊」海外留學生保險 — 卓越計劃",
+    "dest": "global",  // 目的地：global 全球 / usca 美加 / asia 亞洲
+    "dur":  "1y",  // 保障期：1y 一年 / 2y 兩年 / 6m 半年
+    "age":  "8至32歲",  // 受保年齡
+    "med": 1500000, "acc": 500000, "tui": 0, "edu": 0,  // 保障額：醫療/意外/學費/教育基金
+    "leaflet": "https://www.starrinsurance.com.hk/static/products/pdf/starr_zly_202401.pdf",  // 產品單張 PDF
+    "policy":  "https://www.starrinsurance.com.hk/static/products/pdf/starr_zly_202401.pdf"   // 保單條款 PDF
+  },
+  /* ═══════════════════════════════════════════════════════════════
+     蘇黎世「智學保+」海外留學保險計劃 — 基本計劃（兩年）
+     ═══════════════════════════════════════════════════════════════ */
+  {
+    /* ★ 常改欄位（PCT 日常主要改呢 5 行）──────────────────────── */
+    "price": 4670,      // 每年原價 HK$（淨數字，唔好加 $ 或逗號）
+    "disc":  null,      // 折扣價 HK$（有折扣先填數字；冇折扣 → null）
+    "promo": null,      // 優惠碼（冇 → null；有 → 加引號，例 "MH10ASAP"）
+    "badge": "",        // 角標（冇 → 空引號 ""；例 "人氣之選"）
+    "url":   "https://gi.zurich.com.hk/page/public/zh/hk/process/enterPublic/TravelPlusProcess?productId=TravelPlus&data=hh8sjeWWHJCQbuzzUCflNAyGp1zohPXVlMznrk-Fjez2t6z0r-UTu-_C-IVHTMv85D-hJiCEEAb_AvUwgqqzdvNpoo1pETE83xzw6-1lsrrLMz2guHjJ6s2LD8gk6Xsy38_FCHXYDHMGahSrqxDN4sVWUM877bRDlpqcO7GQxAR5-umCXkxH42yNw56qN6kW_ElOrKsgmp6L-O8zJ8TorJYzVbcK8EVtcIdI70ZGDCuKBki5ZJe4ClT4C3RJcdmM5OzZ65MrppnuWCHWkL2kYA&initProcessAction=Step1CreateQuoteTravelPlus",
+    /* ── 以下較少改動 ────────────────────────────────────────── */
+    "id":   "zurich-basic-2y",  // 系統編號｜切勿修改
+    "iss":  "zurich",  // 保險公司代碼（對應上面名單）
+    "name": "蘇黎世「智學保+」海外留學保險計劃 — 基本計劃（兩年）",
+    "dest": "global",  // 目的地：global 全球 / usca 美加 / asia 亞洲
+    "dur":  "2y",  // 保障期：1y 一年 / 2y 兩年 / 6m 半年
+    "age":  "7至70歲",  // 受保年齡
+    "med": 0, "acc": 500000, "tui": 100000, "edu": 50000,  // 保障額：醫療/意外/學費/教育基金
+    "leaflet": "https://edge.sitecorecloud.io/zurichinsurf8c0-zwpshared-prod-d824/media/project/zurich-headless/hongkong/docs/individuals/travel-insurance/studysmartplus-insurance-plan/product-brochure-2022oct-tc.pdf",  // 產品單張 PDF
+    "policy":  "https://info.zurich.com.hk/policy/TVA-002-10-2022.pdf"   // 保單條款 PDF
+  },
+  /* ═══════════════════════════════════════════════════════════════
+     藍十字 智醒海外升學保智尊計劃（兩年）
+     ═══════════════════════════════════════════════════════════════ */
+  {
+    /* ★ 常改欄位（PCT 日常主要改呢 5 行）──────────────────────── */
+    "price": 10600,     // 每年原價 HK$（淨數字，唔好加 $ 或逗號）
+    "disc":  9010,      // 折扣價 HK$（有折扣先填數字；冇折扣 → null）
+    "promo": "moneyhero", // 優惠碼（冇 → null；有 → 加引號，例 "MH10ASAP"）
+    "badge": "",        // 角標（冇 → 空引號 ""；例 "人氣之選"）
+    "url":   "https://www.bluecross.com.hk/ch/Overseas-StudySafe/Application?promoCode=moneyhero&utm_source=MoneyHero&utm_medium=listing&utm_campaign=GI2H26",
+    /* ── 以下較少改動 ────────────────────────────────────────── */
+    "id":   "bluecross-prestige-2y",  // 系統編號｜切勿修改
+    "iss":  "bluecross",  // 保險公司代碼（對應上面名單）
+    "name": "藍十字 智醒海外升學保智尊計劃（兩年）",
+    "dest": "global",  // 目的地：global 全球 / usca 美加 / asia 亞洲
+    "dur":  "2y",  // 保障期：1y 一年 / 2y 兩年 / 6m 半年
+    "age":  "7至35歲",  // 受保年齡
+    "med": 1200000, "acc": 1200000, "tui": 80000, "edu": 300000,  // 保障額：醫療/意外/學費/教育基金
+    "leaflet": "https://ap.bluecross.com.hk/shared/leaflets/Overseas_StudySafe_Insurance_Leaflet.pdf?q=Friday,%20June%2026,%20202612:36:02%20PM",  // 產品單張 PDF
+    "policy":  "https://ap.bluecross.com.hk/shared/tncs/Overseas_StudySafe_Insurance_TnC.pdf?q=Friday,%20June%2026,%20202612:37:08%20PM"   // 保單條款 PDF
+  },
+  /* ═══════════════════════════════════════════════════════════════
+     藍十字 智醒海外升學保智選計劃（一年）
+     ═══════════════════════════════════════════════════════════════ */
+  {
+    /* ★ 常改欄位（PCT 日常主要改呢 5 行）──────────────────────── */
+    "price": 2800,      // 每年原價 HK$（淨數字，唔好加 $ 或逗號）
+    "disc":  2520,      // 折扣價 HK$（有折扣先填數字；冇折扣 → null）
+    "promo": "moneyhero", // 優惠碼（冇 → null；有 → 加引號，例 "MH10ASAP"）
+    "badge": "",        // 角標（冇 → 空引號 ""；例 "人氣之選"）
+    "url":   "https://www.bluecross.com.hk/ch/Overseas-StudySafe/Application?promoCode=moneyhero&utm_source=MoneyHero&utm_medium=listing&utm_campaign=GI2H26",
+    /* ── 以下較少改動 ────────────────────────────────────────── */
+    "id":   "bluecross-select-1y",  // 系統編號｜切勿修改
+    "iss":  "bluecross",  // 保險公司代碼（對應上面名單）
+    "name": "藍十字 智醒海外升學保智選計劃（一年）",
+    "dest": "global",  // 目的地：global 全球 / usca 美加 / asia 亞洲
+    "dur":  "1y",  // 保障期：1y 一年 / 2y 兩年 / 6m 半年
+    "age":  "7至35歲",  // 受保年齡
+    "med": 0, "acc": 1200000, "tui": 80000, "edu": 300000,  // 保障額：醫療/意外/學費/教育基金
+    "leaflet": "https://ap.bluecross.com.hk/shared/leaflets/Overseas_StudySafe_Insurance_Leaflet.pdf?q=Friday,%20June%2026,%20202612:36:02%20PM",  // 產品單張 PDF
+    "policy":  "https://ap.bluecross.com.hk/shared/tncs/Overseas_StudySafe_Insurance_TnC.pdf?q=Friday,%20June%2026,%20202612:37:08%20PM"   // 保單條款 PDF
+  },
+  /* ═══════════════════════════════════════════════════════════════
+     藍十字 智醒海外升學保智選計劃（兩年）
+     ═══════════════════════════════════════════════════════════════ */
+  {
+    /* ★ 常改欄位（PCT 日常主要改呢 5 行）──────────────────────── */
+    "price": 4900,      // 每年原價 HK$（淨數字，唔好加 $ 或逗號）
+    "disc":  4410,      // 折扣價 HK$（有折扣先填數字；冇折扣 → null）
+    "promo": "moneyhero", // 優惠碼（冇 → null；有 → 加引號，例 "MH10ASAP"）
+    "badge": "",        // 角標（冇 → 空引號 ""；例 "人氣之選"）
+    "url":   "https://www.bluecross.com.hk/ch/Overseas-StudySafe/Application?promoCode=moneyhero&utm_source=MoneyHero&utm_medium=listing&utm_campaign=GI2H26",
+    /* ── 以下較少改動 ────────────────────────────────────────── */
+    "id":   "bluecross-select-2y",  // 系統編號｜切勿修改
+    "iss":  "bluecross",  // 保險公司代碼（對應上面名單）
+    "name": "藍十字 智醒海外升學保智選計劃（兩年）",
+    "dest": "global",  // 目的地：global 全球 / usca 美加 / asia 亞洲
+    "dur":  "2y",  // 保障期：1y 一年 / 2y 兩年 / 6m 半年
+    "age":  "7至35歲",  // 受保年齡
+    "med": 0, "acc": 1200000, "tui": 80000, "edu": 300000,  // 保障額：醫療/意外/學費/教育基金
+    "leaflet": "https://ap.bluecross.com.hk/shared/leaflets/Overseas_StudySafe_Insurance_Leaflet.pdf?q=Friday,%20June%2026,%20202612:36:02%20PM",  // 產品單張 PDF
+    "policy":  "https://ap.bluecross.com.hk/shared/tncs/Overseas_StudySafe_Insurance_TnC.pdf?q=Friday,%20June%2026,%20202612:37:08%20PM"   // 保單條款 PDF
+  }
+];
+
+
+/* ══════════════════════════════════════════════════════════════════════
+   常見問題 FAQ　—　PCT 團隊編輯呢個部分就得
+   ══════════════════════════════════════════════════════════════════════
+
+   ┌─ 點改 ─────────────────────────────────────────────────────────┐
+   │ 1. q: 係問題，a: 係答案，淨係改單引號 ' ' 入面嘅字。            │
+   │ 2. 每項結尾嘅逗號「,」要保留，最後一項唔使。                     │
+   │ 3. 唔好喺內容入面用單引號 ' ，要用「」或全形引號。               │
+   │ 4. 加／減問題：直接複製一整行，跟住改文字。頁面會自動編號。      │
+   │ 5. 改完記得同步更新 head.html 入面嘅 FAQPage JSON-LD（SEO 用），  │
+   │    兩邊文字必須一模一樣，否則影響 Google 搜尋結果顯示。          │
+   └────────────────────────────────────────────────────────────────┘
+
+   內容版本：2026年7月16日《海外升學保險 RP｜產品卡後正文及 FAQ 上稿版》
+   ══════════════════════════════════════════════════════════════════════ */
+var FAQS=[
+ {q:'海外升學保險同旅遊保險有咩分別？',a:'旅遊保險主要保障短期旅程，單次旅程通常設有最長保障日數；海外升學保險則按較長的學習期設計。除海外醫療、意外及財物保障外，部分留學保險亦可涵蓋學費損失、教育中斷或海外住所財物。實際保障期及項目須以保單條款為準。'},
+ {q:'美國或加拿大留學保險應該點揀？',a:'前往美國或加拿大升學，應先選擇受保地區明確涵蓋美國或加拿大的計劃，再比較醫療保障限額、緊急支援、人身意外、學費損失及個人財物保障。部分保險公司會為美加地區設立獨立計劃或保費，投保前應核對產品卡及保單條款。'},
+ {q:'英國留學保險及澳洲留學保險有咩要留意？',a:'英國學生簽證申請人一般須按規定繳付IHS，即使持有私人醫療保險通常仍須繳付；澳洲Student visa申請人及同行家屬一般須持有由認可澳洲保險公司提供的OSHC，少數豁免除外。香港海外升學保險可補充其他留學風險，但不應視為IHS或OSHC的替代品。'},
+ {q:'留學保險保費點解有原價同優惠價？',a:'部分保險公司會為經MoneyHero投保的指定海外升學保險提供專屬折扣或限時優惠，因此產品卡可能同時列出標準保費及優惠保費。優惠內容、推廣期、適用計劃及資格可能隨時調整，實際保費及條款應以產品卡、保險公司網站及推廣條款為準。'},
+ {q:'經MoneyHero網上投保留學保險安全嗎？',a:'MoneyHero Insurance Brokers Limited為香港保險業監管局持牌保險經紀公司（牌照號碼FB1740）。你可先在MoneyHero比較不同留學保障及保費，再按「立即投保」前往相關保險公司的申請頁面。實際申請、核保及保單簽發安排以保險公司為準。'},
+ {q:'留學保險可唔可以保障實習、兼職或旅遊？',a:'視乎個別保單條款，部分海外升學保險可能涵蓋升學期間的指定實習、非體力兼職或消閒旅遊，但工作性質、活動類型、目的地及旅程日數可能受到限制。體力勞動、專業運動或高風險活動亦可能屬除外責任，參與前應向保險公司確認。'},
+ {q:'應該幾時購買海外升學保險？',a:'學生可在確認課程及出發日期後，預留時間比較及完成投保，並確保保障期配合實際留學安排。不同計劃的投保期限及生效條件各有不同，部分計劃可能要求學生離開香港前完成投保。如簽證或院校另有指定醫療保障要求，亦應按相關規定另外辦理。'}
+];
+</script>

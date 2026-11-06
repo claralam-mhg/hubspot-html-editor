@@ -528,6 +528,8 @@
         h += '<button class="btn sm" id="stagAdd">Add tag</button>';
       } else if (f.type === 'toggle') {
         h += '<label class="check"><input type="checkbox" data-toggle="' + f.path + '"' + (val !== false ? ' checked' : '') + '> ' + (val !== false ? 'On — shown on the page' : 'Off — hidden from the page') + '</label>';
+      } else if (f.type === 'select') {
+        h += '<select data-path="' + f.path + '" data-type="select">' + f.options.map(function (op) { return '<option value="' + esc(op.value) + '"' + (op.value === val ? ' selected' : '') + '>' + esc(op.label) + ' (' + esc(op.value) + ')</option>'; }).join('') + '</select>';
       } else if (f.type === 'textarea') h += '<textarea data-path="' + f.path + '">' + esc(val) + '</textarea>';
       else if (f.type === 'number' || f.type === 'number-null') h += '<input type="number" min="0" step="any" data-path="' + f.path + '" data-type="' + f.type + '" value="' + (typeof val === 'number' ? val : '') + '">';
       else h += '<input type="text" data-path="' + f.path + '" data-type="' + (f.type || 'text') + '" value="' + esc(val == null ? '' : val) + '">';

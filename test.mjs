@@ -365,6 +365,44 @@ console.log('\nOSI numbers, badges, empty values');
   });
 }
 
+console.log('\nOSI every field editable');
+{
+  const page = PAGES.find(p => p.key === 'osi'), pc = page.data, pdm = page.modules.find(m => m.editor === 'products');
+  const PD = fs.readFileSync(path.join(here, 'fixtures/osi-product-data-2026-11-06.html'), 'utf8'), D = E.load(PD, pc);
+  const formPaths = pc.fields.map(f => f.path);
+  t('every field on every plan is in the form (id stays locked on purpose)', () => {
+    const missing = [...new Set(D.records.flatMap(r => Object.keys(r.data)))].filter(k => k !== 'id' && !formPaths.includes(k));
+    eq(missing.join(), '');
+  });
+  t('insurer names and logos are editable tables', () => {
+    const vs = pdm.vars.map(v => v.v); assert(vs.includes('ISSUERS') && vs.includes('ISSUER_ICON'), vs.join());
+    const o = M.applyVars(PD, [{ v: 'ISSUERS', path: 'starr', value: 'Starr 史帶' }]);
+    eq(runModule(o).ISSUERS.starr, 'Starr 史帶'); eq(E.lineDiff(PD, o).length, 2);
+    const st = { mode: 'form', original: PD, doc: D, order: D.records.map(r => r.id), fields: {}, base: PD, vedits: { 'ISSUERS|starr': { v: 'ISSUERS', path: 'starr', value: 'Starr 史帶' } } };
+    const r = R.review(page, pdm, st); assert(r.res.ok, r.res.errors.join()); assert(r.changes.length > 0, 'no change row');
+  });
+  t('dropdowns offer exactly the allowed destination and period values', () => {
+    pc.fields.filter(f => f.type === 'select').forEach(f => eq(f.options.map(o => o.value).join(), pc.enums[f.path].join(), f.path));
+  });
+  const s = D.records.find(r => r.id === 'starr-excellent').id, plain = D.records.find(r => r.data.destLabel === undefined && r.data.badgeIcon === undefined).id;
+  t('coverage, destination, period, insurer edits → browser sees them, checks pass', () => {
+    const o = E.build(D, { fields: { [s]: { tui: 120000, med: 0, dest: 'usca', dur: '2y', iss: 'axa', age: '8至35歲' } } });
+    const p = runModule(o).P.find(x => x.id === s);
+    eq(p.tui, 120000); eq(p.med, 0); eq(p.dest, 'usca'); eq(p.dur, '2y'); eq(p.iss, 'axa'); eq(p.age, '8至35歲');
+    assert(E.check(PD, o, pc).ok, E.check(PD, o, pc).errors.join());
+    eq(E.lineDiff(PD, o).length, 10, 'only the 5 edited lines change (old + new each)');
+  });
+  t('destination text and badge emoji: added to a plan without them, left alone when empty', () => {
+    eq(E.build(D, { fields: { [plain]: { destLabel: null, badgeIcon: null } } }), PD);
+    const o = E.build(D, { fields: { [plain]: { destLabel: '全球', badgeIcon: '🏷️' } } }), p = runModule(o).P.find(x => x.id === plain);
+    eq(p.destLabel, '全球'); eq(p.badgeIcon, '🏷️'); assert(E.check(PD, o, pc).ok, E.check(PD, o, pc).errors.join());
+  });
+  t('clearing an existing badge emoji → null, card falls back to the default', () => {
+    const m = D.records.find(r => r.data.badgeIcon).id, o = E.build(D, { fields: { [m]: { badgeIcon: null } } });
+    eq(runModule(o).P.find(x => x.id === m).badgeIcon, null); assert(E.check(PD, o, pc).ok, 'check');
+  });
+}
+
 console.log('\nCI premium table formats');
 {
   const page = PAGES.find(p => p.key === 'ci'), pdm = page.modules.find(m => m.editor === 'products');
