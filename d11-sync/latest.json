@@ -1,35 +1,36 @@
 {
- "key": "d050000e",
- "prepared": "2026-11-05T01:31:15.998Z",
- "js": "d050000e",
+ "key": "cf44eba3",
+ "prepared": "2026-11-06T01:31:14.517Z",
+ "js": "cf44eba3",
  "css": null,
  "changes": [
   {
    "name": "Citi Cash Back 信用卡",
    "ch": [
-    "獨家 line: HK$2,300 現金回贈 (經轉數快) → **額外贏 Switch 2／HK$500 惠康券**",
+    "獨家 line: HK$2,500 Apple Store 禮品卡 → **額外贏 Switch 2／HK$500 惠康券**",
     "added: 額外贏 Switch 2／HK$500 惠康券"
    ]
   },
   {
    "name": "Citi Rewards 信用卡",
    "ch": [
-    "獨家 line: HK$2,300 現金回贈 (經轉數快) → **額外贏 Switch 2／HK$500 惠康券**",
+    "獨家 line: HK$2,500 Apple Store 禮品卡 → **額外贏 Switch 2／HK$500 惠康券**",
     "added: 額外贏 Switch 2／HK$500 惠康券"
    ]
   },
   {
    "name": "Citi Rewards 銀聯信用卡",
    "ch": [
-    "獨家 line: HK$2,300 現金回贈 (經轉數快) → **額外贏 Switch 2／HK$500 惠康券**",
+    "獨家 line: HK$2,500 Apple Store 禮品卡 → **額外贏 Switch 2／HK$500 惠康券**",
     "added: 額外贏 Switch 2／HK$500 惠康券"
    ]
   },
   {
    "name": "Citi PremierMiles 信用卡",
    "ch": [
-    "獨家 line: 25,000 Max Miles 飛行里數 → **額外贏 Switch 2／HK$500 惠康券**",
-    "added: 額外贏 Switch 2／HK$500 惠康券"
+    "獨家 line: HK$2,500 Apple Store 禮品卡 → **額外贏 Switch 2／HK$500 惠康券**",
+    "added: 額外贏 Switch 2／HK$500 惠康券 · PHILIPS ADD6920 RO即熱式純淨飲水機",
+    "removed: PHILIPS ADD6920 RO 即熱式純淨飲水機"
    ]
   },
   {
@@ -70,6 +71,7 @@
   {
    "name": "DBS Eminent Visa Signature Card",
    "ch": [
+    "獨家 line: HK$800 Apple Store 禮品卡 → **額外贏 Switch 2／HK$500 惠康券**",
     "added: 額外贏 Switch 2／HK$500 惠康券"
    ]
   },
@@ -103,8 +105,6 @@
   "滙豐Red信用卡: not found on the live listing — left as is."
  ],
  "warnings": [
-  "Ends 11/05 18:00: CITI CoreCard R1 (Flash) — HK$2,300 現金回贈.",
-  "Starts 11/05 18:00: CITI CoreCard (Flash) — HK$2,500 Apple Store 禮品卡. The page follows when the product pages change.",
   "Starts 11/06 12:00: SCB CX T012 (Flash) — HK$1,800 惠康購物現金券. The page follows when the product pages change.",
   "Starts 11/06 12:00: SCB SimplyCash (Flash) — HK$1,500 惠康購物現金券. The page follows when the product pages change."
  ]
