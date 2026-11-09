@@ -1,111 +1,57 @@
 {
- "key": "cf44eba3",
- "prepared": "2026-11-06T01:31:14.517Z",
- "js": "cf44eba3",
+ "key": "49b02cae",
+ "prepared": "2026-11-09T01:49:10.149Z",
+ "js": "49b02cae",
  "css": null,
  "changes": [
   {
-   "name": "Citi Cash Back 信用卡",
-   "ch": [
-    "獨家 line: HK$2,500 Apple Store 禮品卡 → **額外贏 Switch 2／HK$500 惠康券**",
-    "added: 額外贏 Switch 2／HK$500 惠康券"
-   ]
-  },
-  {
-   "name": "Citi Rewards 信用卡",
-   "ch": [
-    "獨家 line: HK$2,500 Apple Store 禮品卡 → **額外贏 Switch 2／HK$500 惠康券**",
-    "added: 額外贏 Switch 2／HK$500 惠康券"
-   ]
-  },
-  {
-   "name": "Citi Rewards 銀聯信用卡",
-   "ch": [
-    "獨家 line: HK$2,500 Apple Store 禮品卡 → **額外贏 Switch 2／HK$500 惠康券**",
-    "added: 額外贏 Switch 2／HK$500 惠康券"
-   ]
-  },
-  {
    "name": "Citi PremierMiles 信用卡",
    "ch": [
-    "獨家 line: HK$2,500 Apple Store 禮品卡 → **額外贏 Switch 2／HK$500 惠康券**",
-    "added: 額外贏 Switch 2／HK$500 惠康券 · PHILIPS ADD6920 RO即熱式純淨飲水機",
+    "獨家 line: HK$2,500 Apple Store 禮品卡 → **25,000 Max Miles 飛行里數**",
+    "added: PHILIPS ADD6920 RO即熱式純淨飲水機",
     "removed: PHILIPS ADD6920 RO 即熱式純淨飲水機"
-   ]
-  },
-  {
-   "name": "渣打國泰Mastercard",
-   "ch": [
-    "獨家 line: HK$900 Apple Store禮品卡 → **額外贏 Switch 2／HK$500 惠康券**",
-    "added: 額外贏 Switch 2／HK$500 惠康券"
-   ]
-  },
-  {
-   "name": "渣打國泰Mastercard - 優先理財",
-   "ch": [
-    "獨家 line: HK$900 Apple Store禮品卡 → **額外贏 Switch 2／HK$500 惠康券**",
-    "added: 額外贏 Switch 2／HK$500 惠康券"
-   ]
-  },
-  {
-   "name": "渣打國泰Mastercard - 優先私人理財",
-   "ch": [
-    "獨家 line: HK$900 Apple Store禮品卡 → **額外贏 Switch 2／HK$500 惠康券**",
-    "added: 額外贏 Switch 2／HK$500 惠康券"
    ]
   },
   {
    "name": "渣打Simply Cash Visa卡",
    "ch": [
-    "獨家 line: HK$800 Apple Store 禮品卡 → **額外贏 Switch 2／HK$500 惠康券**",
-    "added: 額外贏 Switch 2／HK$500 惠康券"
-   ]
-  },
-  {
-   "name": "DBS Eminent Visa Platinum Card",
-   "ch": [
-    "獨家 line: HK$800 Apple Store 禮品卡 → **額外贏 Switch 2／HK$500 惠康券**",
-    "added: 額外贏 Switch 2／HK$500 惠康券"
-   ]
-  },
-  {
-   "name": "DBS Eminent Visa Signature Card",
-   "ch": [
-    "獨家 line: HK$800 Apple Store 禮品卡 → **額外贏 Switch 2／HK$500 惠康券**",
-    "added: 額外贏 Switch 2／HK$500 惠康券"
-   ]
-  },
-  {
-   "name": "DBS Black World Mastercard®",
-   "ch": [
-    "獨家 line: HK$1,700 惠康購物現金券 → **額外贏 Switch 2／HK$500 惠康券**",
-    "added: 額外贏 Switch 2／HK$500 惠康券"
+    "獎賞＋迎新總價值 HK$3,199 → **HK$3,667**",
+    "added: PHILIPS 飛利浦 ADD6920 RO 純淨飲水機（需以指定信用卡以換購價HK$621換領）",
+    "removed: PHILIPS 飛利浦 ADD6920 RO 純淨飲水機 (需以指定信用卡以換購價HK$621換領)"
    ]
   },
   {
    "name": "Mox 信用卡 (CashBack)",
    "ch": [
+    "優惠期至 2026/11/08 → **(no date shown)**",
     "推廣碼 MOXFLASHMH2 removed",
-    "獨家 line: HK$500 現金回贈 (經轉數快) (由MoneyHero送出) +HK$1,800現金獎賞 (由 Mox 送出) + 1% 基本簽賬CashBack MoneyHero獨家迎新優惠（需使用指定邀請碼「MOXPHONEMH」） 或 ^HK$500 現金回贈 (經轉數快) (由MoneyHero送出) + HK$1,000現金獎賞 (由 Mox 送出) MoneyHero獨家迎新優惠（需使用指定邀請碼「MOXFLASHMH2」） → **額外贏 Switch 2／HK$500 惠康券**",
-    "added: 額外贏 Switch 2／HK$500 惠康券 · HK$500 現金回贈 (經轉數快) (由MoneyHero送出) +HK$1,800現金獎賞 (由 Mox 送出) + 1% 基本簽賬CashBack · ^HK$500 現金回贈 (經轉數快) (由MoneyHero送出) + HK$1,000現金獎賞 (由 Mox 送出)",
+    "獎賞＋迎新總價值 HK$2,800 → **HK$2,300**",
+    "獨家 line: HK$500 現金回贈 (經轉數快) (由MoneyHero送出) +HK$1,800現金獎賞 (由 Mox 送出) + 1% 基本簽賬CashBack MoneyHero獨家迎新優惠（需使用指定邀請碼「MOXPHONEMH」） 或 ^HK$500 現金回贈 (經轉數快) (由MoneyHero送出) + HK$1,000現金獎賞 (由 Mox 送出) MoneyHero獨家迎新優惠（需使用指定邀請碼「MOXFLASHMH2」） → **HK$2,300 現金回贈（由MoneyHero + Mox送出）**",
+    "added: HK$2,300 現金回贈（由MoneyHero + Mox送出）",
     "removed: HK$500 現金回贈 (經轉數快) (由MoneyHero送出) +HK$1,800現金獎賞 (由 Mox 送出) + 1% 基本簽賬CashBack MoneyHero獨家迎新優惠（需使用指定邀請碼「MOXPHONEMH」） 或 ^HK$500 現金回贈 (經轉數快) (由MoneyHero送出) + HK$1,000現金獎賞 (由 Mox 送出) MoneyHero獨家迎新優惠（需使用指定邀請碼「MOXFLASHMH2」）"
    ]
   },
   {
    "name": "Mox 信用卡 （「亞洲萬里通」）",
    "ch": [
+    "優惠期至 2026/11/08 → **(no date shown)**",
     "推廣碼 MOXFLASHMH2 removed",
-    "獨家 line: HK$500 現金回贈 (經轉數快) (由MoneyHero送出) +HK$1,800現金獎賞 (由 Mox 送出) + 1% 基本簽賬CashBack MoneyHero獨家迎新優惠（需使用指定邀請碼「MOXPHONEMH」） 或 ^HK$500 現金回贈 (經轉數快) (由MoneyHero送出) + HK$1,000現金獎賞 (由 Mox 送出) MoneyHero獨家迎新優惠（需使用指定邀請碼「MOXFLASHMH2」） → **額外贏 Switch 2／HK$500 惠康券**",
-    "added: 額外贏 Switch 2／HK$500 惠康券 · HK$500 現金回贈 (經轉數快) (由MoneyHero送出) +HK$1,800現金獎賞 (由 Mox 送出) + 1% 基本簽賬CashBack · ^HK$500 現金回贈 (經轉數快) (由MoneyHero送出) + HK$1,000現金獎賞 (由 Mox 送出)",
+    "獎賞＋迎新總價值 HK$2,800 → **HK$2,300**",
+    "獨家 line: HK$500 現金回贈 (經轉數快) (由MoneyHero送出) +HK$1,800現金獎賞 (由 Mox 送出) + 1% 基本簽賬CashBack MoneyHero獨家迎新優惠（需使用指定邀請碼「MOXPHONEMH」） 或 ^HK$500 現金回贈 (經轉數快) (由MoneyHero送出) + HK$1,000現金獎賞 (由 Mox 送出) MoneyHero獨家迎新優惠（需使用指定邀請碼「MOXFLASHMH2」） → **HK$2,300 現金回贈（由MoneyHero + Mox送出）**",
+    "added: HK$2,300 現金回贈（由MoneyHero + Mox送出）",
     "removed: HK$500 現金回贈 (經轉數快) (由MoneyHero送出) +HK$1,800現金獎賞 (由 Mox 送出) + 1% 基本簽賬CashBack MoneyHero獨家迎新優惠（需使用指定邀請碼「MOXPHONEMH」） 或 ^HK$500 現金回贈 (經轉數快) (由MoneyHero送出) + HK$1,000現金獎賞 (由 Mox 送出) MoneyHero獨家迎新優惠（需使用指定邀請碼「MOXFLASHMH2」）"
    ]
   }
  ],
  "notes": [
+  "Mox 信用卡 (CashBack): the listing shows no 獎賞＋迎新總價值 (\"-\"), so the headline HK$2,300 is used. Ask BD to fill it in.",
+  "Mox 信用卡 (CashBack): the product page has no MoneyHero offer, so the listing headline is the gift and no end date is shown. Ask BD for the offer details.",
+  "Mox 信用卡 （「亞洲萬里通」）: the listing shows no 獎賞＋迎新總價值 (\"-\"), so the headline HK$2,300 is used. Ask BD to fill it in.",
+  "Mox 信用卡 （「亞洲萬里通」）: the product page has no MoneyHero offer, so the listing headline is the gift and no end date is shown. Ask BD for the offer details.",
   "滙豐Red信用卡: not found on the live listing — left as is."
  ],
  "warnings": [
-  "Starts 11/06 12:00: SCB CX T012 (Flash) — HK$1,800 惠康購物現金券. The page follows when the product pages change.",
-  "Starts 11/06 12:00: SCB SimplyCash (Flash) — HK$1,500 惠康購物現金券. The page follows when the product pages change."
+  "Ends 11/11 23:59: DBS BWM Only FS (Flash) — HK$1,700 惠康購物現金券.",
+  "Ends 11/11 23:59: DBS Eniment Only (BAU) — HK$800 惠康購物現金券."
  ]
 }
