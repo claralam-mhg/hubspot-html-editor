@@ -1,7 +1,7 @@
 {
- "key": "49b02cae",
- "prepared": "2026-11-09T01:49:10.149Z",
- "js": "49b02cae",
+ "key": "6dff6f00",
+ "prepared": "2026-11-10T01:31:16.010Z",
+ "js": "6dff6f00",
  "css": null,
  "changes": [
   {
@@ -23,31 +23,31 @@
   {
    "name": "Mox 信用卡 (CashBack)",
    "ch": [
-    "優惠期至 2026/11/08 → **(no date shown)**",
+    "優惠期至 2026/11/08 → **2026/11/30**",
+    "申請 link apply/9760 → **apply/9804** (the old form is closed when its offer ends)",
     "推廣碼 MOXFLASHMH2 removed",
-    "獎賞＋迎新總價值 HK$2,800 → **HK$2,300**",
-    "獨家 line: HK$500 現金回贈 (經轉數快) (由MoneyHero送出) +HK$1,800現金獎賞 (由 Mox 送出) + 1% 基本簽賬CashBack MoneyHero獨家迎新優惠（需使用指定邀請碼「MOXPHONEMH」） 或 ^HK$500 現金回贈 (經轉數快) (由MoneyHero送出) + HK$1,000現金獎賞 (由 Mox 送出) MoneyHero獨家迎新優惠（需使用指定邀請碼「MOXFLASHMH2」） → **HK$2,300 現金回贈（由MoneyHero + Mox送出）**",
-    "added: HK$2,300 現金回贈（由MoneyHero + Mox送出）",
+    "獨家 line: HK$500 現金回贈 (經轉數快) (由MoneyHero送出) +HK$1,800現金獎賞 (由 Mox 送出) + 1% 基本簽賬CashBack MoneyHero獨家迎新優惠（需使用指定邀請碼「MOXPHONEMH」） 或 ^HK$500 現金回贈 (經轉數快) (由MoneyHero送出) + HK$1,000現金獎賞 (由 Mox 送出) MoneyHero獨家迎新優惠（需使用指定邀請碼「MOXFLASHMH2」） → **HK$500 現金回贈 (經轉數快) (由MoneyHero送出) +HK$1,800現金獎賞 (由 Mox 送出) + 1% 基本簽賬CashBack**",
+    "added: HK$500 現金回贈 (經轉數快) (由MoneyHero送出) +HK$1,800現金獎賞 (由 Mox 送出) + 1% 基本簽賬CashBack · ^HK$500 現金回贈 (經轉數快) (由MoneyHero送出) + HK$1,000現金獎賞 (由 Mox 送出)",
     "removed: HK$500 現金回贈 (經轉數快) (由MoneyHero送出) +HK$1,800現金獎賞 (由 Mox 送出) + 1% 基本簽賬CashBack MoneyHero獨家迎新優惠（需使用指定邀請碼「MOXPHONEMH」） 或 ^HK$500 現金回贈 (經轉數快) (由MoneyHero送出) + HK$1,000現金獎賞 (由 Mox 送出) MoneyHero獨家迎新優惠（需使用指定邀請碼「MOXFLASHMH2」）"
    ]
   },
   {
    "name": "Mox 信用卡 （「亞洲萬里通」）",
    "ch": [
-    "優惠期至 2026/11/08 → **(no date shown)**",
+    "優惠期至 2026/11/08 → **2026/11/30**",
+    "申請 link apply/9759 → **apply/9808** (the old form is closed when its offer ends)",
     "推廣碼 MOXFLASHMH2 removed",
-    "獎賞＋迎新總價值 HK$2,800 → **HK$2,300**",
-    "獨家 line: HK$500 現金回贈 (經轉數快) (由MoneyHero送出) +HK$1,800現金獎賞 (由 Mox 送出) + 1% 基本簽賬CashBack MoneyHero獨家迎新優惠（需使用指定邀請碼「MOXPHONEMH」） 或 ^HK$500 現金回贈 (經轉數快) (由MoneyHero送出) + HK$1,000現金獎賞 (由 Mox 送出) MoneyHero獨家迎新優惠（需使用指定邀請碼「MOXFLASHMH2」） → **HK$2,300 現金回贈（由MoneyHero + Mox送出）**",
-    "added: HK$2,300 現金回贈（由MoneyHero + Mox送出）",
+    "獨家 line: HK$500 現金回贈 (經轉數快) (由MoneyHero送出) +HK$1,800現金獎賞 (由 Mox 送出) + 1% 基本簽賬CashBack MoneyHero獨家迎新優惠（需使用指定邀請碼「MOXPHONEMH」） 或 ^HK$500 現金回贈 (經轉數快) (由MoneyHero送出) + HK$1,000現金獎賞 (由 Mox 送出) MoneyHero獨家迎新優惠（需使用指定邀請碼「MOXFLASHMH2」） → **HK$500 現金回贈 (經轉數快) (由MoneyHero送出) +HK$1,800現金獎賞 (由 Mox 送出) + 1% 基本簽賬CashBack**",
+    "added: HK$500 現金回贈 (經轉數快) (由MoneyHero送出) +HK$1,800現金獎賞 (由 Mox 送出) + 1% 基本簽賬CashBack · ^HK$500 現金回贈 (經轉數快) (由MoneyHero送出) + HK$1,000現金獎賞 (由 Mox 送出)",
     "removed: HK$500 現金回贈 (經轉數快) (由MoneyHero送出) +HK$1,800現金獎賞 (由 Mox 送出) + 1% 基本簽賬CashBack MoneyHero獨家迎新優惠（需使用指定邀請碼「MOXPHONEMH」） 或 ^HK$500 現金回贈 (經轉數快) (由MoneyHero送出) + HK$1,000現金獎賞 (由 Mox 送出) MoneyHero獨家迎新優惠（需使用指定邀請碼「MOXFLASHMH2」）"
    ]
   }
  ],
  "notes": [
-  "Mox 信用卡 (CashBack): the listing shows no 獎賞＋迎新總價值 (\"-\"), so the headline HK$2,300 is used. Ask BD to fill it in.",
-  "Mox 信用卡 (CashBack): the product page has no MoneyHero offer, so the listing headline is the gift and no end date is shown. Ask BD for the offer details.",
-  "Mox 信用卡 （「亞洲萬里通」）: the listing shows no 獎賞＋迎新總價值 (\"-\"), so the headline HK$2,300 is used. Ask BD to fill it in.",
-  "Mox 信用卡 （「亞洲萬里通」）: the product page has no MoneyHero offer, so the listing headline is the gift and no end date is shown. Ask BD for the offer details.",
+  "Citi Cash Back 信用卡: the product page now says 2026/11/12, on or after the override's 2026/11/12 — the page wins. Remove the override from src-deck/sync-config.json.",
+  "Citi Rewards 信用卡: the product page now says 2026/11/12, on or after the override's 2026/11/12 — the page wins. Remove the override from src-deck/sync-config.json.",
+  "Citi Rewards 銀聯信用卡: the product page now says 2026/11/12, on or after the override's 2026/11/12 — the page wins. Remove the override from src-deck/sync-config.json.",
+  "Citi PremierMiles 信用卡: the product page now says 2026/11/12, on or after the override's 2026/11/12 — the page wins. Remove the override from src-deck/sync-config.json.",
   "滙豐Red信用卡: not found on the live listing — left as is."
  ],
  "warnings": [
