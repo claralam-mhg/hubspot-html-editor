@@ -1,7 +1,7 @@
 {
- "key": "6dff6f00",
- "prepared": "2026-11-10T01:31:16.010Z",
- "js": "6dff6f00",
+ "key": "b3adfe10",
+ "prepared": "2026-11-11T01:31:20.496Z",
+ "js": "b3adfe10",
  "css": null,
  "changes": [
   {
@@ -10,6 +10,30 @@
     "獨家 line: HK$2,500 Apple Store 禮品卡 → **25,000 Max Miles 飛行里數**",
     "added: PHILIPS ADD6920 RO即熱式純淨飲水機",
     "removed: PHILIPS ADD6920 RO 即熱式純淨飲水機"
+   ]
+  },
+  {
+   "name": "渣打國泰Mastercard",
+   "ch": [
+    "獨家 line: HK$2,000 Apple Store禮品卡 → **HK$2,000 Apple Store 禮品卡**",
+    "added: HK$2,000 Apple Store 禮品卡 · HK$2,000 HKTVmall電子購物禮券",
+    "removed: HK$2,000 Apple Store禮品卡 · HK$2,000 HKTVmall 電子購物禮券"
+   ]
+  },
+  {
+   "name": "渣打國泰Mastercard - 優先理財",
+   "ch": [
+    "獨家 line: HK$2,000 Apple Store禮品卡 → **HK$2,000 Apple Store 禮品卡**",
+    "added: HK$2,000 Apple Store 禮品卡 · HK$2,000 HKTVmall電子購物禮券",
+    "removed: HK$2,000 Apple Store禮品卡 · HK$2,000 HKTVmall 電子購物禮券"
+   ]
+  },
+  {
+   "name": "渣打國泰Mastercard - 優先私人理財",
+   "ch": [
+    "獨家 line: HK$2,000 Apple Store禮品卡 → **HK$2,000 Apple Store 禮品卡**",
+    "added: HK$2,000 Apple Store 禮品卡 · HK$2,000 HKTVmall電子購物禮券",
+    "removed: HK$2,000 Apple Store禮品卡 · HK$2,000 HKTVmall 電子購物禮券"
    ]
   },
   {
@@ -51,7 +75,9 @@
   "滙豐Red信用卡: not found on the live listing — left as is."
  ],
  "warnings": [
+  "Starts 11/11 18:00: CITI CoreCard (FSR3) — HK$2,500 Apple Store 禮品卡. The page follows when the product pages change.",
   "Ends 11/11 23:59: DBS BWM Only FS (Flash) — HK$1,700 惠康購物現金券.",
-  "Ends 11/11 23:59: DBS Eniment Only (BAU) — HK$800 惠康購物現金券."
+  "Ends 11/11 23:59: DBS Eniment Only (BAU) — HK$800 惠康購物現金券.",
+  "Starts 11/13 12:00: DBS Eminent (Flash) — HK$1,500 惠康購物現金券. The page follows when the product pages change."
  ]
 }
